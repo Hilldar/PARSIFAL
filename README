@@ -1,0 +1,21 @@
+#
+# bash_PARSIFAL2
+Initilize the code parsifal with the command
+>>
+>> source init_PARSIFAL.sh
+>>
+
+# Future upgrades
+Up to now the setting of the triple-GEMs are introduced by the variable setup (=0)
+This determines the following variables:
+- collection efficiency x 3
+- extraction efficiency x 3
+- GEM gain x 3
+These variables depends on the gain of the detector
+-> It is missing the check on the gain file
+
+The ionization depends on the particle, now only muons are considered
+This determines the following variables:
+- number of primary electron cluster
+- number of secondary electron for each primary cluster
+These variables depends on the particle type, kinetic energy and the gas mixture
