@@ -38,7 +38,9 @@ namespace PARSIFAL2{
 		TString file_name,nome_g;
 		TFile *file_gain_eff;
 		TH1F*  h_gain_eff;
+		TF1*   f_gain_eff;
 		TH1I*  h_gain; //is it needed? 
+		bool   use_function_gain;
 		//Function Get
 		void      Set_PrintInfo     (bool io) {PrintInfo=io;};
 		void      Set_PrintNTuple   (bool io) {PrintNTuple=io;};

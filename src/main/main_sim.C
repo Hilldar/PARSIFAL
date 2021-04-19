@@ -9,18 +9,31 @@ void Run_i(string folder_i, int angle_i){
   infile.open("run_list.txt", ios::out | ios::app | ios::binary);
   string var[4];
   while(infile>>var[0]>>var[1]>>var[2]>>var[3]) if(var[0]==folder_i) break;
-  PARSIFAL *tripleGEM = new PARSIFAL();
   string name_ang = Form("run_angle%i.root",(int)angle_i);
+  /*
+  PARSIFAL *tripleGEM = new PARSIFAL();
   tripleGEM->Set_Particle_AngleXZ(aangle);
   tripleGEM->Set_OutfileName(folder_i,name_ang);
   tripleGEM->Set_nShots(nshot);
-  tripleGEM->Initialization();
+  tripleGEM->Initialization_tripleGEM();
   tripleGEM->Set_GainFactor(stod(var[1]));
   tripleGEM->Set_SpaceDiffusionFactor(stod(var[2]));
   tripleGEM->Set_TimeDiffusionFactor(stod(var[3]));
   tripleGEM->Run();
   tripleGEM->Terminate();
   delete tripleGEM;
+  */
+  PARSIFAL *rwell = new PARSIFAL();
+  rwell->Set_Particle_AngleXZ(aangle);
+  rwell->Set_OutfileName(folder_i,name_ang);
+  rwell->Set_nShots(nshot);
+  rwell->Initialization_rwell();
+  rwell->Set_GainFactor(stod(var[1]));
+  rwell->Set_SpaceDiffusionFactor(stod(var[2]));
+  rwell->Set_TimeDiffusionFactor(stod(var[3]));
+  rwell->Run(); 
+  rwell->Terminate(); 
+  delete rwell;
   return;
 }
 

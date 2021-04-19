@@ -44,7 +44,7 @@ namespace PARSIFAL2{
 	  double    TemporalShiftTrans;           //ns
           double    TemporalShiftInduc;           //ns
 	  double    SpatialDiffusionDrift[4];     //mm
-	  double    TemporalDiffusionDrift[3];    //ns
+	  double    TemporalDiffusionDrift[4];    //ns
 	  double    SpatialDiffusionTrans;        //mm
 	  double    SpatialDiffusionInduc;        //mm
 	  double    TemporalDiffusionTrans;       //ns
@@ -57,7 +57,7 @@ namespace PARSIFAL2{
 	  double    TemporalShiftTransMagField;           //ns
 	  double    TemporalShiftInducMagField;           //ns
 	  double    SpatialDiffusionDriftMagField[4];     //mm
-	  double    TemporalDiffusionDriftMagField[3];    //ns
+	  double    TemporalDiffusionDriftMagField[4];    //ns
 	  double    SpatialDiffusionTransMagField;    	  //mm
 	  double    SpatialDiffusionInducMagField;    	  //mm
 	  double    TemporalDiffusionTransMagField;   	  //ns

@@ -20,8 +20,15 @@ namespace PARSIFAL2{
       else file_name="guadagni_10M.root";			
       file_gain_eff = new TFile("src/DetectorGain/guadagni_10M.root", "READ");
       h_gain_eff = (TH1F*) file_gain_eff->Get("h_gain_eff_0_825");
+      use_function_gain=false;
     }
-    if(Get_Setup()!=0){
+    else if(Get_Setup()==1){
+      collection_efficiency_stage1=0.888;
+      f_gain_eff = new TF1("gain_rwell","([2]/[0]) * (pow(1 + [1],1 + [1]) / TMath::Gamma(1 + [1])) * pow((x/[0]),[1]) * exp(-(1 + [1]) * x / [0])", 0, 150000);
+      f_gain_eff->SetParameters(5000,0.5,1);
+      use_function_gain=true;
+    }
+    else{
       cout<<"<>-<>  <>-<>  <>-<>  <>-<>  <>-<>"<<endl;
       cout<<"<>-<>      DetectorGain     <>-<>"<<endl;
       cout<<"<>-<>  Check the setup ID   <>-<>"<<endl;
@@ -44,7 +51,9 @@ namespace PARSIFAL2{
       }
       else{
 	//Multiply the electrons number due to the detector gain
-	int tot_gain = h_gain_eff->GetRandom();
+	int tot_gain;
+	if(use_function_gain) tot_gain = f_gain_eff->GetRandom();
+	else      	      tot_gain = h_gain_eff->GetRandom();
 	tot_gain = (int) (tot_gain*Get_TuningFactor());
 	if(NO_Gain) tot_gain = 1;
 	post_gain.at(iele)->Set_GainedElectrons(tot_gain);
@@ -60,7 +69,9 @@ namespace PARSIFAL2{
     }
     else{
       //Multiply the electrons number due to the detector gain                                                                                                           
-      int tot_gain = h_gain_eff->GetRandom();
+      int tot_gain;
+      if(use_function_gain) tot_gain = f_gain_eff->GetRandom();
+      else                  tot_gain = h_gain_eff->GetRandom();
       tot_gain = (int) (tot_gain*Get_TuningFactor());
       if(NO_Gain) tot_gain = 1;
       return tot_gain;

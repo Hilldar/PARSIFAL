@@ -31,7 +31,8 @@ namespace PARSIFAL2{
     void Write_oFile();
     void Clean();
     void FreeMemory();
-    void Initialization();
+    void Initialization_tripleGEM();
+    void Initialization_rwell();
     void Run();
     void Terminate();
     //Function support 

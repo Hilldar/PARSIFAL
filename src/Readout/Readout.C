@@ -9,7 +9,7 @@ namespace PARSIFAL2{
   {
     r = new TRandom3();
     r->SetSeed(SEED);
-    if(Get_Setup()==0){
+    if(Get_Setup()==0 || Get_Setup()==1){
       channel.reserve(geo->Get_NumberOfStrip1()+geo->Get_NumberOfStrip2());
       //Strip case
       for(int ich=0;ich<geo->Get_NumberOfStrip1();ich++){
@@ -30,7 +30,7 @@ namespace PARSIFAL2{
 	delete pos;
       }
     }
-    if(Get_Setup()!=0){
+    else{
       cout<<"<>-<>  <>-<>  <>-<>  <>-<>  <>-<>"<<endl;
       cout<<"<>-<>        Readout        <>-<>"<<endl;
       cout<<"<>-<>  Check the setup ID   <>-<>"<<endl;
@@ -84,6 +84,9 @@ namespace PARSIFAL2{
       double charge_sharing = geometry->Get_ChargeSharing();
       if(charge_sharing/(1+charge_sharing) < r->Uniform(0,1)) return Xview;
       else return Yview;
+    }
+    else if(Get_Setup()==1){
+      return Xview;
     }
     return -1;
   };

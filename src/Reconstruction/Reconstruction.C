@@ -14,6 +14,16 @@ namespace PARSIFAL2{
       Set_Drift_Velocity(0.037); // mm/ns
       Set_T0_TPC(141); //ns
     }
+    else if(Get_Setup()==1){
+      Set_Drift_Velocity(0.039); // mm/ns 
+      Set_T0_TPC(0); //ns 
+    }
+    else{
+      cout<<"<>-<>  <>-<>  <>-<>  <>-<>  <>-<>"<<endl;
+      cout<<"<>-<>    Reconstruction     <>-<>"<<endl;
+      cout<<"<>-<>  Check the setup ID   <>-<>"<<endl;
+      cout<<"<>-<>  <>-<>  <>-<>  <>-<>  <>-<>"<<endl;      
+    }
   };
   vector<Hit*> Reconstruction::Digitize(vector<ElectronicChannel*> chan){
     vector<Hit*> hits;
