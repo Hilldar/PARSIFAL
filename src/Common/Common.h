@@ -19,8 +19,8 @@ namespace PARSIFAL2{
   const bool NO_Drift = false;
   const bool NO_Readout = false;
   const bool NO_Noise = false;
-  const bool NO_Capacitive= false;
-  const bool NO_uTPC_Correction = false;
+  const bool NO_Capacitive= true;
+  const bool NO_uTPC_Correction = true;
   const bool NO_Hit = false;
   const bool NO_Cluster = false;
   const bool fast_simulation = true;

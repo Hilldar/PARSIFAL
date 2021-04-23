@@ -8,8 +8,8 @@ namespace PARSIFAL2{
     PrintInfo(true),
     PrintNTuple(true)
   {
-    tuning_factor_diff = 1.5;
-    tuning_factor_time = 1.5;
+    tuning_factor_diff = 1.0;
+    tuning_factor_time = 1.0;
     r = new TRandom3();
 
     r->SetSeed(SEED);
@@ -64,10 +64,10 @@ namespace PARSIFAL2{
     }
     else if(Get_Setup()==1){
       // no mag field -----------                                                                                                                                                                               // >>> spatial shift                                                                                                                                                                                
-      SpatialShiftDrift[0] = 0.; // OK // shift drift                                                                                                                                                     
-      SpatialShiftDrift[1] = 0.; // OK // shift drift                                                                                                                                                     
-      SpatialShiftTrans = 0.; // OK // shift transfer                                                                                                                                                     
-      SpatialShiftInduc = 0.; // OK // shift induction                                                                                                                                                    
+      SpatialShiftDrift[0] = 0.; // OK // shift drift 
+      SpatialShiftDrift[1] = 0.; // OK // shift drift
+      SpatialShiftTrans = 0.; // OK // shift transfer
+      SpatialShiftInduc = 0.; // OK // shift induction 
       SpatialDiffusionDrift[0] = 0.000452964;    // OK // sigma drift
       SpatialDiffusionDrift[1] = 0.0400226;   // OK // sigma drift                                                                                                                                       
       SpatialDiffusionDrift[2] = -0.0878887;     // OK // sigma drift
@@ -92,7 +92,7 @@ namespace PARSIFAL2{
       TemporalDiffusionTrans = 0; // OK // sigma transfer                                                                                                                                           
       TemporalDiffusionInduc = 0; // OK // sigma induction                                                                                                                                          
       // mag field -------------- UNSET
-      // >>> spatial shift                                                                                                                                                                                
+      // >>> spatial shift 
       SpatialShiftDriftMagField[0] = 0;
       SpatialShiftDriftMagField[1] = 0;
       SpatialShiftTransMagField = 0;
@@ -103,12 +103,12 @@ namespace PARSIFAL2{
       SpatialDiffusionDriftMagField[3] = 0;
       SpatialDiffusionTransMagField = 0;
       SpatialDiffusionInducMagField = 0;
-      // >>> temporal shift                                                                                                                                                                               
+      // >>> temporal shift
       TemporalShiftDriftMagField[0] = 0;
       TemporalShiftDriftMagField[1] = 0;
       TemporalShiftTransMagField = 0;
       TemporalShiftInducMagField  = 0;
-      // >>> temporal sigma                                                                                                                                                                               
+      // >>> temporal sigma 
       TemporalDiffusionDriftMagField[0] = 0;
       TemporalDiffusionDriftMagField[1] = 0;
       TemporalDiffusionDriftMagField[2] = 0;
@@ -201,7 +201,8 @@ namespace PARSIFAL2{
     return geometry->Get_DriftTotal();
   }
   double ElectronDrift::Get_T(double t, double z){
-    z = 5 - z; //TO FIX 
+    if(Get_Setup()==0) z = 5 - z; //TO FIX 
+    //if(Get_Setup()==1) z = 6 - z; //TO FIX
     z/=10;
     double shift, sigma;
     double dt=0;

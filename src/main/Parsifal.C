@@ -5,7 +5,7 @@ PARSIFAL::PARSIFAL() {
 }
 
 PARSIFAL::~PARSIFAL(){
-  Clean();
+  //Clean(); -> it crash
   delete geo;
   delete D4;
   delete party;
