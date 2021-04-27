@@ -17,6 +17,7 @@
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
 #include "Reconstruction/Reconstruction.h"
+#include "Resistive/Resistive.h"
 #include "Signal/Signal.h"
 namespace PARSIFAL2{
   class PARSIFAL{
@@ -75,14 +76,12 @@ namespace PARSIFAL2{
     Position *D4;
     Particle *party;
     Ionization *ionio;
-    //ElectronDrift *drift;
-    //DetectorGain *gain;
-    //Readout *anode;
     Reconstruction *recon;
     Signal *signal;
     vector<Primary*> primi;
     vector<Secondary*> secondary;
     vector<Secondary*> electrons;
+    vector<Secondary*> electrons_resistive;
     vector<ElectronicChannel*> channels;
     vector<Hit*> hit;
     vector<Cluster1D*> cluster1d;

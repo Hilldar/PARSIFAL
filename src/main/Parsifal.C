@@ -5,7 +5,7 @@ PARSIFAL::PARSIFAL() {
 }
 
 PARSIFAL::~PARSIFAL(){
-  //Clean(); -> it crash
+  //Clean(); --> it crashes
   delete geo;
   delete D4;
   delete party;
@@ -71,10 +71,11 @@ void PARSIFAL::Run(){
       //Create the electrons from the primary clusters
       secondary = ionio->SecondaryIonization(primi);
       //Amplification and drift to the anode
-      secondary = signal->Gain(secondary);
-      electrons = signal->Drift(secondary);
+      secondary           = signal->Gain(secondary);
+      electrons           = signal->Drift(secondary);
+      electrons_resistive = signal->Resist(electrons);
       //Readout
-      channels  = signal->Read(electrons);
+      channels  = signal->Read(electrons_resistive);
     }
     //
     //Process

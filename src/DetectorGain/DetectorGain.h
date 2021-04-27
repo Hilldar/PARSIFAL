@@ -12,7 +12,8 @@ namespace PARSIFAL2{
 		//Destructor
 		~DetectorGain() {
 		  delete r;
-                  delete file_gain_eff;
+		  if(use_function_gain) delete f_gain_eff;
+		  else  delete file_gain_eff;
 		};
 		//Function
 		bool               Get_PrintInfo     () {return PrintInfo;};

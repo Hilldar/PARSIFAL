@@ -21,11 +21,11 @@ LIBS     = $(LIB)                        # will get an -L for each entry
 
 
 EXEC1        = Test
-COMPONENTS1  = main/main_test Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Signal/Signal Reconstruction/Reconstruction
+COMPONENTS1  = main/main_test Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Resistive/Resistive Signal/Signal Reconstruction/Reconstruction
 BIN_EXEC1    = $(addprefix $(BIN)/,$(EXEC1) )
 
 EXEC2	     = Simulate
-COMPONENTS2  = main/main_sim main/Parsifal Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Signal/Signal Reconstruction/Reconstruction
+COMPONENTS2  = main/main_sim main/Parsifal Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Resistive/Resistive Signal/Signal Reconstruction/Reconstruction
 BIN_EXEC2    = $(addprefix $(BIN)/,$(EXEC2) )
 
 EXEC3        = Analysis
@@ -76,6 +76,7 @@ $(LIB):
 	mkdir -p $(LIB)/DetectorGain
 	mkdir -p $(LIB)/Readout
 	mkdir -p $(LIB)/Reconstruction
+	mkdir -p $(LIB)/Resistive
 	mkdir -p $(LIB)/Signal
 	mkdir -p $(LIB)/main
 $(BIN):
@@ -88,4 +89,5 @@ installdirs: $(LIB) $(BIN) $(LOG) $(DATA)
 yo: installdirs $(BIN_EXEC1)
 tum: installdirs $(BIN_EXEC2)
 fush: installdirs $(BIN_EXEC3)
-all: yo tum fush
+#all: yo tum fush
+all: tum fush

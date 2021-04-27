@@ -8,6 +8,7 @@
 #include "ElectronDrift/ElectronDrift.h"
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
+#include "Resistive/Resistive.h"
 using namespace std;
 namespace PARSIFAL2{
   class Signal{
@@ -17,9 +18,10 @@ namespace PARSIFAL2{
     //Fast
     vector<ElectronicChannel*> Generate_Signal (vector<Primary*>);
     //Slow
-    vector<Secondary*>         Gain            (vector<Secondary*> secondary) {return gain->Gain  (secondary);};
-    vector<Secondary*>         Drift           (vector<Secondary*> secondary) {return drift->Drift(secondary);}; 
-    vector<ElectronicChannel*> Read            (vector<Secondary*> secondary) {return anode->Read (secondary);};
+    vector<Secondary*>         Gain            (vector<Secondary*> secondary) {return gain->Gain        (secondary);};
+    vector<Secondary*>         Drift           (vector<Secondary*> secondary) {return drift->Drift      (secondary);}; 
+    vector<Secondary*>         Resist          (vector<Secondary*> secondary) {return resisto->Diffusion(secondary);};
+    vector<ElectronicChannel*> Read            (vector<Secondary*> secondary) {return anode->Read       (secondary);};
     
     //Tuning
     void Set_GainTuningFactor (double io){ gain->Set_TuningFactor(io);};
@@ -29,6 +31,7 @@ namespace PARSIFAL2{
     ElectronDrift *drift;
     DetectorGain *gain;
     Readout *anode;
+    Resistive *resisto;
   };//end class
 }//end namespace
 #endif

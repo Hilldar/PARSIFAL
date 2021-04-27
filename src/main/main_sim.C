@@ -1,6 +1,6 @@
 #include "main/Parsifal.h"
 bool run_parallel = true;
-const int nshot = 10000;//2000;//10000;
+const int nshot = 100;//2000;//10000;
 
 using namespace PARSIFAL2;
 void Run_i(string folder_i, int angle_i){

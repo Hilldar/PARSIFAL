@@ -6,7 +6,7 @@
 #include "Common/Secondary.h"
 using namespace std;
 namespace PARSIFAL2{
-	class ElectronDrift{
+  class ElectronDrift{
 	public:
 	  //Constructur
 	  ElectronDrift(int setup, bool MagField, Geometry* geo);
