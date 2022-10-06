@@ -1,3 +1,12 @@
+/**
+ Authors:
+ Riccardo Farinelli <rfarinelli@fe.infn.it>
+ Lia Lavezzi        <lia.lavezzi@to.infn.it>
+
+ All rights reserved
+ For the licensing terms see $PARSIFAL/LICENSE
+**/
+
 #ifndef Secondary_h
 #define Secondary_h
 #include "Common/Position.h"

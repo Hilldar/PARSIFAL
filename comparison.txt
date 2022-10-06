@@ -1,3 +1,11 @@
+#
+# Authors:
+# Riccardo Farinelli <rfarinelli@fe.infn.it>
+# Lia Lavezzi        <lia.lavezzi@to.infn.it>
+#
+# All rights reserved
+# For the licensing terms see $PARSIFAL/LICENSE
+#
 0  128 4.67 50 350 50
 5  114 4.75 114 330 110
 10 143 5.20 173 155 125

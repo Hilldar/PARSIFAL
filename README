@@ -1,3 +1,11 @@
+#
+# Authors:
+# Riccardo Farinelli <rfarinelli@fe.infn.it>
+# Lia Lavezzi        <lia.lavezzi@to.infn.it>
+#
+# All rights reserved
+# For the licensing terms see $PARSIFAL/LICENSE
+#
 
 Requirements: a working installation of ROOT (root.cern.ch). Tested on ROOT version 6.12/04
 

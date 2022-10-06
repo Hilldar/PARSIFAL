@@ -1,3 +1,12 @@
+/**
+ Authors:
+ Riccardo Farinelli <rfarinelli@fe.infn.it>
+ Lia Lavezzi        <lia.lavezzi@to.infn.it>
+
+ All rights reserved
+ For the licensing terms see $PARSIFAL/LICENSE
+**/
+
 #include "main/Parsifal.h"
 bool run_parallel = true;
 const int nshot = 100;//2000;//10000;

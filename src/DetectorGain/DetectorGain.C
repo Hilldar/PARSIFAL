@@ -1,3 +1,12 @@
+/**
+ Authors:
+ Riccardo Farinelli <rfarinelli@fe.infn.it>
+ Lia Lavezzi        <lia.lavezzi@to.infn.it>
+
+ All rights reserved
+ For the licensing terms see $PARSIFAL/LICENSE
+**/
+
 #include "DetectorGain/DetectorGain.h"
 namespace PARSIFAL2{
   DetectorGain::DetectorGain(int setup,bool MagField):

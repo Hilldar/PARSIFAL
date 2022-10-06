@@ -1,3 +1,11 @@
+#
+# Authors:
+# Riccardo Farinelli <rfarinelli@fe.infn.it>
+# Lia Lavezzi        <lia.lavezzi@to.infn.it>
+#
+# All rights reserved
+# For the licensing terms see $PARSIFAL/LICENSE
+#
 SRC  = $(PARSIFAL2)/src
 LIB  = $(PARSIFAL2)/lib
 BIN  = $(PARSIFAL2)/bin
