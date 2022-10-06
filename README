@@ -1,9 +1,11 @@
-#
-# bash_PARSIFAL2
-Initilize the code parsifal with the command
->>
->> source init_PARSIFAL.sh
->>
+Requirements: a working installation of ROOT (root.cern.ch). Tested on ROOT version 6.12/04
+
+HOWTO:
+1) set the ROOT environment variables: source $ROOTSYS/bin/thisroot.sh
+2) go to the directory where you copied PARSIFAL
+3) initilize PARSIFAL with the command: source init_PARSIFAL.sh
+4) set the PARSIFAL environment variables: source $PARSIFAL/bash_PARSIFAL2
+5) get the PARSIFAL command list: parsifal -h
 
 # Future upgrades
 Up to now, the settings of the triple-GEM are introduced by the variable setup (=0)
