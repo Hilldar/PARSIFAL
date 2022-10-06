@@ -9,7 +9,7 @@
 
 #include "ElectronDrift/ElectronDrift.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
   ElectronDrift::ElectronDrift(int setup, bool MagField, Geometry* geo):
     Setup(setup),
     MagneticField(MagField),

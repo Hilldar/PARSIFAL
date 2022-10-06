@@ -19,7 +19,7 @@
 #include "Readout/Readout.h"
 #include "Resistive/Resistive.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
   class Signal{
   public:
     Signal(int setup, int electronics, bool MagField, Geometry *geo);

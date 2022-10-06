@@ -23,7 +23,7 @@
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
 #include "Reconstruction/Reconstruction.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
 	//Function 
 	void Initialize_oFile();

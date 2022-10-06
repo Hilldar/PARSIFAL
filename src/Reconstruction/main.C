@@ -8,7 +8,7 @@
 **/
 
 #include "Reconstruction/main.h"
-using namespace PARSIFAL2;
+using namespace PARSIFAL;
 
 const int nShots = 10;
 
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]){
   return 0;
 };
 
-void PARSIFAL2::Clean(){
+void PARSIFAL::Clean(){
   nhit=0;
   ncluster1d=0;
   primi.clear();
@@ -116,7 +116,7 @@ void PARSIFAL2::Clean(){
   cluster1d_positionCC_Y.clear();
 }
 
-void PARSIFAL2::Initialize_oFile(){
+void PARSIFAL::Initialize_oFile(){
   tree->Branch("event" ,&event  ,"event/I");  
   if(geo->Get_PrintNTuple()){
     tree->Branch("geo_numview" ,&geo_numview  ,"geo_numview/I");
@@ -195,7 +195,7 @@ void PARSIFAL2::Initialize_oFile(){
   return;  
 }
 
-void PARSIFAL2::Write_oFile(){
+void PARSIFAL::Write_oFile(){
   //Output
   if(geo->Get_PrintNTuple()){
     geo_numview  = geo->Get_NumberOfView();

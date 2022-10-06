@@ -8,7 +8,7 @@
 **/
 
 #include "Readout/Readout.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
   Readout::Readout(int setup, int electronics, Geometry *geo):
     Setup(setup),
     Electronics(electronics),

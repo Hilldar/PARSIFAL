@@ -8,12 +8,12 @@
 **/
 
 #include "main/Parsifal.h"
-using namespace PARSIFAL2;
+using namespace PARSIFAL;
 
-PARSIFAL::PARSIFAL() {
+PARSI::PARSI() {
 }
 
-PARSIFAL::~PARSIFAL(){
+PARSI::~PARSI(){
   //Clean(); --> it crashes
   delete geo;
   delete D4;
@@ -26,7 +26,7 @@ PARSIFAL::~PARSIFAL(){
   delete file;
 }
 
-void PARSIFAL::Initialization_tripleGEM(){
+void PARSI::Initialization_tripleGEM(){
   cout<<"Ciao"<<endl;
   file = new TFile(name_outfile,"RECREATE");
   tree = new TTree("tree","tree");
@@ -41,7 +41,7 @@ void PARSIFAL::Initialization_tripleGEM(){
   return;
 }
 
-void PARSIFAL::Initialization_rwell(){
+void PARSI::Initialization_rwell(){
   cout<<"Ciao"<<endl;
   file = new TFile(name_outfile,"RECREATE");
   tree = new TTree("tree","tree");
@@ -57,7 +57,7 @@ void PARSIFAL::Initialization_rwell(){
 }
 
 
-void PARSIFAL::Run(){
+void PARSI::Run(){
   TRandom3 *r = new TRandom3();
   r->SetSeed(SEED); // CHECK
   for(event=0;event<nShots;event++){
@@ -113,7 +113,7 @@ void PARSIFAL::Run(){
 }
 
 
-void PARSIFAL::Terminate(){
+void PARSI::Terminate(){
   file->Write();
   file->Close();
   cout<<"---- Output file ----"<<endl;
@@ -121,7 +121,7 @@ void PARSIFAL::Terminate(){
   return;
 }
 
-void PARSIFAL::Clean(){
+void PARSI::Clean(){
   nhit=0;
   ncluster1d=0;
   primi.clear();
@@ -174,7 +174,7 @@ void PARSIFAL::Clean(){
   cluster1d_positionTPC_X.clear();
   cluster1d_positionTPC_Y.clear();
 }
-void PARSIFAL::FreeMemory() {
+void PARSI::FreeMemory() {
   if(cluster1d.size()>0) {   for (vector<Cluster1D*>::iterator itr = cluster1d.begin(); itr != cluster1d.end(); itr++) { delete *itr; }}
   if(hit.size()>0) {  for (vector<Hit*>::iterator itr = hit.begin(); itr != hit.end(); itr++) { delete *itr; }}
   if(electrons.size()>0) {  for (vector<Secondary*>::iterator itr = electrons.begin(); itr != electrons.end(); itr++) { delete *itr; }}
@@ -182,7 +182,7 @@ void PARSIFAL::FreeMemory() {
   if(primi.size()>0) {   for (vector<Primary*>::iterator itr = primi.begin(); itr != primi.end(); itr++) { delete *itr;  }}
 }
 
-void PARSIFAL::Initialize_oFile(){
+void PARSI::Initialize_oFile(){
   tree->Branch("event" ,&event  ,"event/I");  
   if(PrintNTuple_Geo){
     tree->Branch("geo_numview" ,&geo_numview  ,"geo_numview/I");
@@ -261,7 +261,7 @@ void PARSIFAL::Initialize_oFile(){
   return;  
 }
 
-void PARSIFAL::Write_oFile(){
+void PARSI::Write_oFile(){
   
   //Output
   if(PrintNTuple_Geo){

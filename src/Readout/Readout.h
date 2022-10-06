@@ -16,7 +16,7 @@
 #include "Common/ElectronicChannel.h"
 #include "TF1.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
   class Readout{
   public:
     //Constructur

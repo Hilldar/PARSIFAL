@@ -9,7 +9,7 @@
 
 #include "Resistive/Resistive.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
   Resistive::Resistive(int setup,Geometry* geo):
     Setup(setup),
     geometry(geo),

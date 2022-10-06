@@ -10,7 +10,7 @@
 #include "Geometry/Geometry.h"
 #include <vector>
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
   Geometry::Geometry(int numberofview, double pitch1, double pitch2, int nstrip1, int nstrip2, double driftgap, double drifttotal, int charge_sharing):
     NumberOfView(numberofview),

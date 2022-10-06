@@ -35,8 +35,8 @@ int main(int argc, const char* argv[]){
     //for(int iangle=0;iangle<=40;iangle+=10){ 
     for(int iangle=0;iangle<7;iangle++){
       if(run_parallel){
-	//gSystem->Exec(Form("ts -n $exe_parsifal2 -A %i %i",folder,iangle));
-	gSystem->Exec(Form("ts -n $exe_parsifal2 -A %i %i",folder,angles[iangle]));
+	//gSystem->Exec(Form("ts -n $exe_parsifal -A %i %i",folder,iangle));
+	gSystem->Exec(Form("ts -n $exe_parsifal -A %i %i",folder,angles[iangle]));
 	gSystem->Exec("sleep 1");
       }
       else{

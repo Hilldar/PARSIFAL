@@ -8,7 +8,7 @@
 **/
 
 #include "DetectorGain/DetectorGain.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
   DetectorGain::DetectorGain(int setup,bool MagField):
     Setup(setup),
     MagneticField(MagField),

@@ -13,7 +13,7 @@
 #include "Common/Position.h"
 #include "Common/Secondary.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
 	class DetectorGain{
 	public:
 		//Constructur

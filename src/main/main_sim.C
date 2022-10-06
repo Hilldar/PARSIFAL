@@ -11,7 +11,7 @@
 bool run_parallel = true;
 const int nshot = 100;//2000;//10000;
 
-using namespace PARSIFAL2;
+using namespace PARSIFAL;
 void Run_i(string folder_i, int angle_i){
   double aangle = angle_i*TMath::DegToRad();
   ifstream infile;
@@ -20,7 +20,7 @@ void Run_i(string folder_i, int angle_i){
   while(infile>>var[0]>>var[1]>>var[2]>>var[3]) if(var[0]==folder_i) break;
   string name_ang = Form("run_angle%i.root",(int)angle_i);
   /*
-  PARSIFAL *tripleGEM = new PARSIFAL();
+  PARSI *tripleGEM = new PARSI();
   tripleGEM->Set_Particle_AngleXZ(aangle);
   tripleGEM->Set_OutfileName(folder_i,name_ang);
   tripleGEM->Set_nShots(nshot);
@@ -32,7 +32,7 @@ void Run_i(string folder_i, int angle_i){
   tripleGEM->Terminate();
   delete tripleGEM;
   */
-  PARSIFAL *rwell = new PARSIFAL();
+  PARSI *rwell = new PARSI();
   rwell->Set_Particle_AngleXZ(aangle);
   rwell->Set_OutfileName(folder_i,name_ang);
   rwell->Set_nShots(nshot);
@@ -58,8 +58,8 @@ int main(int argc, const char* argv[]){
     //for(int iangle=0;iangle<=40;iangle+=10){
     for(int iangle=0;iangle<7;iangle++){
       if(run_parallel){
-	//gSystem->Exec(Form("ts $exe_parsifal2 -S %i %i",stoi(folder),iangle));
-	gSystem->Exec(Form("ts $exe_parsifal2 -S %i %i",stoi(folder),angles[iangle]));
+	//gSystem->Exec(Form("ts $exe_parsifal -S %i %i",stoi(folder),iangle));
+	gSystem->Exec(Form("ts $exe_parsifal -S %i %i",stoi(folder),angles[iangle]));
 	gSystem->Exec(Form("sleep 0.1s"));
       }
       else{

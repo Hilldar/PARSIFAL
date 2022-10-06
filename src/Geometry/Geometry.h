@@ -14,7 +14,7 @@
 #include <fstream>
 using namespace std;
 
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
   class Geometry{
   public:

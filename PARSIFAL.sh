@@ -26,7 +26,7 @@ fi
 # PARSIFAL:BEGIN #
 ##################
 start=`date +%s`
-cd $PARSIFAL2
+cd $PARSIFAL
 export TS_MAXCONN=10
 TS_MAXCONN=10
 ts -S 20
@@ -35,7 +35,7 @@ ts -S 20
 #################
 echo
 echo " ###############"
-echo " ## PARSIFAL2 ##"
+echo " ## PARSIFAL ##"
 echo " ###############"
 echo
 
@@ -47,7 +47,7 @@ while getopts "MmehtSA" OPTION; do
 	h)
             echo "Usage:"
             echo ""
-	    echo "   -m     ->   make PARSIFAL2"
+	    echo "   -m     ->   make PARSIFAL"
 	    echo "   -M     ->   make clean all"
             echo "   -e     ->   to execute echo \"hello world\""
             echo "   -t     ->   run simulation test"

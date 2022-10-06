@@ -15,7 +15,7 @@
 #include "Ionization/Ionization.h"
 #include "ElectronDrift/ElectronDrift.h"
 #include "DetectorGain/DetectorGain.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
 	//Function 
 	void Initialize_oFile();

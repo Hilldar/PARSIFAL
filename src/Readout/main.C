@@ -9,7 +9,7 @@
 
 #include "Readout/main.h"
 using namespace std;
-using namespace PARSIFAL2;
+using namespace PARSIFAL;
 
 int main(int argc, const char* argv[]){
   //Initialization
@@ -50,7 +50,7 @@ int main(int argc, const char* argv[]){
   return 0;
 };
 
-void PARSIFAL2::Initialize_oFile(){
+void PARSIFAL::Initialize_oFile(){
   if(geo->Get_PrintNTuple()){
     tree->Branch("geo_numview" ,&geo_numview  ,"geo_numview/I");
     tree->Branch("geo_pitch1"  ,&geo_pitch1   ,"geo_pitch1/D");
@@ -107,7 +107,7 @@ void PARSIFAL2::Initialize_oFile(){
   return;  
 }
 
-void PARSIFAL2::Write_oFile(){
+void PARSIFAL::Write_oFile(){
   //Output
   if(geo->Get_PrintNTuple()){
     geo_numview  = geo->Get_NumberOfView();

@@ -9,7 +9,7 @@
 
 #ifndef PrintNTuple_h
 #define PrintNTuple_h
-namespace PARSIFAL2{
+namespace PARSIFAL{
   const bool PrintNTuple_Geo       = false;
   const bool PrintNTuple_Party     = false;
   const bool PrintNTuple_Ionio     = true;

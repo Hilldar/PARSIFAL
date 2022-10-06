@@ -14,7 +14,7 @@
 #include "Particle/Particle.h"
 #include "Ionization/Ionization.h"
 #include "ElectronDrift/ElectronDrift.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
 	//Function 
 	void Initialize_oFile();

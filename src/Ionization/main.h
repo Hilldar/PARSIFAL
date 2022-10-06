@@ -17,7 +17,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
 	//Function 
 	void Initialize_oFile();

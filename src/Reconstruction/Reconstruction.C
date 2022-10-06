@@ -8,7 +8,7 @@
 **/
 
 #include "Reconstruction/Reconstruction.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
   Reconstruction::Reconstruction(int setup, Geometry *geo):
     PrintInfo(true),
     PrintNTuple(true),

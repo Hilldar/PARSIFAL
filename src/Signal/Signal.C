@@ -8,7 +8,7 @@
 **/
 
 #include "Signal/Signal.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
   Signal::Signal(int setup, int electronics, bool MagField, Geometry *geo){
     gain    = new DetectorGain(setup, Bfield);

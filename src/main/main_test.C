@@ -8,7 +8,7 @@
 **/
 
 #include "main/main_test.h"
-using namespace PARSIFAL2;
+using namespace PARSIFAL;
 
 int main(int argc, const char* argv[]){
   /*
@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]){
   return 0;
 };
 
-void PARSIFAL2::Initialization(){
+void PARSIFAL::Initialization(){
   /**
   cout<<"Ciao"<<endl;
   file = new TFile(name_outfile,"RECREATE");
@@ -46,7 +46,7 @@ void PARSIFAL2::Initialization(){
   **/
 }
 
-void PARSIFAL2::Run(){
+void PARSIFAL::Run(){
   /**  for(event=0;event<nShots;event++){
     Clean();
     primi     = ionio->PrimaryIonization();
@@ -67,7 +67,7 @@ void PARSIFAL2::Run(){
 }
 
 
-void PARSIFAL2::Terminate(){
+void PARSIFAL::Terminate(){
   /**file->Write();
   file->Close();
   cout<<"---- Output file ----"<<endl;
@@ -79,7 +79,7 @@ void PARSIFAL2::Terminate(){
 
 
 
-void PARSIFAL2::Parsifal(){
+void PARSIFAL::Parsifal(){
   /**
 double angle = 10;
   double nshot = 1;
@@ -97,7 +97,7 @@ double angle = 10;
 
 
 
-void PARSIFAL2::Clean(){
+void PARSIFAL::Clean(){
   /**
   nhit=0;
   ncluster1d=0;
@@ -152,7 +152,7 @@ void PARSIFAL2::Clean(){
 }
 
 /**
-void PARSIFAL2::Initialize_oFile(){
+void PARSIFAL::Initialize_oFile(){
    tree->Branch("event" ,&event  ,"event/I");  
   if(geo->Get_PrintNTuple()){
     tree->Branch("geo_numview" ,&geo_numview  ,"geo_numview/I");
@@ -232,7 +232,7 @@ void PARSIFAL2::Initialize_oFile(){
   return;  
 }
 
-void PARSIFAL2::Write_oFile(){
+void PARSIFAL::Write_oFile(){
   //Output
   if(geo->Get_PrintNTuple()){
     geo_numview  = geo->Get_NumberOfView();

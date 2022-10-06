@@ -9,7 +9,7 @@
 
 #include "Ionization/Ionization.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
   Ionization::Ionization(Particle *party, Geometry *geo):
   PrintInfo(false),

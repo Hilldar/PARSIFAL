@@ -16,7 +16,7 @@
 #include "ElectronDrift/ElectronDrift.h"
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
 	//Function 
 	void Initialize_oFile();

@@ -9,7 +9,7 @@
 
 #include "Particle/Particle.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
   Particle::Particle(int particleID, Position *position, double angleXZ, double angleYZ, Geometry *geo):
   PrintInfo(true),
   PrintNTuple(PrintNTuple_Party),

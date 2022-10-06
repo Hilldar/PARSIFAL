@@ -12,7 +12,7 @@
 using namespace std; 
 // XYZ are refered to the detector frame where the anode is on the XY plane and the electrinc drift field is along the Z direction
 // Z=0 is cathode plane
-namespace PARSIFAL2{
+namespace PARSIFAL{
   class Position{
   public: 
     //Construtor

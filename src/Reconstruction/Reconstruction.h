@@ -21,7 +21,7 @@
 #include "TLine.h"
 #include "Ionization/Ionization.h"
 using namespace std;
-namespace PARSIFAL2{
+namespace PARSIFAL{
   class Reconstruction{
   public:
     //Constructur

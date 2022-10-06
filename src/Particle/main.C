@@ -9,7 +9,7 @@
 
 #include "Particle/Particle.h"
 using namespace std;
-using namespace PARSIFAL2;
+using namespace PARSIFAL;
 
 int main(int argc, const char* argv[]){
   //

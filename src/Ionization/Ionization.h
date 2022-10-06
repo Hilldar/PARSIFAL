@@ -19,7 +19,7 @@
 #include "Particle/Particle.h"
 using namespace std;
 // XYZ are refered to the detector frame where the anode is on the XY plane and the electrinc drift field is along the Z direction
-namespace PARSIFAL2{
+namespace PARSIFAL{
 
   class Ionization{
   public:

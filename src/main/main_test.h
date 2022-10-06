@@ -24,7 +24,7 @@
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
 #include "Reconstruction/Reconstruction.h"
-namespace PARSIFAL2{
+namespace PARSIFAL{
 	//Main Function 
 	void Initialize_oFile();
 	void Write_oFile();
@@ -128,10 +128,10 @@ namespace PARSIFAL2{
 
 	//Function support
 	void Set_OutfileName      (TString io) {
-	  name_outfile=(TString)(getenv("PARSIFAL2_data"))+"/"+=io;
+	  name_outfile=(TString)(getenv("PARSIFAL_data"))+"/"+=io;
 	};
 	void Set_OutfileName      (TString io_dir, TString io_file) {
-          name_outfile=(TString)(getenv("PARSIFAL2_data"))+"/"+io_dir;
+          name_outfile=(TString)(getenv("PARSIFAL_data"))+"/"+io_dir;
 	  gSystem->Exec("mkdir -p "+name_outfile);
           name_outfile+="/"+io_file;
         };

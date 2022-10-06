@@ -28,13 +28,13 @@
 #include "Reconstruction/Reconstruction.h"
 #include "Resistive/Resistive.h"
 #include "Signal/Signal.h"
-namespace PARSIFAL2{
-  class PARSIFAL{
+namespace PARSIFAL{
+  class PARSI{
   public:
     //Construction
-    PARSIFAL();
+    PARSI();
     //Destruction
-    ~PARSIFAL();
+    ~PARSI();
 
     //Main Function 
     void Initialize_oFile();
@@ -47,10 +47,10 @@ namespace PARSIFAL2{
     void Terminate();
     //Function support 
     void Set_OutfileName      (TString io) {
-      name_outfile=(TString)(getenv("PARSIFAL2_data"))+=io;
+      name_outfile=(TString)(getenv("PARSIFAL_data"))+=io;
     };
     void Set_OutfileName      (TString io_dir, TString io_file) {
-      name_outfile=(TString)(getenv("PARSIFAL2_data"))+"/"+io_dir;
+      name_outfile=(TString)(getenv("PARSIFAL_data"))+"/"+io_dir;
       gSystem->Exec("mkdir -p "+name_outfile);
       name_outfile+="/"+io_file;
     };
