@@ -40,9 +40,9 @@ namespace PARSIFAL{
       TemporalShiftDrift[1] = -271.213; // OK // shift drift
       TemporalShiftTrans = 56.6527; // OK // shift transfer
       TemporalShiftInduc = 56.5305; // OK // sigma induction
-      TemporalDiffusionDrift[0] = 3.52458;  // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[1] = -2.01135; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[2] = -4.15946; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
+      TemporalDiffusionDrift[0] = 3.52458;  // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
+      TemporalDiffusionDrift[1] = -2.01135; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
+      TemporalDiffusionDrift[2] = -4.15946; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
       TemporalDiffusionDrift[3] = 0;
       TemporalDiffusionTrans = 2.12464; // OK // sigma transfer
       TemporalDiffusionInduc = 1.93061; // OK // sigma induction
@@ -64,9 +64,9 @@ namespace PARSIFAL{
       TemporalShiftTransMagField = 57.6; // OK // shift transfer
       TemporalShiftInducMagField  = 56.78; // OK // shift induction
       // >>> temporal sigma 
-      TemporalDiffusionDriftMagField[0] = 3.94043;  // OK // sigma drift VANNO SOMMATI IN QUADRATURA 
-      TemporalDiffusionDriftMagField[1] = -2.58493; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDriftMagField[2] = -4.25339; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
+      TemporalDiffusionDriftMagField[0] = 3.94043;  // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM 
+      TemporalDiffusionDriftMagField[1] = -2.58493; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
+      TemporalDiffusionDriftMagField[2] = -4.25339; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
       TemporalDiffusionDriftMagField[3] = 0;
       TemporalDiffusionTransMagField = 2.155;       // OK // sigma transfer
       TemporalDiffusionInducMagField = 1.933;       // OK // sigma induction
@@ -94,10 +94,10 @@ namespace PARSIFAL{
       double rap1 = 19.0958;
       double rap2 = -44.7537;
       double rap3 = 38.6046;
-      TemporalDiffusionDrift[0] = 2.57168;  // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[1] = 19.0958; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[2] = -44.7537; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[3] = 38.6046; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
+      TemporalDiffusionDrift[0] = 2.57168;  // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
+      TemporalDiffusionDrift[1] = 19.0958; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
+      TemporalDiffusionDrift[2] = -44.7537; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
+      TemporalDiffusionDrift[3] = 38.6046; // OK // sigma drift MUST BE COMBINED WITH A QUADRATIC SUM
       TemporalDiffusionTrans = 0; // OK // sigma transfer                                                                                                                                           
       TemporalDiffusionInduc = 0; // OK // sigma induction                                                                                                                                          
       // mag field -------------- UNSET

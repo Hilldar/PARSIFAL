@@ -26,7 +26,6 @@ namespace PARSIFAL{
   const bool NO_SecondaryIonization = false;
   const bool NO_Gain = false;
   const bool NO_Drift = false;
-  const bool NO_Resistive = false;
   const bool NO_Readout = false;
   const bool NO_Noise = false;
   const bool NO_Capacitive= true;

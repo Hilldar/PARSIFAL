@@ -26,7 +26,6 @@
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
 #include "Reconstruction/Reconstruction.h"
-#include "Resistive/Resistive.h"
 #include "Signal/Signal.h"
 namespace PARSIFAL{
   class PARSI{

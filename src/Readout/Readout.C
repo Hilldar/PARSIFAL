@@ -33,7 +33,6 @@ namespace PARSIFAL{
 	int type=Yview; // Y view
 	double posY = (ich-0.5*geo->Get_NumberOfStrip2())*geo->Get_Pitch2();
 	Position *pos = new Position(0,posY,0,0);
-	//ElectronicChannel* ch = new ElectronicChannel(type,ich,pos);
 	ElectronicChannel* ch = new ElectronicChannel(type,ich+geo->Get_NumberOfStrip1(),*pos);
 	if(!NO_Readout) channel.push_back(ch);
 	delete pos;
@@ -111,8 +110,6 @@ namespace PARSIFAL{
       else{
 	electron.at(iele)->Set_ElectronicChannel(Get_ChannelID(Yview,electron.at(iele)));
       }
-      //int view_ele = Define_View();
-      //electron.at(iele)->Set_ElectronicChannel(Get_ChannelID(view_ele,,electron.at(iele)));
     }	
     return;	
   };
@@ -147,7 +144,6 @@ namespace PARSIFAL{
       if(type==channel.at(ich)->Get_Type() && type==Yview){
 	if(abs(ele->Get_PositionFinal().Get_Y()-channel.at(ich)->Get_Position().Get_Y())<0.5*geometry->Get_Pitch2()){
 	  channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
-	  //return ich - geometry->Get_NumberOfStrip1();
 	  return ich;
 	}
       }
@@ -249,7 +245,6 @@ namespace PARSIFAL{
       for(int ich=0;ich<channel.size();ich++){
 	double q_peak = channel.at(ich)->Get_Histo_apv()->GetMaximum(); // fC
 	double q_peak_adc = q_peak * fC_to_ADC; // ADC  
-	//cout<<ich<<" "<<q_peak_adc<<endl;
 	if (Capacitive_Induction_1(q_peak_adc) &&
 	    ich!=0 &&
 	    ich!=channel.size()-1
@@ -262,8 +257,6 @@ namespace PARSIFAL{
 	    // induce to i-strip +/- 1  
 	    double q_1 = Get_Q_induced_1(q_in);
 	    double t_1 = Get_T_induced_1(q_in,t_in);
-	    //cout<<"0: q->"<<q_in<<" t->"<<t_in<<endl;
-	    //cout<<"1; q->"<<q_1<<" t->"<<t_1<<" q_r->"<<q_1/q_in<<" dt->"<<t_1-t_in<<endl;
 	    if(channel.at(ich)->Get_Type()==channel.at(ich-1)->Get_Type()) {
 	      channel.at(ich-1)->Get_Histo_cap()->Fill(t_1,q_1/fC_to_ADC);
 	    }
@@ -276,7 +269,6 @@ namespace PARSIFAL{
 		){
 	      double q_2 = Get_Q_induced_2(q_1);
 	      double t_2 = Get_T_induced_2(q_in,t_in);
-	      //cout<<"2: q->"<<q_2<<" t->"<<t_2<<" q_r->"<<q_2/q_in<<" dt->"<<t_2-t_in<<endl;
 	      if(channel.at(ich)->Get_Type()==channel.at(ich-2)->Get_Type()){
 		channel.at(ich-2)->Get_Histo_cap()->Fill(t_2,q_2/fC_to_ADC);
 	      }
@@ -300,9 +292,7 @@ namespace PARSIFAL{
     prob *= 100;
     if(q_in<200) return false;
     if(q_in>1800) q_in = 1800;
-    //cout<<"     "<<prob<<" "<<cap_probability_1->Eval(q_in)<<endl;
     if(prob<cap_probability_1->Eval(q_in)) is_induced = true;
-    //cout<<is_induced<<endl;
     return is_induced;
   }
 
@@ -318,7 +308,6 @@ namespace PARSIFAL{
   double Readout::Get_T_induced_1(double q_in, double t_in){
     double t=t_in;
     if(q_in>1800) q_in = 1800;
-    //  t += cap_time_1->Eval(q_in);
     double tt = cap_time_1->Eval(q_in);
     t -= r->Gaus(tt, 30);
     return t;
@@ -327,7 +316,6 @@ namespace PARSIFAL{
   double Readout::Get_T_induced_2(double q_in, double t_in){
     double t=t_in;
     if(q_in>1800) q_in = 1800;
-    //    t += cap_time_2->Eval(q_in);
     t -= r->Gaus(cap_time_2->Eval(q_in), 30);
     return t;
   }
@@ -358,7 +346,6 @@ namespace PARSIFAL{
       //Set the channel time 
       channel.at(ich)->Set_Time(Get_Time_APV(channel.at(ich)));
       channel.at(ich)->Set_dTime(Get_dTime_APV(channel.at(ich)));
-      //if(channel.at(ich)->Get_Time()<30) for(int itime=0;itime<27;itime++) cout<<itime<<" "<<channel.at(ich)->Get_Histo_apv()->GetBinContent(itime+1)<<" "<<channel.at(ich)->Get_Histo_cap()->GetBinContent(itime+1)<<endl;
     }
     return;
   }
@@ -436,7 +423,6 @@ namespace PARSIFAL{
     tFD = r->Gaus(f_FD->GetParameter(2), 7.12);
     double dtFD = 0.;
     dtFD = f_FD->GetParError(2);
-    //f_FD->~TF1();
     delete f_FD;
     Set_Time(tFD);
     Set_dTime(dtFD);

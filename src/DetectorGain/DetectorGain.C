@@ -33,7 +33,7 @@ namespace PARSIFAL{
     }
     else if(Get_Setup()==1){
       collection_efficiency_stage1=0.888;
-      f_gain_eff = new TF1("gain_rwell","([2]/[0]) * (pow(1 + [1],1 + [1]) / TMath::Gamma(1 + [1])) * pow((x/[0]),[1]) * exp(-(1 + [1]) * x / [0])", 0, 150000);
+      f_gain_eff = new TF1("gain_polya","([2]/[0]) * (pow(1 + [1],1 + [1]) / TMath::Gamma(1 + [1])) * pow((x/[0]),[1]) * exp(-(1 + [1]) * x / [0])", 0, 150000);
       f_gain_eff->SetParameters(5000,0.5,1);
       use_function_gain=true;
     }

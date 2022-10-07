@@ -82,7 +82,7 @@ namespace PARSIFAL{
     double time = Get_PositionInitial().Get_T();
     double dpag = Get_Geometry()->Get_DriftGap();
     double track_length_limit = TMath::Sqrt(pow((x1 - x0),2) + pow((y1 - y0),2) + pow((z1 - z0),2));
-    // e' il numero di cluster/mm (NON in 0.5 cm!!)
+    // it is the number of clusters/mm (NOT in 0.5 cm!!)
     double n_ion_mm = Get_Particle()->Get_MeanPrimary(); // CHECK the value -> checked
     double track_length = 0;
   

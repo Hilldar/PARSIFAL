@@ -28,12 +28,8 @@ ROOTLIBS = $(shell root-config --glibs) -lMinuit  # will be used as it is
 LIBS     = $(LIB)                        # will get an -L for each entry
 
 
-EXEC1        = Test
-COMPONENTS1  = main/main_test Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Resistive/Resistive Signal/Signal Reconstruction/Reconstruction
-BIN_EXEC1    = $(addprefix $(BIN)/,$(EXEC1) )
-
 EXEC2	     = Simulate
-COMPONENTS2  = main/main_sim main/Parsifal Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Resistive/Resistive Signal/Signal Reconstruction/Reconstruction
+COMPONENTS2  = main/main_sim main/Parsifal Geometry/Geometry Particle/Particle Ionization/Ionization ElectronDrift/ElectronDrift DetectorGain/DetectorGain Readout/Readout Signal/Signal Reconstruction/Reconstruction
 BIN_EXEC2    = $(addprefix $(BIN)/,$(EXEC2) )
 
 EXEC3        = Analysis
@@ -47,16 +43,6 @@ $(LIB)/%.o: %.C
 	@echo .
 	@echo ... compiling source: $< to $@
 	$(CC) $(CCFLAGS) $< $(ROOTINCS) $(INC) -o $@
-
-# 0
-$(BIN_EXEC0):
-	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(addprefix -L, $(LIBS)) -o $@
-$(BIN)/$(EXEC0): $(addprefix $(LIB)/, $(addsuffix .o, $(COMPONENTS0) ) )
-
-# 1
-$(BIN_EXEC1):
-	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(addprefix -L, $(LIBS)) -o $@
-$(BIN)/$(EXEC1): $(addprefix $(LIB)/, $(addsuffix .o, $(COMPONENTS1) ) )
 
 # 2
 $(BIN_EXEC2):
@@ -84,7 +70,6 @@ $(LIB):
 	mkdir -p $(LIB)/DetectorGain
 	mkdir -p $(LIB)/Readout
 	mkdir -p $(LIB)/Reconstruction
-	mkdir -p $(LIB)/Resistive
 	mkdir -p $(LIB)/Signal
 	mkdir -p $(LIB)/main
 $(BIN):
@@ -94,8 +79,6 @@ $(LOG):
 $(DATA):
 	mkdir -p $(DATA)
 installdirs: $(LIB) $(BIN) $(LOG) $(DATA)
-yo: installdirs $(BIN_EXEC1)
 tum: installdirs $(BIN_EXEC2)
 fush: installdirs $(BIN_EXEC3)
-#all: yo tum fush
 all: tum fush

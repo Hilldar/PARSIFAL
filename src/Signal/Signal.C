@@ -14,12 +14,10 @@ namespace PARSIFAL{
     gain    = new DetectorGain(setup, Bfield);
     drift   = new ElectronDrift(setup, Bfield, geo);
     anode   = new Readout(setup,electronics,geo);
-    resisto = new Resistive(setup,geo);
   };
   Signal::~Signal(){
     delete gain;                                                                                                                         
     delete drift;
-    delete resisto;
     delete anode;
   };
 
@@ -41,24 +39,18 @@ namespace PARSIFAL{
 	    iX++;
 	    double x = primary.at(iprimi)->Get_Position().Get_X();
 	    x += drift->Get_Drift_X(z);
-	    x += resisto->Get_Diff_X(x);
 	    anode->Induce_on_channel(Xview,x,time,gain_speedup);
 	  }
 	  else if(view == Yview) {
 	    iY++;
 	    double y = primary.at(iprimi)->Get_Position().Get_Y();
             y += drift->Get_Drift_Y(z);
-	    y += resisto->Get_Diff_Y(y);
             anode->Induce_on_channel(Yview,y,time,gain_speedup);
 	  }
 	  else cout<<"Error in Signal::Generate_Signal --> no induction defined for this Readout type \n";
-	  //if(igain==0){
-	  //  cout<<"iPrimy: "<<iprimi<<" \t X: "<<primary.at(iprimi)->Get_Position().Get_X()<<" \t Z: "<<primary.at(iprimi)->Get_Position().Get_Z()<<" \t T: "<<primary.at(iprimi)->Get_Position().Get_T()<<" \t T(1): "<<time<<endl;
-	  //}
 	} //end loop on gained electrons after amplification
       } //end loop on electrons in the primary cluster
     } //end loop on primary clusters
-    //cout<<"NUMBER OF ELECTRONS ON X : "<<iX<<" and ON Y : "<<iY<<endl;
     return anode->Read();
   };
 }//end namespace

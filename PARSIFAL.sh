@@ -27,9 +27,6 @@ fi
 ##################
 start=`date +%s`
 cd $PARSIFAL
-export TS_MAXCONN=10
-TS_MAXCONN=10
-ts -S 20
 #################
 # PARSIFAL:NAME #
 #################
@@ -39,7 +36,7 @@ echo " ## PARSIFAL ##"
 echo " ###############"
 echo
 
-while getopts "MmehtSA" OPTION; do
+while getopts "MmehSA" OPTION; do
     case $OPTION in
 	e)
 	    echo "Hello world"
@@ -50,7 +47,6 @@ while getopts "MmehtSA" OPTION; do
 	    echo "   -m     ->   make PARSIFAL"
 	    echo "   -M     ->   make clean all"
             echo "   -e     ->   to execute echo \"hello world\""
-            echo "   -t     ->   run simulation test"
 	    echo "   -S i   ->   run scan angle in i config"
 	    echo "   -S i j ->   run i config and j angle (deg)"  
 	    echo "   -A i   ->   analyze i config"
@@ -61,9 +57,6 @@ while getopts "MmehtSA" OPTION; do
 	    ;;
 	M)
 	    make clean all
-	    ;;
-	t)
-	    ./bin/Test
 	    ;;
 	S)
 	    if [ -z $3 ]

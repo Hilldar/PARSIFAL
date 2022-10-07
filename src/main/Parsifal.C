@@ -14,15 +14,12 @@ PARSI::PARSI() {
 }
 
 PARSI::~PARSI(){
-  //Clean(); --> it crashes
   delete geo;
   delete D4;
   delete party;
   delete ionio;
   delete signal;
   delete recon;
-  // ----------------------------
-  //  delete tree; // do not try to delete it is automatically deleted wwith the file!
   delete file;
 }
 
@@ -41,25 +38,10 @@ void PARSI::Initialization_tripleGEM(){
   return;
 }
 
-void PARSI::Initialization_rwell(){
-  cout<<"Ciao"<<endl;
-  file = new TFile(name_outfile,"RECREATE");
-  tree = new TTree("tree","tree");
-  geo = Planar1D(0.4, 6);
-  D4 = new Position(0,0,0,0);
-  party = new Particle(2, D4, party_angle_xz[0], -0.0, geo);
-  ionio = new Ionization(party,geo);
-  signal = new Signal(1,0,Bfield,geo);
-  recon = new Reconstruction(1,geo);
-  event=0;
-  Initialize_oFile();
-  return;
-}
-
 
 void PARSI::Run(){
   TRandom3 *r = new TRandom3();
-  r->SetSeed(SEED); // CHECK
+  r->SetSeed(SEED);
   for(event=0;event<nShots;event++){
     //
     //Init
@@ -72,8 +54,6 @@ void PARSI::Run(){
     //Ionization
     primi     = ionio->PrimaryIonization();
     if(fast_simulation){
-      //--> I have to create function from "primi" to "channels" 
-      //--> then I have to reduce the Read function 
       channels = signal->Generate_Signal(primi);
     }
     else{
@@ -82,15 +62,12 @@ void PARSI::Run(){
       //Amplification and drift to the anode
       secondary           = signal->Gain(secondary);
       electrons           = signal->Drift(secondary);
-      electrons_resistive = signal->Resist(electrons);
       //Readout
-      channels  = signal->Read(electrons_resistive);
+      channels  = signal->Read(electrons);
     }
     //
     //Process
     //Reconstruction
-    recon->Get_Ionization(ionio); //Debug uTPC
-    recon->Get_Primary(primi);    //Debug uTPC
     hit       = recon->Digitize(channels);
     cluster1d = recon->Clusterize(hit);
     //
@@ -127,7 +104,7 @@ void PARSI::Clean(){
   primi.clear();
   secondary.clear();
   electrons.clear();
-  for(int i=0;i<channels.size();i++) channels.at(i)->Reset(); // CHECK not needed if I use the FreeMemory
+  for(int i=0;i<channels.size();i++) channels.at(i)->Reset();
   channels.clear();
   hit.clear();
   cluster1d.clear();
@@ -249,7 +226,6 @@ void PARSI::Initialize_oFile(){
   if(PrintNTuple_Cluster1d){
     tree->Branch("ncluster1d"             , &ncluster1d           ,"ncluster1d/I");  
     tree->Branch("cluster1d_ID"           , "vector<int>"         ,&cluster1d_ID);
-    //tree->Branch("cluster1d_hitID"        , "vector<vector<int>>" ,&cluster1d_hitID);
     tree->Branch("cluster1d_type"         , "vector<int>"         ,&cluster1d_type);
     tree->Branch("cluster1d_size"         , "vector<int>"         ,&cluster1d_size);
     tree->Branch("cluster1d_charge"       , "vector<double>"      ,&cluster1d_charge);
@@ -326,7 +302,7 @@ void PARSI::Write_oFile(){
       }
     }
   }
-  if(PrintNTuple_Secondary){  // CHECK in realta' gli oggetti electron_* sono prodotti solo da Drift
+  if(PrintNTuple_Secondary){
     if(electrons.empty()){
       electron_positionX_initial.push_back(-999);
       electron_positionY_initial.push_back(-999);
@@ -370,7 +346,6 @@ void PARSI::Write_oFile(){
       channel_type.push_back(-1);
       channel_charge.push_back(-999);
       channel_time.push_back(-999);
-      //channel_dtime.push_back(-999);
       channel_positionX.push_back(-999);
       channel_positionY.push_back(-999);
     }
@@ -380,7 +355,6 @@ void PARSI::Write_oFile(){
 	channel_type.push_back(channels.at(i)->Get_Type());
 	channel_charge.push_back(channels.at(i)->Get_Charge());
 	channel_time.push_back(channels.at(i)->Get_Time());
-	//channel_dtime.push_back(channels.at(i)->Get_dTime());
 	channel_positionX.push_back(channels.at(i)->Get_Position().Get_X());
 	channel_positionY.push_back(channels.at(i)->Get_Position().Get_Y());
 
@@ -409,7 +383,6 @@ void PARSI::Write_oFile(){
       hit_type.push_back(-1);
       hit_charge.push_back(-999);
       hit_time.push_back(-999);
-      // hit_dtime.push_back(-999);
       hit_positionX.push_back(-999);
       hit_positionY.push_back(-999);
     }
@@ -448,7 +421,6 @@ void PARSI::Write_oFile(){
 	cluster1d_positionCC_Y.push_back(cluster1d.at(i)->Get_Position_CC()->Get_Y());
 	cluster1d_positionTPC_X.push_back(cluster1d.at(i)->Get_Position_TPC()->Get_X());
         cluster1d_positionTPC_Y.push_back(cluster1d.at(i)->Get_Position_TPC()->Get_Y());
-	//for(int j=0;j<cluster1d.at(i)->Get_Size();j++) cluster1d_hitID->at(i).push_back(cluster1d.at(i)->Get_HitID(j));
       }    
     }
   }
