@@ -13,7 +13,7 @@ For the licensing terms see $PARSIFAL/LICENSE
 ## ChangeLog
 
 ## REQUIREMENTS
-A working installation of <a href="http::/root.cern.ch">ROOT</a>. Tested on ROOT version 6.12/04
+A working installation of <a href="https://root.cern.ch/">ROOT</a>. Tested on ROOT version 6.12/04
 
 ## HOWTO
 <ul>
