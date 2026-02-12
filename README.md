@@ -2,8 +2,9 @@
 
 ## Authors
 <ul>
-<li>Riccardo Farinelli <rfarinelli@fe.infn.it></li>
-<li>Lia Lavezzi        <lia.lavezzi@to.infn.it></li>
+<li>Riccardo Farinelli          <rfarinelli@bo.infn.it></li>
+<li>Lia Lavezzi                 <lia.lavezzi@to.infn.it></li>
+<li>Francesco Chiapponi         <chiappon@bo.infn.it></li>
 </ul>
 All rights reserved
 
