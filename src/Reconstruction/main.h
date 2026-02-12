@@ -1,12 +1,3 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #ifndef Main_h
 #define Main_h
 #include "Common/Common.h"
@@ -23,7 +14,7 @@
 #include "DetectorGain/DetectorGain.h"
 #include "Readout/Readout.h"
 #include "Reconstruction/Reconstruction.h"
-namespace PARSIFAL{
+namespace PARSIFAL2{
 
 	//Function 
 	void Initialize_oFile();
@@ -49,7 +40,7 @@ namespace PARSIFAL{
 	TTree *tree;	
 	
 	//Output variables
-	int event;
+        int event;
 	//Geometry
 	int    geo_numview;
 	double geo_pitch1;

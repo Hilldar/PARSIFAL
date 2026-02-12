@@ -1,12 +1,3 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #ifndef Ionization_h
 #define Ionization_h
 #include "Common/Common.h"
@@ -19,7 +10,7 @@
 #include "Particle/Particle.h"
 using namespace std;
 // XYZ are refered to the detector frame where the anode is on the XY plane and the electrinc drift field is along the Z direction
-namespace PARSIFAL{
+namespace PARSIFAL2{
 
   class Ionization{
   public:
@@ -29,7 +20,7 @@ namespace PARSIFAL{
     ~Ionization() { };
 
     //Function
-    void      UpdatePosition(Particle *party); // CHECK 
+    void      UpdatePosition(Particle *party);
     bool      Get_PrintInfo              () {return PrintInfo;};
     bool      Get_PrintNTuple            () {return PrintNTuple;};
     Position  Get_PositionInitial        () {return pos_initial;};

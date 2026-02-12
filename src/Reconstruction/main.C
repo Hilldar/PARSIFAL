@@ -1,16 +1,7 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #include "Reconstruction/main.h"
-using namespace PARSIFAL;
+using namespace PARSIFAL2;
 
-const int nShots = 10;
+const int nShots = 1;
 
 int main(int argc, const char* argv[]){
   //Initialization
@@ -50,7 +41,7 @@ int main(int argc, const char* argv[]){
     cluster1d = recon->Clusterize(hit);
     nhit      = hit.size();
     ncluster1d= cluster1d.size();
-    //channels.at(5)->Print_Time();
+    channels.at(5)->Print_Time();
     Write_oFile();
     if(event%10==0) cout<<"Event "<<event<<endl;
   }
@@ -64,7 +55,7 @@ int main(int argc, const char* argv[]){
   return 0;
 };
 
-void PARSIFAL::Clean(){
+void PARSIFAL2::Clean(){
   nhit=0;
   ncluster1d=0;
   primi.clear();
@@ -116,7 +107,7 @@ void PARSIFAL::Clean(){
   cluster1d_positionCC_Y.clear();
 }
 
-void PARSIFAL::Initialize_oFile(){
+void PARSIFAL2::Initialize_oFile(){
   tree->Branch("event" ,&event  ,"event/I");  
   if(geo->Get_PrintNTuple()){
     tree->Branch("geo_numview" ,&geo_numview  ,"geo_numview/I");
@@ -195,7 +186,7 @@ void PARSIFAL::Initialize_oFile(){
   return;  
 }
 
-void PARSIFAL::Write_oFile(){
+void PARSIFAL2::Write_oFile(){
   //Output
   if(geo->Get_PrintNTuple()){
     geo_numview  = geo->Get_NumberOfView();

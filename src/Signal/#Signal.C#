@@ -24,7 +24,7 @@ namespace PARSIFAL2{
     if(NO_Gain) gain_speedup = 1;
     if(Fix_Gain) gain_speedup = FIX_GAIN;
     if(primary.empty()) return reado->Read();
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(int iprimi=0;iprimi<primary.size();iprimi++){ //loop on the primary electron clusters 
       tot_ele = primary.at(iprimi)->Get_NumberOfSecondary();
       for(int iele=0; iele<primary.at(iprimi)->Get_NumberOfSecondary();iele++){ //lopp on the electrons inside the primary clusters

@@ -3,7 +3,7 @@
 using namespace PARSIFAL2;
 
 bool print_plot_all = 0;
-bool print_plot_above_thr = 1;
+bool print_plot_above_thr = 0;
 bool print_plot_middle = 0; //also print waveform on file
 bool print_plot_charge_above = 0;
 bool plot_histo_Qt_APV = 1;
@@ -50,8 +50,8 @@ void PARSIFAL::Initialization_tripleGEM(){
   D4 = new Position(0,0,0,0);
   party = new Particle(1, D4, party_angle_xz[0], -0.0, geo); 
   ionio = new Ionization(party,geo);
-  //signal = new Signal(0,0,Bfield,geo); //apv
-  signal = new Signal(0,1,Bfield,geo); //tiger
+  signal = new Signal(0,0,Bfield,geo); //apv
+  //signal = new Signal(0,1,Bfield,geo); //tiger
   recon = new Reconstruction(0,geo);
   event=0;
   Initialize_oFile();
@@ -66,8 +66,8 @@ void PARSIFAL::Initialization_rwell(){
   D4 = new Position(0,0,0,0);
   party = new Particle(2, D4, party_angle_xz[0], -0.0, geo);
   ionio = new Ionization(party,geo);
-  //signal = new Signal(1,0,Bfield,geo); //APV
-  signal = new Signal(1,1,Bfield,geo); //TIGER
+  signal = new Signal(1,0,Bfield,geo); //APV
+  //signal = new Signal(1,1,Bfield,geo); //TIGER
   recon = new Reconstruction(1,geo);
   event=0;
   Initialize_oFile();

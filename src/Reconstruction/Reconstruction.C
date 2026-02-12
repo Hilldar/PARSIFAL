@@ -1,14 +1,5 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #include "Reconstruction/Reconstruction.h"
-namespace PARSIFAL{
+namespace PARSIFAL2{
   Reconstruction::Reconstruction(int setup, Geometry *geo):
     PrintInfo(true),
     PrintNTuple(true),
@@ -24,7 +15,8 @@ namespace PARSIFAL{
       Set_T0_TPC(141); //ns
     }
     else if(Get_Setup()==1){
-      Set_Drift_Velocity(0.039); // mm/ns 
+      Set_Drift_Velocity(0.021); // mm/ns  <-- from measurement on sim
+      //Set_Drift_Velocity(0.039); // mm/ns  <-- from simulation and std values
       Set_T0_TPC(0); //ns 
     }
     else{
@@ -38,7 +30,8 @@ namespace PARSIFAL{
     vector<Hit*> hits;
     if(chan.empty() || NO_Readout || NO_Hit)return hits;
     for(int i=0;i<chan.size();i++){
-      if(chan.at(i)->Get_Charge()>thr_APV){
+      if(chan.at(i)->Get_AboveThr()){
+	//if(chan.at(i)->Get_Charge()<=0) cout<<"chan: "<<i<<" above: "<<chan.at(i)->Get_AboveThr()<<" charge: "<<chan.at(i)->Get_Charge()<<" time: "<<chan.at(i)->Get_Time()<<endl;
 	Hit* hit = new Hit(chan.at(i));
 	hits.push_back(hit);
       }
@@ -59,7 +52,7 @@ namespace PARSIFAL{
       }
       else if(
 	      Get_Hit_type(i) == Get_Hit_type(i-1) &&
-	      abs(Get_Hit_channel(i) - Get_Hit_channel(i-1)) == (1+dead_strip)
+	      abs(Get_Hit_channel(i) - Get_Hit_channel(i-1)) <= (1+dead_strip)
 	      ){
 	cluster.at(cluster.size()-1)->Set_HitID(i);
       }
@@ -72,6 +65,8 @@ namespace PARSIFAL{
     for(int icl=0;icl<cluster.size();icl++){
       double charge=0;
       double cc=0;
+      double time0=9999;
+      double timeF=-9999;
       cluster.at(icl)->Set_ClusterID(icl);
       cluster.at(icl)->Set_Size();
       for(int ihit=0;ihit<cluster.at(icl)->Get_Size();ihit++){
@@ -79,6 +74,16 @@ namespace PARSIFAL{
 	//Charge
 	double hit_charge = Get_Hit_charge(hit_ID);
 	charge+=hit_charge;
+	//Time0
+	if(Get_Hit_T(hit_ID)<time0){
+	  time0=Get_Hit_T(hit_ID);
+	  cluster.at(icl)->Set_Time0(time0);
+	}
+	//TimeF
+	if(Get_Hit_T(hit_ID)>timeF){
+	  timeF=Get_Hit_T(hit_ID);
+	  cluster.at(icl)->Set_TimeF(timeF);
+	}
 	//Charge Centroid
 	if(cluster.at(icl)->Get_Type()==Xview) cc += hit_charge * Get_Hit_X(hit_ID);
 	if(cluster.at(icl)->Get_Type()==Yview) cc += hit_charge * Get_Hit_Y(hit_ID);
@@ -88,6 +93,34 @@ namespace PARSIFAL{
       cluster.at(icl)->Set_Charge(charge);
       cluster.at(icl)->Set_Position_CC(cc/charge);
       cluster.at(icl)->Set_Position_TPC(Get_TPC(cluster.at(icl)));
+    }
+    //Find cluster w/ highQ | faster T
+    double high_Q=-999;
+    int ID_high_Q=-1;
+    double fast_T= 999;
+    int ID_fast_T=-1;
+    for(int icl=0;icl<cluster.size();icl++){
+      //High Q
+      if(cluster.at(icl)->Get_Charge()>high_Q){
+	high_Q=cluster.at(icl)->Get_Charge();
+	ID_high_Q=icl;
+      }
+      //Fast T
+      if(cluster.at(icl)->Get_Time0()>fast_T){
+        fast_T=cluster.at(icl)->Get_Time0();
+        ID_fast_T=icl;
+      }
+
+    }
+    
+    //Set high Q flag | faster T flag
+    for(int icl=0;icl<cluster.size();icl++){
+      //High Q
+      if(icl==ID_high_Q) cluster.at(icl)->Set_High_Q(true);
+      else cluster.at(icl)->Set_High_Q(false);
+      //Fast T
+      if(icl==ID_fast_T) cluster.at(icl)->Set_Faster(true);
+      else cluster.at(icl)->Set_Faster(false);
     }
     return cluster;
   };
@@ -121,9 +154,9 @@ namespace PARSIFAL{
       TCanvas *c_tpc = new TCanvas("c_tpc","c_tpc",800,600);
       TGraphErrors *g = new TGraphErrors(position_tpc.size(),&position_tpc[0],&drift_tpc[0],&dpos_tpc[0],&ddrift_tpc[0]);
       TF1 *f = new TF1("f","pol1");
-      g->Fit("f","QFW");
+      g->Fit("f","QWM");
       if(print_TPC) g->Draw("AP");
-      g->Fit("f","FQ");
+      g->Fit("f","QM");
       double q=f->GetParameter(0);
       double m=f->GetParameter(1);
       double tpc = (0.5*gap - q)/m;

@@ -1,15 +1,6 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #include "ElectronDrift/ElectronDrift.h"
 using namespace std;
-namespace PARSIFAL{
+namespace PARSIFAL2{
   ElectronDrift::ElectronDrift(int setup, bool MagField, Geometry* geo):
     Setup(setup),
     MagneticField(MagField),
@@ -84,10 +75,10 @@ namespace PARSIFAL{
       SpatialDiffusionTrans = 0;  // OK // sigma transfer 
       SpatialDiffusionInduc = 0;  // OK // sigma induction
       // >>> temporal shift
-      double par0 = -6.31906;
-      double par1 = 464.536;
-      TemporalShiftDrift[0] = -6.319060;  // OK // shift drift
-      TemporalShiftDrift[1] = 464.536; // OK // shift drift
+      double par0 = -6.31906; //old setting
+      double par1 = 464.536;  //old setting
+      TemporalShiftDrift[0] = 120;  // OK // shift drift
+      TemporalShiftDrift[1] = 75; // OK // shift drift
       TemporalShiftTrans = 0; // OK // shift transfer
       TemporalShiftInduc = 0; // OK // sigma induction
       double rap0 = 2.57168;
@@ -157,12 +148,15 @@ namespace PARSIFAL{
   };
 
   double ElectronDrift::Get_Drift_X(double z){
+    if(NO_Drift) return 0;
     return Get_X(0,z);
   }
   double ElectronDrift::Get_Drift_Y(double z){
+    if(NO_Drift) return 0;
     return Get_Y(0,z);
   }
   double ElectronDrift::Get_Drift_T(double z){
+    if(NO_Drift) return 0;
     return Get_T(0,z);
   }
   
@@ -194,7 +188,10 @@ namespace PARSIFAL{
     }
     sigma = sqrt(pow(sigma,2)+2*(pow(SpatialDiffusionTrans,2))+pow(SpatialDiffusionInduc,2));
     dx=10*r->Gaus(shift,Get_SpaceTuningFactor()*sigma);
-    return (x+dx);
+    float X = x+dx;
+    if(X<geometry->Get_Min_X()) X=geometry->Get_Min_X();
+    if(X>geometry->Get_Max_X()) X=geometry->Get_Max_X();
+    return (X);
   }
   double ElectronDrift::Get_Y(double y, double z){
     z/=10;
@@ -204,7 +201,10 @@ namespace PARSIFAL{
     sigma = SpatialDiffusionDrift[0]+SpatialDiffusionDrift[1]*z+SpatialDiffusionDrift[2]*pow(z,2)+SpatialDiffusionDrift[3]*pow(z,3);
     sigma = sqrt(pow(sigma,2)+2*(pow(SpatialDiffusionTrans,2))+pow(SpatialDiffusionInduc,2));
     dy = 10* r->Gaus(shift,Get_SpaceTuningFactor()*sigma);
-    return (y+dy);
+    float Y = y+dy;
+    if(Y<geometry->Get_Min_Y()) Y=geometry->Get_Min_Y();
+    if(Y>geometry->Get_Max_Y()) Y=geometry->Get_Max_Y();
+    return (Y);
   }
   double ElectronDrift::Get_Z(){
     return geometry->Get_DriftTotal();

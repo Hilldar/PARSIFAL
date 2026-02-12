@@ -1,12 +1,3 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #ifndef ElectronDrift_h
 #define ElectronDrift_h
 #include "Geometry/Geometry.h"
@@ -14,7 +5,7 @@
 #include "Common/Position.h"
 #include "Common/Secondary.h"
 using namespace std;
-namespace PARSIFAL{
+namespace PARSIFAL2{
   class ElectronDrift{
 	public:
 	  //Constructur

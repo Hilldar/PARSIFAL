@@ -1,12 +1,3 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #ifndef Reconstruction_h
 #define Reconstruction_h
 #include "Common/Common.h"
@@ -21,7 +12,7 @@
 #include "TLine.h"
 #include "Ionization/Ionization.h"
 using namespace std;
-namespace PARSIFAL{
+namespace PARSIFAL2{
   class Reconstruction{
   public:
     //Constructur

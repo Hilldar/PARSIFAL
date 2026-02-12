@@ -1,15 +1,6 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #include "Ionization/Ionization.h"
 using namespace std;
-namespace PARSIFAL{
+namespace PARSIFAL2{
 
   Ionization::Ionization(Particle *party, Geometry *geo):
   PrintInfo(false),
@@ -85,33 +76,16 @@ namespace PARSIFAL{
     // e' il numero di cluster/mm (NON in 0.5 cm!!)
     double n_ion_mm = Get_Particle()->Get_MeanPrimary(); // CHECK the value -> checked
     double track_length = 0;
-  
-    while(1 && !NO_PrimaryIonization) {
-      //Generate primary electorns
-      double u = r->Uniform(0, 1);
-      // step along the trajectory, that for now is a straight line [x0, z0] -> [x1, z1]
-      double dl_extracted = -(1./n_ion_mm) * TMath::Log(1 - u);
-      track_length += dl_extracted;
-      if(track_length > track_length_limit) break;
-      iion++;
-      double t = (track_length_limit - track_length)/track_length_limit;
-      double tmp_z = z0 * t + z1 * (1 - t);
-      double x = x0 * t + x1 * (1 - t);
-      double y = y0 * t + y1 * (1 - t);
-      if(tmp_z<=z0||tmp_z>=z1){if(Get_PrintInfo())cout<<"Compute z outside gas gap"<<endl;break;}
-      //Generate secondary electrons
-      int n_elec=0;
-      double prob = r->Rndm();
-      for(int j=0;j<100;j++){
-        n_elec=j+1;
-        if(prob<Get_Particle()->Get_ProbabilitySecondary(j)) break;
-      }
-      if(n_elec>100){if(Get_PrintInfo())cout<<"increase the size above 100"<<endl;n_elec=100;}
-
-      totalnumberofsecondary+=n_elec;
-      Position pos(x,y,z0+z1-tmp_z,time);
-      Primary *primo = new Primary(pos,n_elec);
+    if(Single_Electron){
+      //Position pos(r->Gaus(0,geometry->Get_Pitch1()),r->Gaus(0,geometry->Get_Pitch2()),0,n_ns/5.);
+      Position pos(0,0,0,n_ns/5.); 
+      Primary *primo = new Primary(pos,1);
       primi.push_back(primo);
+      totalnumberofsecondary=1;
+      //Position pos2(0.4,0,0,n_ns/5.);
+      //Primary *secondo = new Primary(pos2,1);
+      //primi.push_back(secondo);
+      //totalnumberofsecondary=2;
       if(Get_PrintInfo()){
         cout<<"---- New primary ionization ----"<<endl;
         cout<<"Position X         : "<<primo->Get_Position().Get_X()<<endl;
@@ -119,20 +93,77 @@ namespace PARSIFAL{
         cout<<"Position Z         : "<<primo->Get_Position().Get_Z()<<endl;
         cout<<"Position T         : "<<primo->Get_Position().Get_T()<<endl;
         cout<<"Number of secondary: "<<primo->Get_NumberOfSecondary()<<endl;
-        cout<<"----------------------"<<endl;      
+        cout<<"----------------------"<<endl;
       }
     }
+    else if(Square_Wave){
+      cout<<"Square Wave Injection - Lenght: "<<SW_Lenght<<" - Amplitude: "<<SW_Amplitude<<endl;
+    }
+    else if(Fix_Ionization){
+      for(int ii=0;ii<FIX_IONIZATION;ii++){
+	Position pos(0,0,(z1-z0)-(((z1-z0)*ii+0.001)/FIX_IONIZATION)-0.001,n_ns/5.);
+	Primary *primo = new Primary(pos,1);
+	primi.push_back(primo);
+	totalnumberofsecondary++;
+	if(Get_PrintInfo()){
+	  cout<<"---- New primary ionization ----"<<endl;
+	  cout<<"Position X         : "<<primo->Get_Position().Get_X()<<endl;
+	  cout<<"Position Y         : "<<primo->Get_Position().Get_Y()<<endl;
+	  cout<<"Position Z         : "<<primo->Get_Position().Get_Z()<<endl;
+	  cout<<"Position T         : "<<primo->Get_Position().Get_T()<<endl;
+	  cout<<"Number of secondary: "<<primo->Get_NumberOfSecondary()<<endl;
+	  cout<<"----------------------"<<endl;
+	}
+      }
+    }
+    else while(1 && !NO_PrimaryIonization) {
+	//Generate primary electorns
+	double u = r->Uniform(0, 1);
+	// step along the trajectory, that for now is a straight line [x0, z0] -> [x1, z1]
+	double dl_extracted = -(1./n_ion_mm) * TMath::Log(1 - u);
+	track_length += dl_extracted;
+	if(track_length > track_length_limit) break;
+	iion++;
+	double t = (track_length_limit - track_length)/track_length_limit;
+	double tmp_z = z0 * t + z1 * (1 - t);
+	double x = x0 * t + x1 * (1 - t);
+	double y = y * t + y1 * (1 - t);
+	if(tmp_z<=z0||tmp_z>=z1){if(Get_PrintInfo())cout<<"Compute z outside gas gap"<<endl;break;}
+	//Generate secondary electrons
+	int n_elec=0;
+	double prob = r->Rndm();
+	for(int j=0;j<100;j++){
+	  n_elec=j+1;
+	  if(prob<Get_Particle()->Get_ProbabilitySecondary(j)) break;
+	}
+	if(n_elec>100){if(Get_PrintInfo())cout<<"increase the size above 100"<<endl;n_elec=100;}
+	
+	totalnumberofsecondary+=n_elec;
+	Position pos(x,y,z0+z1-tmp_z,time);
+	Primary *primo = new Primary(pos,n_elec);
+	primi.push_back(primo);
+	primo->~Primary();
+	if(Get_PrintInfo()){
+	  cout<<"---- New primary ionization ----"<<endl;
+	  cout<<"Position X         : "<<primo->Get_Position().Get_X()<<endl;
+	  cout<<"Position Y         : "<<primo->Get_Position().Get_Y()<<endl;
+	  cout<<"Position Z         : "<<primo->Get_Position().Get_Z()<<endl;
+	  cout<<"Position T         : "<<primo->Get_Position().Get_T()<<endl;
+	  cout<<"Number of secondary: "<<primo->Get_NumberOfSecondary()<<endl;
+	  cout<<"----------------------"<<endl;      
+	}
+      }
     if(!primi.empty() || !NO_PrimaryIonization) Set_TotalNumberOfPrimary(primi.size());
     else if (!NO_SecondaryIonization) Set_TotalNumberOfPrimary(1);
     else Set_TotalNumberOfPrimary(0);
     Set_TotalNumberOfSecondary(totalnumberofsecondary);
     if(Get_PrintInfo()){
-        cout<<"---- Ionization completed ----"<<endl;
-        cout<<"Total number of primary electrons  : "<<Get_TotalNumberOfPrimary()<<endl;
-        cout<<"Total number of secondary electrons: "<<Get_TotalNumberOfSecondary()<<endl;
-        cout<<"----------------------"<<endl;      
+      cout<<"---- Ionization completed ----"<<endl;
+      cout<<"Total number of primary electrons  : "<<Get_TotalNumberOfPrimary()<<endl;
+      cout<<"Total number of secondary electrons: "<<Get_TotalNumberOfSecondary()<<endl;
+      cout<<"----------------------"<<endl;      
     }
-
+    
     delete r;
     return primi;
   };
@@ -146,7 +177,7 @@ namespace PARSIFAL{
         Position pos = primary.at(iprimi)->Get_Position();
         Secondary *second = new Secondary(iprimi, pos, pos);
         secondary.push_back(second);
-	isec++;
+	      isec++;
       }
     }
     return secondary;

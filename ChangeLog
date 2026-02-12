@@ -1,0 +1,20 @@
+#2024 08 30 - RF - Implementato una funzione in ReadOut chiamata Injection_External_Signal per generare un onda quadra sull'istogramma di corrente
+#2024 10 14 - RF - Implemented White noise, ion tail, time information on the cluster
+#2024 11 22 - RF - Added flag on channels above threshold and channel signal lenght
+#2024 12 18 - RF - Added noise amplitude tuning with sigma noise fC expected from with noise simulation
+#2025 02 03 - RF - now µRWELL 1° electron diffusion and 2° gain while GEM 1° gain and 2° diffusion
+	         - signal induction splitted in fast and slow keeping unitary total charge IT_signal_ratio_fast_slow
+	         - modified run_list.txt to increase the number of custom parameters
+#2025 02 13 - RF - modified APV channel above threshold sigma_noise->sigma_noise/2 + charge_cut
+#2025 03 14 - RF - modified noise (1/f) to white noise
+                 - included buffer current to improbe noise at t=0
+                 - updated the electron drift parameter in µRWELL
+	         - now noise is evaluated for each channel (slower sim)
+#2025 03 19 - RF - updated calibration white noise fixed amplitude w/ shaping time
+                 - charged resistive model from Morello to T2K
+#2025 05 10 - RF - modified TIGER saturation
+#2025 05 21 - RF - included noise TIGER on E Branch (prev was fixed to0.1fC)
+#2025 07 03 - RF - parallelized the code with OpenMP
+#2025 08 08 - RF - reduced the freq range in the noise. modifield the white noise
+                 - moved from Morello to T2K resistive model	
+#2025 10 15 - RF - modified noise calibrations

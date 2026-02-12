@@ -1,18 +1,9 @@
-/**
- Authors:
- Riccardo Farinelli <rfarinelli@fe.infn.it>
- Lia Lavezzi        <lia.lavezzi@to.infn.it>
-
- All rights reserved
- For the licensing terms see $PARSIFAL/LICENSE
-**/
-
 #ifndef Hit_h
 #define Hit_h
 #include "Common/ElectronicChannel.h"
 using namespace std; 
 // XYZ are refered to the detector frame where the anode is on the XY plane and the electrinc drift field is along the Z direction
-namespace PARSIFAL{
+namespace PARSIFAL2{
   class Hit{
   public:
     //Constructor

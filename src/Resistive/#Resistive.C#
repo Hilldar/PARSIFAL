@@ -1,4 +1,4 @@
-#include <omp.h>
+Q_t#include <omp.h>
 #include "Resistive/Resistive.h"
 using namespace std;
 namespace PARSIFAL2{

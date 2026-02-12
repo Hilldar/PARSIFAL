@@ -6,25 +6,27 @@
 # All rights reserved
 # For the licensing terms see $PARSIFAL/LICENSE
 #
-SRC  = $(PARSIFAL)/src
-LIB  = $(PARSIFAL)/lib
-BIN  = $(PARSIFAL)/bin
-LOG  = $(PARSIFAL)/log
-DATA = $(PARSIFAL)/data
+
+SRC  = $(PARSIFAL2)/src
+LIB  = $(PARSIFAL2)/lib
+BIN  = $(PARSIFAL2)/bin
+LOG  = $(PARSIFAL2)/log
+DATA = $(PARSIFAL2)/data
+PDF  = $(PARSIFAL2)/pdf
 INC  = $(addprefix -I,$(SRC))
 
 vpath %.C $(SRC)
 
 CC      = g++
-CCFLAGS = -c  -Wno-deprecated -g  #-std=c++11 -Wall 
+CCFLAGS = -c  -Wno-deprecated -g -fopenmp #-std=c++11 -Wall 
 
 LD      = g++
 #LDFLAGS = -lGui -lTreePlayer -Wall -std=c++11 -fopenmp
-LDFLAGS = -lGui -lTreePlayer -Wall#-w # -Wall  -w toglie i warning
+LDFLAGS = -lGui -lTreePlayer -Wall#-w  -fopenmp # -Wall  -w toglie i warning
 # YOU SHOULD ACTIVE -Wall  every time !!!!
 
 ROOTINCS = $(shell root-config --cflags) # will be used as it is
-ROOTLIBS = $(shell root-config --glibs) -lMinuit  # will be used as it is
+ROOTLIBS = $(shell root-config --glibs) -lMinuit  -fopenmp  # will be used as it is
 LIBS     = $(LIB)                        # will get an -L for each entry
 
 
@@ -93,9 +95,11 @@ $(LOG):
 	mkdir -p $(LOG)
 $(DATA):
 	mkdir -p $(DATA)
+	mkdir -p $(PDF)
+	mkdir -p $(PDF)/backup
 installdirs: $(LIB) $(BIN) $(LOG) $(DATA)
-yo: installdirs $(BIN_EXEC1)
-tum: installdirs $(BIN_EXEC2)
-fush: installdirs $(BIN_EXEC3)
+test: installdirs $(BIN_EXEC1)
+sim: installdirs $(BIN_EXEC2)
+ana: installdirs $(BIN_EXEC3)
 #all: yo tum fush
-all: tum fush
+all: sim ana
