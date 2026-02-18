@@ -7,12 +7,12 @@
 # For the licensing terms see $PARSIFAL/LICENSE
 #
 
-SRC  = $(PARSIFAL2)/src
-LIB  = $(PARSIFAL2)/lib
-BIN  = $(PARSIFAL2)/bin
-LOG  = $(PARSIFAL2)/log
-DATA = $(PARSIFAL2)/data
-PDF  = $(PARSIFAL2)/pdf
+SRC  = $(PARSIFAL)/src
+LIB  = $(PARSIFAL)/lib
+BIN  = $(PARSIFAL)/bin
+LOG  = $(PARSIFAL)/log
+DATA = $(PARSIFAL)/data
+PDF  = $(PARSIFAL)/pdf
 INC  = $(addprefix -I,$(SRC))
 
 vpath %.C $(SRC)
