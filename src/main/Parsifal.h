@@ -45,11 +45,11 @@ namespace PARSIFAL2{
     TString GetOutfileName    ()           {return name_outfile;};
     void Set_RunNumber        (int io)     {run_number = io;};
     void Set_OutfileName      (TString io) {
-      name_outfile=(TString)(getenv("PARSIFAL2_data"))+=io;
+      name_outfile=(TString)(getenv("PARSIFAL_data"))+=io;
     };
     void Set_OutfileName      (TString io_dir, TString io_file) {
       Set_RunNumber(io_dir.Atoi());
-      name_outfile=(TString)(getenv("PARSIFAL2_data"))+"/"+io_dir;
+      name_outfile=(TString)(getenv("PARSIFAL_data"))+"/"+io_dir;
       gSystem->Exec("mkdir -p "+name_outfile);
       name_outfile+="/"+io_file;
     };
