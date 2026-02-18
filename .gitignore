@@ -14,3 +14,7 @@ lib/Readout/Readout.o
 lib/Reconstruction/Reconstruction.o
 lib/Resistive/Resistive.o
 lib/Signal/Signal.o
+pdf
+pdf/*
+data
+data/*
