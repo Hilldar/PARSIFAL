@@ -1,1 +1,16 @@
 PARSIFAL_info.pdf
+bash_PARSIFAL
+bin/Analysis
+bin/Simulate
+lib/DetectorGain/DetectorGain.o
+lib/ElectronDrift/ElectronDrift.o
+lib/Geometry/Geometry.o
+lib/Ionization/Ionization.o
+lib/main/main_ana.o
+lib/main/main_sim.o
+lib/main/Parsifal.o
+lib/Particle/Particle.o
+lib/Readout/Readout.o
+lib/Reconstruction/Reconstruction.o
+lib/Resistive/Resistive.o
+lib/Signal/Signal.o
