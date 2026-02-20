@@ -174,7 +174,7 @@ bool Check_File(TString name, TTree *tree, TFile *file){
     return true;
   }
   else {
-    cout<<"ERROR in file "<<name<<b1<<b2<<b3<<endl;
+    cout<<"ERROR in file "<<name<<" "<<b1<<b2<<b3<<endl;
     return false;
   }
 }
