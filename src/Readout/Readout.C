@@ -17,6 +17,10 @@ namespace PARSIFAL2{
     thrE_TIGER 	   = 10;  // threshold_fC*gain_TIGER;
     TIGER_Get_Maximum = false;
     
+    gain_TORA     = 12.7; //fC/mV
+    thrT_TORA     = 10;  // threshold_fC*gain_TIGER;
+    // thrE_TORA 	  = 10;  // threshold_fC*gain_TIGER;
+
     IT_Lenght          = 170; // ns
     IT_amplitude       = 0.00588; // fC/ns = 1/IT_Length
     IT_ratio_fast_slow = 0.85; // 85% of the signal comes from ions and 15% from electrons
@@ -30,8 +34,8 @@ namespace PARSIFAL2{
     //to be removed ?
     if(Get_Electronics()==0){
       for(int it = 0; it < n_ns; it++) {
-	TString name = "f"; name += it;
-	f[it] = new TF1(name, "[0] * ((x - [1]) / [2]) * TMath::Exp(-(x - [1]) / [2])", it, n_ns);
+        TString name = "f"; name += it;
+        f[it] = new TF1(name, "[0] * ((x - [1]) / [2]) * TMath::Exp(-(x - [1]) / [2])", it, n_ns);
       }
     }
     /* NON VA QUI
@@ -133,11 +137,11 @@ namespace PARSIFAL2{
       channel.reserve(geometry->Get_NumberOfStrip1()+geometry->Get_NumberOfStrip2());
       //Strip 1D
       for(int ich=0;ich<geometry->Get_NumberOfStrip1();ich++){
-	int type=Phiview;
-	double posPhi = (ich+0.5)/(double)(geometry->Get_NumberOfStrip1())*(TMath::Pi()*2);
-	Position *pos = new Position(9, posPhi,0);
-	ElectronicChannel* ch = new ElectronicChannel(type,ich,*pos,geometry->Get_Pitch1()); //forse invece di Get_Pitch metterei Pitch_Phi
-	if(!NO_Readout) channel.push_back(ch);
+        int type=Phiview;
+        double posPhi = (ich+0.5)/(double)(geometry->Get_NumberOfStrip1())*(TMath::Pi()*2);
+        Position *pos = new Position(9, posPhi,0);
+        ElectronicChannel* ch = new ElectronicChannel(type,ich,*pos,geometry->Get_Pitch1()); //forse invece di Get_Pitch metterei Pitch_Phi
+        if(!NO_Readout) channel.push_back(ch);
         delete pos;
       }
     }
@@ -149,16 +153,24 @@ namespace PARSIFAL2{
     }
     //Set electronics on channels and threshold
     for(int ich=0;ich<channel.size();ich++){
-      channel.at(ich)->Set_Electronics(Get_Electronics());
-      channel.at(ich)->Set_V_thr_T(thrT_TIGER);
-      channel.at(ich)->Set_V_thr_E(thrE_TIGER);      
+      channel.at(ich)->Set_Electronics(Get_Electronics());     
     }
     //init
     if(Get_Electronics()==0){
       Initialize_APV();
     }
     if(Get_Electronics()==1){
+      for(int ich=0;ich<channel.size();ich++){
+        channel.at(ich)->Set_V_thr_T(thrT_TIGER);
+        channel.at(ich)->Set_V_thr_E(thrE_TIGER);      
+      }
       Initialize_TIGER();
+    }
+    if(Get_Electronics()==2){
+      for(int ich=0;ich<channel.size();ich++){
+        channel.at(ich)->Set_V_thr_T(thrT_TORA);   
+      }
+      Initialize_TORA();
     }
 
     return;
@@ -187,9 +199,9 @@ namespace PARSIFAL2{
       if(channel.at(ich)->Get_Histo_raw()->GetMaximum()==0) continue;
       double integral = 0;
       for(int it = 0; it < n_ns; it++) {
-	int timebin = channel.at(ich)->Get_Histo_raw()->FindBin(it);
-	integral += channel.at(ich)->Get_Histo_raw()->GetBinContent(timebin);
-	channel.at(ich)->Get_Histo_tot()->SetBinContent(timebin,integral);
+        int timebin = channel.at(ich)->Get_Histo_raw()->FindBin(it);
+        integral += channel.at(ich)->Get_Histo_raw()->GetBinContent(timebin);
+        channel.at(ich)->Get_Histo_tot()->SetBinContent(timebin,integral);
       }
     }
     return;
@@ -227,44 +239,44 @@ namespace PARSIFAL2{
     
     if(Get_Setup()==0 || Get_Setup()==1){
       if(type==Xview){
-	for(int ich=0;ich<channel.size();ich++){
-	  if(type==channel.at(ich)->Get_Type()){
-	    if(abs(position-channel.at(ich)->Get_Position().Get_X())<0.5*geometry->Get_Pitch1()){
-	      //Ion Tail Induction
-	      if(!NO_Ion_Tail){
+        for(int ich=0;ich<channel.size();ich++){
+          if(type==channel.at(ich)->Get_Type()){
+            if(abs(position-channel.at(ich)->Get_Position().Get_X())<0.5*geometry->Get_Pitch1()){
+              //Ion Tail Induction
+              if(!NO_Ion_Tail){
                 for(int itime_ion=time;itime_ion<time+IT_Lenght;itime_ion++){
                   if(itime_ion<n_ns){
-		    float ion_amp = weight*IT_amplitude*IT_ratio_fast_slow;
+		                float ion_amp = weight*IT_amplitude*IT_ratio_fast_slow;
                     channel.at(ich)->Fill_Time(itime_ion,ion_amp);
                   }
                 }
               }
-	      //Electron Induction
-	      float ele_amp = weight*electron_weight;
-	      channel.at(ich)->Fill_Time(time,ele_amp);
-	      channel.at(ich)->Add_electrons(weight);
-	      return;
-	    }
-	  }
-	}
-	cout<<"Electron X outside the readout -> x: "<<position<<" tye: "<<type<<endl;
-      }
-      else if(type==Yview){
-	for(int ich=0;ich<channel.size();ich++){
-          if(type==channel.at(ich)->Get_Type()){
-            if(abs(position-channel.at(ich)->Get_Position().Get_Y())<0.5*geometry->Get_Pitch2()){
-	      channel.at(ich)->Fill_Time(time,weight);
+              //Electron Induction
+              float ele_amp = weight*electron_weight;
+              channel.at(ich)->Fill_Time(time,ele_amp);
               channel.at(ich)->Add_electrons(weight);
               return;
             }
           }
         }
-	cout<<"Electron Y outside the readout -> y: "<<position<<" tye: "<<type<<endl;
+        cout<<"Electron X outside the readout -> x: "<<position<<" tye: "<<type<<endl;
+      }
+      else if(type==Yview){
+	      for(int ich=0;ich<channel.size();ich++){
+          if(type==channel.at(ich)->Get_Type()){
+            if(abs(position-channel.at(ich)->Get_Position().Get_Y())<0.5*geometry->Get_Pitch2()){
+	            channel.at(ich)->Fill_Time(time,weight);
+              channel.at(ich)->Add_electrons(weight);
+              return;
+            }
+          }
+        }
+	      cout<<"Electron Y outside the readout -> y: "<<position<<" tye: "<<type<<endl;
       }
       else if(type==Phiview){
-	for(int ich=0;ich<channel.size();ich++){
+	      for(int ich=0;ich<channel.size();ich++){
           if(type==channel.at(ich)->Get_Type()){
-	    double Phi_Pitch = abs(channel.at(1)->Get_Position().Get_Phi()-channel.at(0)->Get_Position().Get_Phi());
+	          double Phi_Pitch = abs(channel.at(1)->Get_Position().Get_Phi()-channel.at(0)->Get_Position().Get_Phi());
             if(abs(position-channel.at(ich)->Get_Position().Get_Phi())<0.5*Phi_Pitch){
               channel.at(ich)->Fill_Time(time,weight);
               channel.at(ich)->Add_electrons(weight);
@@ -272,7 +284,7 @@ namespace PARSIFAL2{
             }
           }
         }
-	cout<<"Electron Phi outside the readout -> Phi: "<<position<<" tye: "<<type<<endl;
+	      cout<<"Electron Phi outside the readout -> Phi: "<<position<<" tye: "<<type<<endl;
       }
     }
     return;
@@ -293,8 +305,8 @@ namespace PARSIFAL2{
     if(channel.empty()) return -1;
     for(int ich=0;ich<channel.size();ich++){
       if(type==channel.at(ich)->Get_Type() && type==Xview){
-	if(abs(ele->Get_PositionFinal().Get_X()-channel.at(ich)->Get_Position().Get_X())<0.5*geometry->Get_Pitch1()){
-	  //Ion Tail Induction
+        if(abs(ele->Get_PositionFinal().Get_X()-channel.at(ich)->Get_Position().Get_X())<0.5*geometry->Get_Pitch1()){
+          //Ion Tail Induction
           if(!NO_Ion_Tail){
             for(int itime_ion=time;itime_ion<ele->Get_PositionFinal().Get_T()+IT_Lenght;itime_ion++){
               if(itime_ion<n_ns){
@@ -302,23 +314,23 @@ namespace PARSIFAL2{
               }
             }
           }
-	  //Electron Induction
-	  channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),electron_weight);
-	  channel.at(ich)->Add_electrons(1);
-	  return ich;
-	}
+          //Electron Induction
+          channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),electron_weight);
+          channel.at(ich)->Add_electrons(1);
+          return ich;
+        }
       }
       if(type==channel.at(ich)->Get_Type() && type==Yview){
-	if(abs(ele->Get_PositionFinal().Get_Y()-channel.at(ich)->Get_Position().Get_Y())<0.5*geometry->Get_Pitch2()){
-	  channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
-	  channel.at(ich)->Add_electrons(1);
+        if(abs(ele->Get_PositionFinal().Get_Y()-channel.at(ich)->Get_Position().Get_Y())<0.5*geometry->Get_Pitch2()){
+          channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
+          channel.at(ich)->Add_electrons(1);
 	  return ich;
 	}
       }
       if(type==channel.at(ich)->Get_Type() && type==Phiview){
-	double Phi_Pitch = abs(channel.at(1)->Get_Position().Get_Phi()-channel.at(0)->Get_Position().Get_Phi());
-	if(abs(ele->Get_PositionFinal().Get_Phi()-channel.at(ich)->Get_Position().Get_Phi())<0.5*Phi_Pitch){
-	  channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
+        double Phi_Pitch = abs(channel.at(1)->Get_Position().Get_Phi()-channel.at(0)->Get_Position().Get_Phi());
+        if(abs(ele->Get_PositionFinal().Get_Phi()-channel.at(ich)->Get_Position().Get_Phi())<0.5*Phi_Pitch){
+          channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
           channel.at(ich)->Add_electrons(1);
           return ich;
 	}
@@ -331,6 +343,7 @@ namespace PARSIFAL2{
     Injection_External_Signal();
     if(Get_Electronics()==0) Simulate_APV();
     if(Get_Electronics()==1) Simulate_TIGER();
+    if(Get_Electronics()==2) Simulate_TORA();
     //Analysis
     Measure_Signal_Lenght();
     return;
@@ -363,6 +376,17 @@ namespace PARSIFAL2{
     return;
   };
 
+    void Readout::Simulate_TORA(){
+    if(channel.empty()) return;
+    //Background_TORA();
+    Background();
+    //Integration_TORA();
+    Integration();
+    //Capacitive_Induction();
+    Extract_Charge_Time();
+    return;
+  };
+
   void Readout::Initialize_APV(){
     //Values experimentally measured
     r_cap = new TRandom3();
@@ -385,8 +409,18 @@ namespace PARSIFAL2{
   void Readout::Initialize_TIGER(){
     for(int ich=0;ich<channel.size();ich++){
       for(int jt = 0; jt < n_ns; jt++){
-	channel.at(ich)->Get_Histo_tiger_T()->SetBinContent(jt,0);
-	channel.at(ich)->Get_Histo_tiger_E()->SetBinContent(jt,0);
+        channel.at(ich)->Get_Histo_tiger_T()->SetBinContent(jt,0);
+        channel.at(ich)->Get_Histo_tiger_E()->SetBinContent(jt,0);
+      }
+    }
+    return;
+  }
+
+  void Readout::Initialize_TORA(){
+    for(int ich=0;ich<channel.size();ich++){
+      for(int jt = 0; jt < n_ns; jt++){
+        channel.at(ich)->Get_Histo_int_tora()->SetBinContent(jt,0);
+        // channel.at(ich)->Get_Histo_tora_E()->SetBinContent(jt,0);
       }
     }
     return;
@@ -423,39 +457,39 @@ namespace PARSIFAL2{
     for(int ich=0;ich<channel.size();ich++){
       //if(channel.at(ich)->Get_Histo_cur()->GetMaximum()==0) continue;
       if(!NO_Noise){
-	if(noise_1_over_f){
-	  const int max_freq = 1e6; //1 GHz
-	  TRandom3 *r_bkg = new TRandom3();
-	  r_bkg->SetSeed();
-	  for(int itime=1;itime<n_ns+n_ns_buffer;itime++){
-	    float bkg=0;
-	    for(int ifreq=1;ifreq<max_freq;ifreq*=10){
-	      bkg+=r_bkg->Gaus()*noise_amplitude*sin(itime*ifreq);
-	    }
-	    channel.at(ich)->Get_Histo_cur_buffer()->AddBinContent(itime, bkg);
-	  }
-	  delete r_bkg;
-	}
-	if(white_noise){
-	  TRandom3 *r_bkg = new TRandom3();
+        if(noise_1_over_f){
+          const int max_freq = 1e6; //1 GHz
+          TRandom3 *r_bkg = new TRandom3();
           r_bkg->SetSeed();
-	  const int n_freq = 50;
-	  float freq_amplitude[n_freq];
-	  float freq_value[n_freq];
-	  float freq_phase[n_freq];
-	  for(int i=0;i<n_freq;i++){
-	    freq_amplitude[i]=r->Gaus()*noise_amplitude;
-	    freq_value[i]=r->Uniform(min_freq_noise,max_freq_noise);
-	    freq_phase[i]=r->Uniform(0,6.283);
-	  }
-	  for(int itime=1;itime<n_ns+n_ns_buffer;itime++){
+          for(int itime=1;itime<n_ns+n_ns_buffer;itime++){
             float bkg=0;
-	    for(int i=0;i<n_freq;i++){
-	      bkg+=freq_amplitude[i]*sin(6.283*itime*freq_value[i]+freq_phase[i]);
-	    }
-	    channel.at(ich)->Get_Histo_cur_buffer()->AddBinContent(itime, bkg);
-	  }
-	}
+            for(int ifreq=1;ifreq<max_freq;ifreq*=10){
+              bkg+=r_bkg->Gaus()*noise_amplitude*sin(itime*ifreq);
+            }
+            channel.at(ich)->Get_Histo_cur_buffer()->AddBinContent(itime, bkg);
+          }
+          delete r_bkg;
+        }
+        if(white_noise){
+          TRandom3 *r_bkg = new TRandom3();
+                r_bkg->SetSeed();
+          const int n_freq = 50;
+          float freq_amplitude[n_freq];
+          float freq_value[n_freq];
+          float freq_phase[n_freq];
+          for(int i=0;i<n_freq;i++){
+            freq_amplitude[i]=r->Gaus()*noise_amplitude;
+            freq_value[i]=r->Uniform(min_freq_noise,max_freq_noise);
+            freq_phase[i]=r->Uniform(0,6.283);
+          }
+          for(int itime=1;itime<n_ns+n_ns_buffer;itime++){
+                  float bkg=0;
+            for(int i=0;i<n_freq;i++){
+              bkg+=freq_amplitude[i]*sin(6.283*itime*freq_value[i]+freq_phase[i]);
+            }
+            channel.at(ich)->Get_Histo_cur_buffer()->AddBinContent(itime, bkg);
+          }
+        }
       }
     }
   }
@@ -491,27 +525,31 @@ namespace PARSIFAL2{
       //Shaper
       if(channel.at(ich)->Get_Histo_cur_buffer()->GetMaximum()==0) continue;
       for(int it = 1; it < n_ns+n_ns_buffer; it++) {
-	for(int jt = it; jt < n_ns+n_ns_buffer; jt++){
-	  if(jt>n_ns_buffer){
-	    if(Get_Electronics()==0){
-	      channel.at(ich)->Get_Histo_int_apv()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*APV_shaper(jt-it));
-	    }
-	    if(Get_Electronics()==1){
-	      channel.at(ich)->Get_Histo_tiger_T()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*T_branch(jt-it));
-	      channel.at(ich)->Get_Histo_tiger_E()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*E_branch(jt-it));
-	    }
-	  }
-	}
+        for(int jt = it; jt < n_ns+n_ns_buffer; jt++){
+          if(jt>n_ns_buffer){
+            if(Get_Electronics()==0){
+              channel.at(ich)->Get_Histo_int_apv()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*APV_shaper(jt-it));
+            }
+            if(Get_Electronics()==1){
+              channel.at(ich)->Get_Histo_tiger_T()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*T_branch(jt-it));
+              channel.at(ich)->Get_Histo_tiger_E()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*E_branch(jt-it));
+            }
+            if(Get_Electronics()==2){
+              channel.at(ich)->Get_Histo_int_tora()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*TORA_shaper(jt-it));
+              // channel.at(ich)->Get_Histo_tiger_E()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*E_branch(jt-it));
+            }
+          }
+        }
       }
       //Discetizing in APV time-bin (25ns)
       if(Get_Electronics()==0){
-	double jitter = 0;
-	for(int iapv = 0; iapv < timebin_APV; iapv++) {
-	  double t = jitter + iapv * timestep_APV;
-	  double timebin = channel.at(ich)->Get_Histo_int_apv()->FindBin(t);
-	  double qmeas = channel.at(ich)->Get_Histo_int_apv()->GetBinContent(timebin)*fC_to_ADC;
-	  channel.at(ich)->Get_Histo_apv()->AddBinContent(iapv+1, qmeas);
-	} 
+        double jitter = 0;
+        for(int iapv = 0; iapv < timebin_APV; iapv++) {
+          double t = jitter + iapv * timestep_APV;
+          double timebin = channel.at(ich)->Get_Histo_int_apv()->FindBin(t);
+          double qmeas = channel.at(ich)->Get_Histo_int_apv()->GetBinContent(timebin)*fC_to_ADC;
+          channel.at(ich)->Get_Histo_apv()->AddBinContent(iapv+1, qmeas);
+        } 
       }
     }
   }
@@ -523,11 +561,11 @@ namespace PARSIFAL2{
     //Amplitude and Lenght defined in Common/Common.h
     if(Square_Wave){
       for(int ich=0;ich<channel.size();ich++){
-	if(ich==channel.size()/2){
-	  for(int i_ns=0;i_ns<SW_Lenght;i_ns++){
-	    channel.at(ich)->Get_Histo_cur_buffer()->AddBinContent(i_ns+n_ns_buffer+t0_ns,SW_Amplitude);
-	  }
-	}
+        if(ich==channel.size()/2){
+          for(int i_ns=0;i_ns<SW_Lenght;i_ns++){
+            channel.at(ich)->Get_Histo_cur_buffer()->AddBinContent(i_ns+n_ns_buffer+t0_ns,SW_Amplitude);
+          }
+        }
       }
     }
     return;
@@ -537,45 +575,45 @@ namespace PARSIFAL2{
     if(NO_Capacitive) return;
     if(Get_Setup()==0){
       for(int ich=0;ich<channel.size();ich++){
-	double q_peak = channel.at(ich)->Get_Histo_apv()->GetMaximum(); // fC
-	double q_peak_adc = q_peak * fC_to_ADC; // ADC  
-	//cout<<ich<<" "<<q_peak_adc<<endl;
-	if (Capacitive_Induction_1(q_peak_adc) &&
-	    ich!=0 &&
-	    ich!=channel.size()-1
-	    ){
-	  for(int itime = 0; itime < timebin_APV; itime++) {
-	    double t_in = (itime+0.5) * 25;
-	    double q_in = channel.at(ich)->Get_Histo_apv()->GetBinContent(itime+1) * fC_to_ADC;
-	    if(q_in>1800) q_in=1800;
-	    if(q_in<0)    continue;
-	    // induce to i-strip +/- 1  
-	    double q_1 = Get_Q_induced_1(q_in);
-	    double t_1 = Get_T_induced_1(q_in,t_in);
-	    if(channel.at(ich)->Get_Type()==channel.at(ich-1)->Get_Type()) {
-	      channel.at(ich-1)->Get_Histo_cap()->Fill(t_1,q_1/fC_to_ADC);
-	    }
-	    if(channel.at(ich)->Get_Type()==channel.at(ich+1)->Get_Type()) {
-	      channel.at(ich+1)->Get_Histo_cap()->Fill(t_1,q_1/fC_to_ADC);
-	    }
-	    if (Capacitive_Induction_2(q_peak_adc) &&
-		ich!=1 &&
-		ich!=channel.size()-2
-		){
-	      double q_2 = Get_Q_induced_2(q_1);
-	      double t_2 = Get_T_induced_2(q_in,t_in);
-	      if(channel.at(ich)->Get_Type()==channel.at(ich-2)->Get_Type()){
-		channel.at(ich-2)->Get_Histo_cap()->Fill(t_2,q_2/fC_to_ADC);
-	      }
-	      if(channel.at(ich)->Get_Type()==channel.at(ich+2)->Get_Type()){
-		channel.at(ich+2)->Get_Histo_cap()->Fill(t_2,q_2/fC_to_ADC);
-	      }
-	    }
-	  }
-	}
+        double q_peak = channel.at(ich)->Get_Histo_apv()->GetMaximum(); // fC
+        double q_peak_adc = q_peak * fC_to_ADC; // ADC  
+        //cout<<ich<<" "<<q_peak_adc<<endl;
+        if (Capacitive_Induction_1(q_peak_adc) &&
+            ich!=0 &&
+            ich!=channel.size()-1
+            ){
+          for(int itime = 0; itime < timebin_APV; itime++) {
+            double t_in = (itime+0.5) * 25;
+            double q_in = channel.at(ich)->Get_Histo_apv()->GetBinContent(itime+1) * fC_to_ADC;
+            if(q_in>1800) q_in=1800;
+            if(q_in<0)    continue;
+            // induce to i-strip +/- 1  
+            double q_1 = Get_Q_induced_1(q_in);
+            double t_1 = Get_T_induced_1(q_in,t_in);
+            if(channel.at(ich)->Get_Type()==channel.at(ich-1)->Get_Type()) {
+              channel.at(ich-1)->Get_Histo_cap()->Fill(t_1,q_1/fC_to_ADC);
+            }
+            if(channel.at(ich)->Get_Type()==channel.at(ich+1)->Get_Type()) {
+              channel.at(ich+1)->Get_Histo_cap()->Fill(t_1,q_1/fC_to_ADC);
+            }
+            if (Capacitive_Induction_2(q_peak_adc) &&
+            ich!=1 &&
+            ich!=channel.size()-2
+            ){
+              double q_2 = Get_Q_induced_2(q_1);
+              double t_2 = Get_T_induced_2(q_in,t_in);
+              if(channel.at(ich)->Get_Type()==channel.at(ich-2)->Get_Type()){
+                channel.at(ich-2)->Get_Histo_cap()->Fill(t_2,q_2/fC_to_ADC);
+              }
+              if(channel.at(ich)->Get_Type()==channel.at(ich+2)->Get_Type()){
+                channel.at(ich+2)->Get_Histo_cap()->Fill(t_2,q_2/fC_to_ADC);
+              }
+            }
+          }
+        }
       }
       for(int ich=0;ich<channel.size();ich++){
-	channel.at(ich)->Get_Histo_apv()->Add(channel.at(ich)->Get_Histo_cap(),1); 
+	      channel.at(ich)->Get_Histo_apv()->Add(channel.at(ich)->Get_Histo_cap(),1); 
       }
     }
     return;
@@ -639,46 +677,59 @@ namespace PARSIFAL2{
     //Warning in <Fit>: Fit data is empty da qui dentro
     //#pragma omp parallel for
     for(int ich=0;ich<channel.size();ich++){
+
       if(Get_Electronics()==0){ //APV
-	//Set the channel charge
-	channel.at(ich)->Set_Charge(Get_Charge_APV(channel.at(ich)));
-	//Set the channel time 
-	channel.at(ich)->Set_Time(Get_Time_APV(channel.at(ich)));
-	channel.at(ich)->Set_dTime(Get_dTime_APV(channel.at(ich)));
-	float SumQ=0;
-	for(int ii=0;ii<channel.at(ich)->Get_Histo_apv()->GetNbinsX();ii++) SumQ+=channel.at(ich)->Get_Histo_apv()->GetBinContent(ii);
-	//for(int ii=0;ii<channel.at(ich)->Get_Histo_apv()->GetNbinsX();ii++) cout<<ii<<" "<<channel.at(ich)->Get_Histo_apv()->GetBinContent(ii)<<endl;
-	//cout<<"Ch: "<<ich<<" SumQ/Nbin "<<(SumQ/timestep_APV)<<" > 0.8*sigma_noise*fC_to_ADC = "<<(0.8*sigma_noise_fC*30)<<" is good: "<<(bool)(SumQ/timestep_APV>0.8*sigma_noise_fC*30)<<endl;
-	//if(channel.at(ich)->Get_Charge()>thr_APV) channel.at(ich)->Set_AboveThr(true);
-	if(SumQ/timestep_APV>mmdaq_thr_factor*mmdaq_ped*fC_to_ADC && channel.at(ich)->Get_Charge()>threshold_fC) channel.at(ich)->Set_AboveThr(true);
-	//else if(channel.at(ich)->Get_Charge()<=0) channel.at(ich)->Set_AboveThr(false);
-	else channel.at(ich)->Set_AboveThr(false);
-	//Save the apv distribution Qt hit
-	if(channel.at(ich)->Get_AboveThr()){
-	  int hit_q_min = 0;
-	  int hit_q_step = 10;
-	  int hit_q_max = 80;
-	  for(int iq=0; iq<hit_q_max/hit_q_step; iq++){
-	    int hit_q_step_i = hit_q_min+iq*hit_q_step;
-	    int hit_q_step_ip = hit_q_min+(iq+1)*hit_q_step;
-	    if(channel.at(ich)->Get_Charge()>hit_q_step_i && channel.at(ich)->Get_Charge()<hit_q_step_ip && _histo_hit_Qt_APV.size()){
-	      for(int ii=0;ii<channel.at(ich)->Get_Histo_apv()->GetNbinsX();ii++){
-		_histo_hit_Qt_APV.at(iq)->AddBinContent(ii+1,channel.at(ich)->Get_Histo_apv()->GetBinContent(ii+1));
-	      }
-	    }
-	  }
-	}
+        //Set the channel charge
+        channel.at(ich)->Set_Charge(Get_Charge_APV(channel.at(ich)));
+        //Set the channel time 
+        channel.at(ich)->Set_Time(Get_Time_APV(channel.at(ich)));
+        channel.at(ich)->Set_dTime(Get_dTime_APV(channel.at(ich)));
+        float SumQ=0;
+        for(int ii=0;ii<channel.at(ich)->Get_Histo_apv()->GetNbinsX();ii++) SumQ+=channel.at(ich)->Get_Histo_apv()->GetBinContent(ii);
+        //for(int ii=0;ii<channel.at(ich)->Get_Histo_apv()->GetNbinsX();ii++) cout<<ii<<" "<<channel.at(ich)->Get_Histo_apv()->GetBinContent(ii)<<endl;
+        //cout<<"Ch: "<<ich<<" SumQ/Nbin "<<(SumQ/timestep_APV)<<" > 0.8*sigma_noise*fC_to_ADC = "<<(0.8*sigma_noise_fC*30)<<" is good: "<<(bool)(SumQ/timestep_APV>0.8*sigma_noise_fC*30)<<endl;
+        //if(channel.at(ich)->Get_Charge()>thr_APV) channel.at(ich)->Set_AboveThr(true);
+        if(SumQ/timestep_APV>mmdaq_thr_factor*mmdaq_ped*fC_to_ADC && channel.at(ich)->Get_Charge()>threshold_fC) channel.at(ich)->Set_AboveThr(true);
+        //else if(channel.at(ich)->Get_Charge()<=0) channel.at(ich)->Set_AboveThr(false);
+        else channel.at(ich)->Set_AboveThr(false);
+        //Save the apv distribution Qt hit
+        if(channel.at(ich)->Get_AboveThr()){
+          int hit_q_min = 0;
+          int hit_q_step = 10;
+          int hit_q_max = 80;
+          for(int iq=0; iq<hit_q_max/hit_q_step; iq++){
+            int hit_q_step_i = hit_q_min+iq*hit_q_step;
+            int hit_q_step_ip = hit_q_min+(iq+1)*hit_q_step;
+            if(channel.at(ich)->Get_Charge()>hit_q_step_i && channel.at(ich)->Get_Charge()<hit_q_step_ip && _histo_hit_Qt_APV.size()){
+              for(int ii=0;ii<channel.at(ich)->Get_Histo_apv()->GetNbinsX();ii++){
+                _histo_hit_Qt_APV.at(iq)->AddBinContent(ii+1,channel.at(ich)->Get_Histo_apv()->GetBinContent(ii+1));
+              }
+            }
+          }
+        }
+      
       }
       if(Get_Electronics()==1){ //TIGER
-	//Set the channel charge
-	channel.at(ich)->Set_Charge(Get_Charge_TIGER(channel.at(ich)));
-	//Set the channel time
+        //Set the channel charge
+        channel.at(ich)->Set_Charge(Get_Charge_TIGER(channel.at(ich)));
+        //Set the channel time
         channel.at(ich)->Set_Time(Get_Time_TIGER(channel.at(ich)));
         channel.at(ich)->Set_dTime(Get_dTime_TIGER(channel.at(ich)));
-	//Set threshold flag
-	if(channel.at(ich)->Get_AboveThr_E() * channel.at(ich)->Get_AboveThr_T()) channel.at(ich)->Set_AboveThr(true);
-	else channel.at(ich)->Set_AboveThr(false);
-	if(channel.at(ich)->Get_AboveThr() && (channel.at(ich)->Get_Charge()==0 || channel.at(ich)->Get_Time()==0)) cout<<"ich: "<<ich<<" Q: "<<channel.at(ich)->Get_Charge()<<" T: "<<channel.at(ich)->Get_Time()<<endl;
+        //Set threshold flag
+        if(channel.at(ich)->Get_AboveThr_E() * channel.at(ich)->Get_AboveThr_T()) channel.at(ich)->Set_AboveThr(true);
+        else channel.at(ich)->Set_AboveThr(false);
+        if(channel.at(ich)->Get_AboveThr() && (channel.at(ich)->Get_Charge()==0 || channel.at(ich)->Get_Time()==0)) cout<<"ich: "<<ich<<" Q: "<<channel.at(ich)->Get_Charge()<<" T: "<<channel.at(ich)->Get_Time()<<endl;
+      }
+      if(Get_Electronics()==2){ //TORA
+        //Set the channel charge
+        channel.at(ich)->Set_Charge(Get_Charge_TORA(channel.at(ich)));
+        //Set the channel time
+        channel.at(ich)->Set_Time(Get_Time_TORA(channel.at(ich)));
+        channel.at(ich)->Set_dTime(Get_dTime_TORA(channel.at(ich)));
+        //Set threshold flag
+        if(channel.at(ich)->Get_AboveThr_T()) channel.at(ich)->Set_AboveThr(true);
+        else channel.at(ich)->Set_AboveThr(false);
+        if(channel.at(ich)->Get_AboveThr() && (channel.at(ich)->Get_Charge()==0 || channel.at(ich)->Get_Time()==0)) cout<<"ich: "<<ich<<" Q: "<<channel.at(ich)->Get_Charge()<<" T: "<<channel.at(ich)->Get_Time()<<endl;
       }
     }
     return;
@@ -696,7 +747,7 @@ namespace PARSIFAL2{
       ch->Set_Saturation_APV(r->Gaus(saturation_APV,sigma_saturation_APV));
       q_peak  = ch->Get_Saturation_APV();
       for(int ibin=1; ibin<=timebin_APV; ibin++) {
-	if(ch->Get_Histo_apv()->GetBinContent(ibin) > ch->Get_Saturation_APV()) ch->Get_Histo_apv()->SetBinContent(ibin, q_peak);
+	      if(ch->Get_Histo_apv()->GetBinContent(ibin) > ch->Get_Saturation_APV()) ch->Get_Histo_apv()->SetBinContent(ibin, q_peak);
       }
     }
     return (ch->Get_Histo_apv()->GetBinContent(ch->Get_Histo_apv()->GetMaximumBin())/fC_to_ADC);
@@ -724,8 +775,8 @@ namespace PARSIFAL2{
     double QMaxHisto = h_time->GetBinContent(h_time->GetMaximumBin());
     for(int ibin = maxbin; ibin > 1; ibin--){
       if(h_time->GetBinContent(ibin) < 0.1 * QMaxHisto) {
-	minbin = ibin;
-	break;
+        minbin = ibin;
+        break;
       }
     }
     double startvalues[5] = {0};
@@ -775,6 +826,7 @@ namespace PARSIFAL2{
     Set_dTime(dtFD);
     return;
   }
+
   double Readout::Get_Charge_TIGER(ElectronicChannel *ch){
     TH1D *h_time = ch->Get_Histo_tiger_E();
     double maxbin    = h_time->GetNbinsX();
@@ -783,8 +835,8 @@ namespace PARSIFAL2{
     ch->Set_AboveThr_E(false);
     for(int i=1;i<maxbin-1;i++) {
       if(h_time->GetBinContent(i)>thrE_TIGER) {
-	time_thr = i;
-	break;
+        time_thr = i;
+        break;
       }
     }
     for(int i=time_thr;i<maxbin;i++) {
@@ -802,7 +854,7 @@ namespace PARSIFAL2{
     float q_peak  = ch->Get_Saturation_TIGER();
     if(!NO_Saturation){
       for(int i=1;i<maxbin;i++) {
-	if(h_time->GetBinContent(i)>saturation_TIGER) h_time->SetBinContent(i,q_peak);
+	      if(h_time->GetBinContent(i)>saturation_TIGER) h_time->SetBinContent(i,q_peak);
       }
     }
     time_thr = ((int)(time_thr/timestep_TIGER))*timestep_TIGER;
@@ -825,23 +877,23 @@ namespace PARSIFAL2{
     ch->Set_AboveThr_T(false);
     for(int i=1;i<maxbin-1;i++) {
       if(h_time->GetBinContent(i)>thrT_TIGER) {
-	time_thr = i;
-	ch->Set_AboveThr_T(true);
-	break;
+        time_thr = i;
+        ch->Set_AboveThr_T(true);
+        break;
       }
     }
     for(int i=time_thr+1;i<maxbin;i++) {
       if(i==maxbin-1) time_falling=2*maxbin;
       if(h_time->GetBinContent(i)<thrT_TIGER) {
         time_falling = i-1;
-	break;
+	      break;
       }
     }
     ch->Set_t_rising_T(time_thr);
     ch->Set_t_falling_T(time_falling);
     if(enable_tfine_tiger){
       if(time_thr!=0){
-	efine_time_thr = 1 - (thrT_TIGER-h_time->GetBinContent(time_thr-1))/(h_time->GetBinContent(time_thr)-h_time->GetBinContent(time_thr-1));
+	      efine_time_thr = 1 - (thrT_TIGER-h_time->GetBinContent(time_thr-1))/(h_time->GetBinContent(time_thr)-h_time->GetBinContent(time_thr-1));
       }
     }
     //Saturation
@@ -861,20 +913,111 @@ namespace PARSIFAL2{
     return timestep_TIGER;
   }
 
+  double Readout::Get_Charge_TORA(ElectronicChannel *ch){
+    TH1D *h_time = ch->Get_Histo_int_tora();
+  //   double maxbin    = h_time->GetNbinsX();
+  //   float time_thr = -999; // leading edge
+  //   float time_falling = -999; // falling edge
+  //   ch->Set_AboveThr_E(false);
+  //   for(int i=1;i<maxbin-1;i++) {
+  //     if(h_time->GetBinContent(i)>thrE_TIGER) {
+  //       time_thr = i;
+  //       break;
+  //     }
+  //   }
+  //   for(int i=time_thr;i<maxbin;i++) {
+  //     if(i==maxbin-1) time_falling=2*maxbin;
+  //     if(h_time->GetBinContent(i)<thrE_TIGER) {
+  //       time_falling = i-1;
+  //       break;
+  //     }
+  //   }
+  //   ch->Set_t_thr_E(time_thr);
+  //   ch->Set_t_rising_E(time_thr);
+  //   ch->Set_t_falling_E(time_falling);
+  //   //Saturation
+  //   ch->Set_Saturation_TIGER(r->Gaus(saturation_TIGER,sigma_saturation_TIGER));
+  //   float q_peak  = ch->Get_Saturation_TIGER();
+  //   if(!NO_Saturation){
+  //     for(int i=1;i<maxbin;i++) {
+	//       if(h_time->GetBinContent(i)>saturation_TIGER) h_time->SetBinContent(i,q_peak);
+  //     }
+  //   }
+  //   time_thr = ((int)(time_thr/timestep_TIGER))*timestep_TIGER;
+  //   float time_peak = time_thr + 4*6.25*(integration_time_TIGER+0.5);
+  //   if(time_thr<0 || time_peak>=maxbin) return -1;
+  //   ch->Set_AboveThr_E(true);
+  //   time_peak = ((int)(time_peak/timestep_TIGER))*timestep_TIGER;
+  //   ch->Set_t_Q_E(time_peak);
+  //   float charge = h_time->GetBinContent((int)time_peak)/gain_TORA;
+  //   if(TIGER_Get_Maximum) charge = h_time->GetMaximum()/gain_TORA;
+    float charge = h_time->GetMaximum()/gain_TORA;
+    return charge;
+  }
+
+  double Readout::Get_Time_TORA(ElectronicChannel *ch){
+    TH1D *h_time = ch->Get_Histo_int_tora();
+    double maxbin    = h_time->GetNbinsX();
+    float time_thr      = -1;  // leading edge
+    float time_falling  = -999; // falling edge
+    float efine_time_thr=0;
+    ch->Set_AboveThr_T(false);
+    for(int i=1;i<maxbin-1;i++) {
+      if(h_time->GetBinContent(i)>thrT_TORA) {
+        time_thr = i;
+        ch->Set_AboveThr_T(true);
+        break;
+      }
+    }
+    for(int i=time_thr+1;i<maxbin;i++) {
+      if(i==maxbin-1) time_falling=2*maxbin;
+      if(h_time->GetBinContent(i)<thrT_TORA) {
+        time_falling = i-1;
+	      break;
+      }
+    }
+    ch->Set_t_rising_T(time_thr);
+    ch->Set_t_falling_T(time_falling);
+
+    // TFine
+    // if(enable_tfine_tiger){
+    //   if(time_thr!=0){
+	  //     efine_time_thr = 1 - (thrT_TORA-h_time->GetBinContent(time_thr-1))/(h_time->GetBinContent(time_thr)-h_time->GetBinContent(time_thr-1));
+    //   }
+    // }
+
+    // Saturation
+    // float q_peak  = ch->Get_Saturation_TORA();
+    // if(!NO_Saturation){
+    //   for(int i=1;i<maxbin;i++) {
+    //     if(h_time->GetBinContent(i)>saturation_TORA) h_time->SetBinContent(i,q_peak);
+    //   }
+    // }
+    if(time_thr<0) return time_thr;
+    //digitize the time in timestep 6.25ns
+    time_thr = ((int)(1+time_thr/timestep_TORA))*timestep_TORA - efine_time_thr*timestep_TORA;
+    return time_thr;
+  }
+
+  double Readout::Get_dTime_TORA(ElectronicChannel *ch){
+    return timestep_TORA;
+  }
+
+
   void Readout::Measure_Signal_Lenght(){
     for(int ich=0;ich<channel.size();ich++){
       double t_first = -999;
       double t_last = 999;
       if(channel.at(ich)->Get_Histo_raw()->GetMaximum()==0) {
-	channel.at(ich)->Set_t_rising_raw(-999);
-	channel.at(ich)->Set_t_falling_raw(-999);
-	continue;
+        channel.at(ich)->Set_t_rising_raw(-999);
+        channel.at(ich)->Set_t_falling_raw(-999);
+        continue;
       }
       for(int it = 0; it < n_ns; it++) {
         int timebin = channel.at(ich)->Get_Histo_raw()->FindBin(it);
-	float qt = channel.at(ich)->Get_Histo_raw()->GetBinContent(timebin);
-	if(qt && t_first<0) t_first = it;
-	if(qt) t_last=it;
+        float qt = channel.at(ich)->Get_Histo_raw()->GetBinContent(timebin);
+        if(qt && t_first<0) t_first = it;
+        if(qt) t_last=it;
       }
       channel.at(ich)->Set_t_rising_raw(t_first);
       channel.at(ich)->Set_t_falling_raw(t_last);
