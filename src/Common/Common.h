@@ -75,6 +75,12 @@ namespace PARSIFAL2{
   const double saturation_TIGER = 612;
   const double sigma_saturation_TIGER = 15;
   const bool   enable_tfine_tiger = true;
+
+  //TORA
+  const double timestep_TORA = 6.25; //ns
+  const double saturation_TORA = 612;
+
+
   //Readout
   const int    Xview  = 1;
   const int    Yview  = 2;
