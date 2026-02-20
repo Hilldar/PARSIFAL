@@ -21,6 +21,7 @@ namespace PARSIFAL2{
     h_time_int_tigT = new TH1D();
     h_time_int_tigE = new TH1D();
     h_time_apv      = new TH1D();
+    h_time_int_tora = new TH1D();
   };
   ElectronicChannel(int tipo, int ich, Position pos, double passo):
     type(tipo),channelID(ich),position(pos),pitch(passo),n_electrons(0),PrintNTuple(PrintNTuple_Channel),above_thr(false){
@@ -42,8 +43,9 @@ namespace PARSIFAL2{
       h_time_int_apv   = new TH1D(Form("  int_%i_%i",tipo,ich),Form("Charge[fC]    int_%i_%i",tipo,ich),n_ns, 0, n_ns);          //avp integrator circuit
       h_time_int_tigT  = new TH1D(Form("tig_T_%i_%i",tipo,ich),Form("Voltage[mV] tig_T_%i_%i",tipo,ich),n_ns, 0,  n_ns);         //tiger Tbranch signal
       h_time_int_tigE  = new TH1D(Form("tig_E_%i_%i",tipo,ich),Form("Voltage[mV] tig_E_%i_%i",tipo,ich),n_ns, 0,  n_ns);         //tiger Ebranch signal
+      h_time_int_tora  = new TH1D(Form("tora_T_%i_%i",tipo,ich),Form("Voltage[mV] tora_T_%i_%i",tipo,ich),n_ns, 0,  n_ns);         //tora Tbranch signal
       //Electronics discretized
-      h_time_apv       = new TH1D(Form("  apv_%i_%i",tipo,ich),Form("Voltage[ADC]  apv_%i_%i",tipo,ich),timebin_APV,0,timebin_APV*timestep_APV);//apv signal
+      h_time_apv       = new TH1D(Form("  apv_%i_%i",tipo,ich),Form("Voltage[ADC]  apv_%i_%i",tipo,ich), timebin_APV, 0, timebin_APV*timestep_APV);//apv signal
       
       
       h_time_raw->GetXaxis()->SetTitle("Time [ns]");
@@ -55,7 +57,8 @@ namespace PARSIFAL2{
       h_time_int_tigT->GetXaxis()->SetTitle("Time [ns]");
       h_time_int_tigE->GetXaxis()->SetTitle("Time [ns]");
       h_time_apv->GetXaxis()->SetTitle("Time [ns]");
-      
+      h_time_int_tora->GetXaxis()->SetTitle("Time [ns]");
+
       h_time_raw->GetYaxis()->SetTitle("Current [1 fC / 1 ns]");
       h_time_tot->GetYaxis()->SetTitle("Charge [fC]");
       h_time_res->GetYaxis()->SetTitle("Charge [fC]");
@@ -65,6 +68,7 @@ namespace PARSIFAL2{
       h_time_int_tigT->GetYaxis()->SetTitle("Voltage [1 mV / 1 ns]");
       h_time_int_tigE->GetYaxis()->SetTitle("Voltage [1 mV / 1 ns]");
       h_time_apv->GetYaxis()->SetTitle("Voltage [ADC]");
+      h_time_int_tora->GetYaxis()->SetTitle("Voltage [1 mV / 1 ns]");
 
       h_time_raw->GetYaxis()->SetTitleOffset(0.9);
       h_time_tot->GetYaxis()->SetTitleOffset(0.9);
@@ -75,9 +79,11 @@ namespace PARSIFAL2{
       h_time_int_tigT->GetYaxis()->SetTitleOffset(0.9);
       h_time_int_tigE->GetYaxis()->SetTitleOffset(0.9);
       h_time_apv->GetYaxis()->SetTitleOffset(0.9);
+      h_time_int_tora->GetYaxis()->SetTitleOffset(0.9);
 
       h_time_int_tigT->GetYaxis()->SetRangeUser(-200,900);
       h_time_int_tigE->GetYaxis()->SetRangeUser(-200,900);
+      h_time_int_tora->GetYaxis()->SetRangeUser(-200,900);
       //h_time_apv->GetYaxis()->SetRangeUser(-200,2000);
 
       V_thr_T = 10;
@@ -96,6 +102,7 @@ namespace PARSIFAL2{
       h_time_int_tigT->~TH1D();
       h_time_int_tigE->~TH1D();
       h_time_apv->~TH1D();
+      h_time_int_tora->~TH1D();
 
       /*
       delete h_time_raw;
@@ -138,11 +145,13 @@ namespace PARSIFAL2{
     TH1D*     Get_Histo_tiger_E ()          {return h_time_int_tigE;};
     TH1D*     Get_Histo_tiger_T ()          {return h_time_int_tigT;};
     TH1D*     Get_Histo_apv     ()          {return h_time_apv;};
+    TH1D*     Get_Histo_int_tora  ()          {return h_time_int_tora;};
     bool      Get_AboveThr      ()          {return above_thr;};
     bool      Get_AboveThr_T    ()          {return above_thr_T;};
     bool      Get_AboveThr_E    ()          {return above_thr_E;};
     float     Get_Saturation_APV()          {return saturation_apv;};
     float     Get_Saturation_TIGER()        {return saturation_tiger;};
+    float     Get_Saturation_TORA()         {return saturation_tora;};
     
     void      Set_Electronics   (int    io) {ElectronicsType=io;};
     void      Set_Charge        (double io) {charge=io;};
@@ -164,6 +173,7 @@ namespace PARSIFAL2{
     void      Set_V_thr_E       (float  io) {V_thr_E=io;};
     void      Set_Saturation_APV(float  io) {saturation_apv=io;};
     void      Set_Saturation_TIGER(float  io) {saturation_tiger=io;};
+    void      Set_Saturation_TORA(float  io) {saturation_tora=io;};
 
     
     void      ResetNelectrons   ()          {n_electrons=0;};
@@ -179,12 +189,14 @@ namespace PARSIFAL2{
       h_time_int_apv->Reset();
       h_time_int_tigE->Reset();
       h_time_int_tigT->Reset();
+      h_time_int_tora->Reset();
       h_time_apv->Reset();
     };
     void      Fill_Time         (double io, float weight) {h_time_raw->Fill(io,1.6e-4*weight);}; // 1 electron * weight
     void      Print_Time(int ievent){
       if(Get_Electronics()==0) Print_Time_APV(ievent);
       if(Get_Electronics()==1) Print_Time_TIGER(ievent);
+      if(Get_Electronics()==2) Print_Time_TORA(ievent);
     }
     void      Print_Time_APV    (int ievent) {
       TCanvas *c = new TCanvas("ccc","ccc",1600,1600);
@@ -203,7 +215,7 @@ namespace PARSIFAL2{
 	1;
       }
       else{
-	TLine *l_V_thr_T = new TLine(0,(float)(thr_APV_fC*fC_to_ADC),n_ns,(float)(thr_APV_fC*fC_to_ADC));
+	      TLine *l_V_thr_T = new TLine(0,(float)(thr_APV_fC*fC_to_ADC),n_ns,(float)(thr_APV_fC*fC_to_ADC));
         l_V_thr_T->SetLineColor(kRed);
         l_V_thr_T->Draw("same");
       }
@@ -231,39 +243,39 @@ namespace PARSIFAL2{
       c->cd(7); h_time_int_tigT->Draw();
       float t_thr_T = Get_Time();
       if(Get_AboveThr_T()){
-	TLine *l_t_thr_T = new TLine(t_thr_T,h_time_int_tigT->GetMinimum()-10,t_thr_T,V_thr_T);
-	TLine *l_V_thr_T = new TLine(0,V_thr_T,t_thr_T,V_thr_T);
-	l_V_thr_T->SetLineColor(kRed);
-	l_t_thr_T->SetLineColor(kRed);
-	l_V_thr_T->Draw("same");
-	l_t_thr_T->Draw("same");
+        TLine *l_t_thr_T = new TLine(t_thr_T,h_time_int_tigT->GetMinimum()-10,t_thr_T,V_thr_T);
+        TLine *l_V_thr_T = new TLine(0,V_thr_T,t_thr_T,V_thr_T);
+        l_V_thr_T->SetLineColor(kRed);
+        l_t_thr_T->SetLineColor(kRed);
+        l_V_thr_T->Draw("same");
+        l_t_thr_T->Draw("same");
       }
       else{
-	TLine *l_V_thr_T = new TLine(0,V_thr_T,n_ns,V_thr_T);
-	l_V_thr_T->SetLineColor(kRed);
-	l_V_thr_T->Draw("same");       
+        TLine *l_V_thr_T = new TLine(0,V_thr_T,n_ns,V_thr_T);
+        l_V_thr_T->SetLineColor(kRed);
+        l_V_thr_T->Draw("same");       
       }
       c->cd(8); h_time_int_tigE->Draw();
       float t_thr_E = Get_Time();
       float V_Q     = Get_Charge()*gain_TIGER;
       if(Get_AboveThr_E()){
-	TLine *l_t_thr_E = new TLine(Get_t_thr_E(),Get_Histo_tiger_E()->GetMinimum()-10,Get_t_thr_E(),V_thr_E);
-	TLine *l_V_thr_E = new TLine(0,V_thr_E,Get_t_thr_E(),V_thr_E);
-	TLine *l_t_Q     = new TLine(Get_t_Q_E(),Get_Histo_tiger_E()->GetMinimum()-10,Get_t_Q_E(),V_Q);
-	TLine *l_V_Q     = new TLine(0,V_Q,Get_t_Q_E(),V_Q);
-	l_V_thr_E->SetLineColor(kRed);
-	l_t_thr_E->SetLineColor(kRed);
-	l_t_Q->SetLineColor(kRed);
-	l_V_Q->SetLineColor(kRed);
-	l_V_thr_E->Draw("same");
-	l_t_thr_E->Draw("same");
-	l_t_Q->Draw("same");
-	l_V_Q->Draw("same");
+        TLine *l_t_thr_E = new TLine(Get_t_thr_E(),Get_Histo_tiger_E()->GetMinimum()-10,Get_t_thr_E(),V_thr_E);
+        TLine *l_V_thr_E = new TLine(0,V_thr_E,Get_t_thr_E(),V_thr_E);
+        TLine *l_t_Q     = new TLine(Get_t_Q_E(),Get_Histo_tiger_E()->GetMinimum()-10,Get_t_Q_E(),V_Q);
+        TLine *l_V_Q     = new TLine(0,V_Q,Get_t_Q_E(),V_Q);
+        l_V_thr_E->SetLineColor(kRed);
+        l_t_thr_E->SetLineColor(kRed);
+        l_t_Q->SetLineColor(kRed);
+        l_V_Q->SetLineColor(kRed);
+        l_V_thr_E->Draw("same");
+        l_t_thr_E->Draw("same");
+        l_t_Q->Draw("same");
+        l_V_Q->Draw("same");
       }
       else{
-	TLine *l_V_thr_E = new TLine(0,V_thr_E,n_ns,V_thr_E);
-	l_V_thr_E->SetLineColor(kRed);
-	l_V_thr_E->Draw("same");
+        TLine *l_V_thr_E = new TLine(0,V_thr_E,n_ns,V_thr_E);
+        l_V_thr_E->SetLineColor(kRed);
+        l_V_thr_E->Draw("same");
       }
       c->cd(9);
       TPaveText *text_tiger = new TPaveText(0.2,0.2,0.8,0.8);
@@ -280,6 +292,44 @@ namespace PARSIFAL2{
       c->SaveAs(Form("pdf/Event_%i_Channel_%i.png",ievent,Get_ChannelID()));
       delete c;
     };
+
+    void      Print_Time_TORA    (int ievent) {
+      TCanvas *c = new TCanvas("ccc","ccc",1600,1600);
+      c->Divide(3,3);
+      c->cd(1); h_time_raw->Draw("hist");
+      c->cd(2); h_time_tot->Draw();
+      c->cd(3);
+      c->cd(4); h_time_cur->Draw("hist");
+      c->cd(5); h_time_res->Draw();
+      c->cd(6);
+      c->cd(7); h_time_int_tora->Draw();
+      
+      float t_thr_T = Get_Time();
+      if(Get_AboveThr_T()){
+        TLine *l_t_thr_T = new TLine(t_thr_T,h_time_int_tora->GetMinimum()-10,t_thr_T,V_thr_T);
+        TLine *l_V_thr_T = new TLine(0,V_thr_T,t_thr_T,V_thr_T);
+        l_V_thr_T->SetLineColor(kRed);
+        l_t_thr_T->SetLineColor(kRed);
+        l_V_thr_T->Draw("same");
+        l_t_thr_T->Draw("same");
+      }
+      else{
+        TLine *l_V_thr_T = new TLine(0,V_thr_T,n_ns,V_thr_T);
+        l_V_thr_T->SetLineColor(kRed);
+        l_V_thr_T->Draw("same");  
+      }
+      c->cd(8);
+      TPaveText *text_tora = new TPaveText(0.2,0.2,0.8,0.8);
+      text_tora->AddText(Form("APV thr = %.0f fC",t_thr_T));
+      text_tora->AddText(Form("Time measured = %.2f ns",Get_Time()));
+      text_tora->AddText(Form("Charge measured = %.2f fC",Get_Charge()));
+      text_tora->AddText(Form("Max charge collected = %.2f fC",Get_Histo_tot()->GetMaximum()));
+      text_tora->Draw();      
+      c->SaveAs(Form("pdf/Event_%i_Channel_%i.pdf",ievent,Get_ChannelID()));
+      c->SaveAs(Form("pdf/Event_%i_Channel_%i.png",ievent,Get_ChannelID()));
+      delete c;
+    };
+  
     //Variables
     TH1D*     h_time_raw;
     TH1D*     h_time_tot;
@@ -291,6 +341,7 @@ namespace PARSIFAL2{
     TH1D*     h_time_int_tigE;
     TH1D*     h_time_int_tigT;
     TH1D*     h_time_apv;
+    TH1D*     h_time_int_tora;
     //constant
     const int nbin = 1000;
   private:
@@ -320,6 +371,7 @@ namespace PARSIFAL2{
     float     V_thr_E;
     float     saturation_apv;
     float     saturation_tiger;
+    float     saturation_tora;
     //Function
     void Set_Position          (Position io) {position=io;};
   };

@@ -140,6 +140,24 @@ namespace PARSIFAL2{
       cout<<"************************************************"<<endl;
       signal->Set_TIGER_thr_T(io);
     }
+    void Set_TORA_thr_T(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"TORA threshold T branch value set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      signal->Set_TORA_thr_T(io);
+    }
+    void Set_TORA_gain(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"TORA GAIN value set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      signal->Set_TORA_gain(io);
+    }
+    void Set_TORA_tau(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"TORA tau value set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      signal->Set_TORA_tau(io);
+    }
     
   private:
     //Input variables

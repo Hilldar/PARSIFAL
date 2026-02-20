@@ -35,6 +35,9 @@ namespace PARSIFAL2{
     void                       Set_APV_thr       (double io){mmdaq_thr_factor=io;};
     void                       Set_TIGER_thr_E   (double io){thrE_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_E(thrE_TIGER);};
     void      	      	       Set_TIGER_thr_T   (double io){thrT_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TIGER);};
+    void                       Set_TORA_gain     (double io){gain_TORA=io;};
+    void                       Set_TORA_tau      (double io){tau_TORA=io;};
+    void      	      	       Set_TORA_thr_T    (double io){thrT_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TORA);};
     void                       Set_APV_Plot_Hit  (vector<TH1F*> io){_histo_hit_Qt_APV=io;};
     
   private:
@@ -61,6 +64,10 @@ namespace PARSIFAL2{
     float     thrT_TIGER;
     float     thrE_TIGER;
     bool      TIGER_Get_Maximum;
+    //tora
+    float     thrT_TORA;
+    float     gain_TORA;
+    float     tau_TORA;
     //ion tail signal contribution
     float     IT_Lenght ; //ns
     float     IT_amplitude; //fC/ns
@@ -77,8 +84,10 @@ namespace PARSIFAL2{
     void      Simulate_Electronics();
     void      Simulate_APV();
     void      Simulate_TIGER();
+    void      Simulate_TORA();
     void      Initialize_APV();
     void      Initialize_TIGER();
+    void      Initialize_TORA();
     //void      Background_APV();
     //void      Background_TIGER();
     void      Background();
@@ -96,6 +105,10 @@ namespace PARSIFAL2{
     double    Get_Charge_TIGER(ElectronicChannel *ch);
     double    Get_Time_TIGER(ElectronicChannel *ch);
     double    Get_dTime_TIGER(ElectronicChannel *ch);
+    double    Get_Charge_TORA(ElectronicChannel *ch);
+    double    Get_Time_TORA(ElectronicChannel *ch);
+    double    Get_dTime_TORA(ElectronicChannel *ch);
+
 
     //Variable capacitive effect
     TF1* cap_probability_1;
@@ -122,6 +135,10 @@ namespace PARSIFAL2{
     double Get_dTime(){return dtime;};
     double APV_shaper(double t){
       if (t > 0) return TMath::Exp(1.)*(t/tau_APV*TMath::Exp(-t/tau_APV));
+      return 0;
+    }
+    double TORA_shaper(double t){
+      if (t > 0) return TMath::Exp(1.)*(t/tau_TORA*TMath::Exp(-t/tau_TORA));
       return 0;
     }
     vector<TH1F*> _histo_hit_Qt_APV;

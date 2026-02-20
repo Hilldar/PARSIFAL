@@ -67,7 +67,8 @@ void PARSIFAL::Initialization_rwell(){
   party = new Particle(2, D4, party_angle_xz[0], -0.0, geo);
   ionio = new Ionization(party,geo);
   //signal = new Signal(1,0,Bfield,geo); //APV
-  signal = new Signal(1,1,Bfield,geo); //TIGER
+  // signal = new Signal(1,1,Bfield,geo); //TIGER
+  signal = new Signal(1,2,Bfield,geo); //TORA
   recon = new Reconstruction(1,geo);
   event=0;
   Initialize_oFile();

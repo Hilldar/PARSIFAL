@@ -6,7 +6,7 @@ void Run_i(string folder_i, int angle_i){
   double aangle = angle_i*TMath::DegToRad();
   ifstream infile;
   infile.open("run_list.txt", ios::out | ios::app | ios::binary);
-  const int var_size = 16;
+  const int var_size = 19;
   string var[var_size];
   // 0  -> runID
   // 1  -> nEvent
@@ -25,7 +25,7 @@ void Run_i(string folder_i, int angle_i){
   // 14 -> TIGER v_thr E [fC]
   // 15 -> TIGER v_thr T [fC]
   var[0]="?";
-  while(infile>>var[0]>>var[1]>>var[2]>>var[3]>>var[4]>>var[5]>>var[6]>>var[7]>>var[8]>>var[9]>>var[10]>>var[11]>>var[12]>>var[13]>>var[14]>>var[15]){
+  while(infile>>var[0]>>var[1]>>var[2]>>var[3]>>var[4]>>var[5]>>var[6]>>var[7]>>var[8]>>var[9]>>var[10]>>var[11]>>var[12]>>var[13]>>var[14]>>var[15]>>var[16]>>var[17]>>var[18]){
     if(var[0]==folder_i) {
       nshot = stoi(var[1]);
       break;
@@ -78,6 +78,9 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_APV_thr(stod(var[13]));
     rwell->Set_TIGER_thr_E(stod(var[14]));
     rwell->Set_TIGER_thr_T(stod(var[15]));
+    rwell->Set_TORA_thr_T(stod(var[16]));
+    rwell->Set_TORA_gain(stod(var[17]));
+    rwell->Set_TORA_tau(stod(var[18]));
     rwell->Run();
     rwell->Terminate(); 
     delete rwell;
