@@ -35,11 +35,12 @@ namespace PARSIFAL2{
     void                       Set_APV_thr       (double io){mmdaq_thr_factor=io;};
     void                       Set_TIGER_thr_E   (double io){thrE_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_E(thrE_TIGER);};
     void      	      	       Set_TIGER_thr_T   (double io){thrT_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TIGER);};
-    void                       Set_TORA_gain     (double io){gain_TORA=io;};
+    void                       Set_gain_TORA     (double io){gain_TORA=io;};
     void                       Set_TORA_tau      (double io){tau_TORA=io;};
-    void      	      	       Set_TORA_thr_T    (double io){thrT_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TORA);};
+    void      	      	       Set_TORA_thr_T_mV (double io){thrT_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TORA); cout << "TORA thr set to: "<< io << endl ; };
+    void      	      	       Set_TORA_thr_T    (double io){thrT_TORA=io;};
     void                       Set_APV_Plot_Hit  (vector<TH1F*> io){_histo_hit_Qt_APV=io;};
-    
+    void                       Update_param_TORA ();
   private:
     //Variable
     bool      PrintInfo;
@@ -68,6 +69,7 @@ namespace PARSIFAL2{
     float     thrT_TORA;
     float     gain_TORA;
     float     tau_TORA;
+    double    saturation_TORA = -90 * gain_TORA + 1180; //mV (assuming linear relation betwenn gain and max input charge)
     //ion tail signal contribution
     float     IT_Lenght ; //ns
     float     IT_amplitude; //fC/ns
@@ -108,6 +110,8 @@ namespace PARSIFAL2{
     double    Get_Charge_TORA(ElectronicChannel *ch);
     double    Get_Time_TORA(ElectronicChannel *ch);
     double    Get_dTime_TORA(ElectronicChannel *ch);
+    double    Get_gain_TORA() {return gain_TORA;};
+    double    Get_thr_TORA() {return thrT_TORA;};
 
 
     //Variable capacitive effect
@@ -138,7 +142,7 @@ namespace PARSIFAL2{
       return 0;
     }
     double TORA_shaper(double t){
-      if (t > 0) return TMath::Exp(1.)*(t/tau_TORA*TMath::Exp(-t/tau_TORA));
+      if (t > 0) return gain_TORA * TMath::Exp(1.)*(t/tau_TORA*TMath::Exp(-t/tau_TORA));
       return 0;
     }
     vector<TH1F*> _histo_hit_Qt_APV;

@@ -40,11 +40,11 @@ namespace PARSIFAL2{
     void Set_APV_thr          (double io){  reado->Set_APV_thr          (io);};
     void Set_TIGER_thr_E      (double io){  reado->Set_TIGER_thr_E  	  (io);};
     void Set_TIGER_thr_T      (double io){  reado->Set_TIGER_thr_T      (io);};
-    void Set_TORA_thr_T       (double io){  reado->Set_TORA_thr_T       (io);};
-    void Set_TORA_gain        (double io){  reado->Set_TORA_gain        (io);};
-    void Set_TORA_tau         (double io){  reado->Set_TORA_tau        (io);};
+    void Set_TORA_thr_T       (double io){  reado->Set_TORA_thr_T       (io);cout << "TORA thr set to: "<< io << endl ; };
+    void Set_gain_TORA        (double io){  reado->Set_gain_TORA        (io);};
+    void Set_TORA_tau         (double io){  reado->Set_TORA_tau         (io);};
     void Set_APV_Plot_Hit     (vector<TH1F*> io){reado->Set_APV_Plot_Hit(io);};
-
+    void Update_param_TORA    (){ reado->Update_param_TORA();};
     
     //General
     int  Get_Total_Electron_Gained()         {if(!fast_simulation) return gain->Get_Total_Electron_Gained(); else return tot_ele_gained;};

@@ -17,8 +17,8 @@ namespace PARSIFAL2{
     thrE_TIGER 	   = 10;  // threshold_fC*gain_TIGER;
     TIGER_Get_Maximum = false;
     
-    gain_TORA     = 12.7; //fC/mV
-    thrT_TORA     = 10;  // threshold_fC*gain_TIGER;
+    // gain_TORA     =  12.7; //fC/mV
+    thrT_TORA     =  10;  // threshold_fC*gain_TIGER;
     // thrE_TORA 	  = 10;  // threshold_fC*gain_TIGER;
 
     IT_Lenght          = 170; // ns
@@ -89,22 +89,26 @@ namespace PARSIFAL2{
     //White noise
     if(white_noise){
       if(Get_Electronics()==0){
-	//float slope = 156.375-15844.1/(tau_APV+111.638); //tau_APV = shaping time 
-	//float slope = 176.6-21539.47/(tau_APV+133.3); //tau_APV = shaping time
-	//noise_amplitude = sigma_noise_fC/slope; // APV: STD sigma noise = slope * max amplitude input noise current
-	//2025.08.28
-	//float slope = 35.31;
-	//2025.10.15
-	float slope = 44.14;
+        //float slope = 156.375-15844.1/(tau_APV+111.638); //tau_APV = shaping time 
+        //float slope = 176.6-21539.47/(tau_APV+133.3); //tau_APV = shaping time
+        //noise_amplitude = sigma_noise_fC/slope; // APV: STD sigma noise = slope * max amplitude input noise current
+        //2025.08.28
+        //float slope = 35.31;
+        //2025.10.15
+        float slope = 44.14;
         noise_amplitude = sigma_noise_fC/slope;
       }
       if(Get_Electronics()==1){
-	//(noise_amplitude = 0.005; // TIGER: E-branch
-	//float slope = 76.75;
-	//2025.08.28
-	//float slope = 27.73;
-	//2025.10.15
-	float slope = 43.48;
+        //(noise_amplitude = 0.005; // TIGER: E-branch
+        //float slope = 76.75;
+        //2025.08.28
+        //float slope = 27.73;
+        //2025.10.15
+        float slope = 43.48;
+        noise_amplitude = sigma_noise_fC/slope;
+      }
+      if(Get_Electronics()==2){
+        float slope = 43.48; // temporary value : to be tuned
         noise_amplitude = sigma_noise_fC/slope;
       }
     }
@@ -420,10 +424,27 @@ namespace PARSIFAL2{
     for(int ich=0;ich<channel.size();ich++){
       for(int jt = 0; jt < n_ns; jt++){
         channel.at(ich)->Get_Histo_int_tora()->SetBinContent(jt,0);
+        channel.at(ich)->Set_Gain_TORA(gain_TORA);
         // channel.at(ich)->Get_Histo_tora_E()->SetBinContent(jt,0);
       }
     }
     return;
+  }
+
+  void Readout::Update_param_TORA(){
+    gain_TORA  =  Get_gain_TORA();     
+    thrT_TORA  =  Get_thr_TORA();
+    Set_TORA_thr_T_mV(thrT_TORA);
+    // Set_TORA_thr_T(thrT_TORA);
+    for(int ich=0;ich<channel.size();ich++){
+      channel.at(ich)->Set_Gain_TORA(gain_TORA);
+      // channel.at(ich)->Set_V_thr_T(thrT_TORA);   
+        // channel.at(ich)->Get_Histo_tora_E()->SetBinContent(jt,0);
+    }
+    cout << " " << endl; 
+    cout << "Gain TORA set to: "<< gain_TORA << endl;  
+    cout << "Thr TORA set to: "<< thrT_TORA << endl;  
+    cout << " " << endl;
   }
 
   /*
@@ -915,23 +936,23 @@ namespace PARSIFAL2{
 
   double Readout::Get_Charge_TORA(ElectronicChannel *ch){
     TH1D *h_time = ch->Get_Histo_int_tora();
-  //   double maxbin    = h_time->GetNbinsX();
-  //   float time_thr = -999; // leading edge
-  //   float time_falling = -999; // falling edge
-  //   ch->Set_AboveThr_E(false);
-  //   for(int i=1;i<maxbin-1;i++) {
-  //     if(h_time->GetBinContent(i)>thrE_TIGER) {
-  //       time_thr = i;
-  //       break;
-  //     }
-  //   }
-  //   for(int i=time_thr;i<maxbin;i++) {
-  //     if(i==maxbin-1) time_falling=2*maxbin;
-  //     if(h_time->GetBinContent(i)<thrE_TIGER) {
-  //       time_falling = i-1;
-  //       break;
-  //     }
-  //   }
+    double maxbin    = h_time->GetNbinsX();
+    float time_thr = -999; // leading edge
+    float time_falling = -999; // falling edge
+    ch->Set_AboveThr_E(false);
+    for(int i=1;i<maxbin-1;i++) {
+      if(h_time->GetBinContent(i)>thrT_TORA) {
+        time_thr = i;
+        break;
+      }
+    }
+    for(int i=time_thr;i<maxbin;i++) {
+      if(i==maxbin-1) time_falling=2*maxbin;
+      if(h_time->GetBinContent(i)<thrT_TORA) {
+        time_falling = i-1;
+        break;
+      }
+    }
   //   ch->Set_t_thr_E(time_thr);
   //   ch->Set_t_rising_E(time_thr);
   //   ch->Set_t_falling_E(time_falling);

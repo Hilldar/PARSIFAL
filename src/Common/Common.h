@@ -77,8 +77,8 @@ namespace PARSIFAL2{
   const bool   enable_tfine_tiger = true;
 
   //TORA
-  const double timestep_TORA = 6.25; //ns
-  const double saturation_TORA = 612;
+  const double timestep_TORA = 5; //ns
+  // const double saturation_TORA = -90 * gain_TORA + 1180; //mV (assuming linear relation betwenn gain and max input charge)
 
 
   //Readout

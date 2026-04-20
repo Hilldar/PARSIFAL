@@ -145,13 +145,14 @@ namespace PARSIFAL2{
     TH1D*     Get_Histo_tiger_E ()          {return h_time_int_tigE;};
     TH1D*     Get_Histo_tiger_T ()          {return h_time_int_tigT;};
     TH1D*     Get_Histo_apv     ()          {return h_time_apv;};
-    TH1D*     Get_Histo_int_tora  ()          {return h_time_int_tora;};
+    TH1D*     Get_Histo_int_tora  ()        {return h_time_int_tora;};
     bool      Get_AboveThr      ()          {return above_thr;};
     bool      Get_AboveThr_T    ()          {return above_thr_T;};
     bool      Get_AboveThr_E    ()          {return above_thr_E;};
     float     Get_Saturation_APV()          {return saturation_apv;};
     float     Get_Saturation_TIGER()        {return saturation_tiger;};
     float     Get_Saturation_TORA()         {return saturation_tora;};
+    double    Get_Gain_TORA()               {return gain_TORA;};
     
     void      Set_Electronics   (int    io) {ElectronicsType=io;};
     void      Set_Charge        (double io) {charge=io;};
@@ -174,6 +175,7 @@ namespace PARSIFAL2{
     void      Set_Saturation_APV(float  io) {saturation_apv=io;};
     void      Set_Saturation_TIGER(float  io) {saturation_tiger=io;};
     void      Set_Saturation_TORA(float  io) {saturation_tora=io;};
+    void      Set_Gain_TORA     (double  io) {gain_TORA=io;};
 
     
     void      ResetNelectrons   ()          {n_electrons=0;};
@@ -305,6 +307,7 @@ namespace PARSIFAL2{
       c->cd(7); h_time_int_tora->Draw();
       
       float t_thr_T = Get_Time();
+      float t_thr_Tfall = Get_t_falling_T();
       if(Get_AboveThr_T()){
         TLine *l_t_thr_T = new TLine(t_thr_T,h_time_int_tora->GetMinimum()-10,t_thr_T,V_thr_T);
         TLine *l_V_thr_T = new TLine(0,V_thr_T,t_thr_T,V_thr_T);
@@ -312,6 +315,13 @@ namespace PARSIFAL2{
         l_t_thr_T->SetLineColor(kRed);
         l_V_thr_T->Draw("same");
         l_t_thr_T->Draw("same");
+
+        TLine *l_t_thr_Tfall = new TLine(t_thr_Tfall,h_time_int_tora->GetMinimum()-10,t_thr_Tfall,V_thr_T);
+        TLine *l_V_thr_Tfall = new TLine(0,V_thr_T,t_thr_Tfall,V_thr_T);
+        l_V_thr_Tfall->SetLineColor(kRed);
+        l_t_thr_Tfall->SetLineColor(kGreen);
+        l_V_thr_Tfall->Draw("same");
+        l_t_thr_Tfall->Draw("same");
       }
       else{
         TLine *l_V_thr_T = new TLine(0,V_thr_T,n_ns,V_thr_T);
@@ -320,13 +330,54 @@ namespace PARSIFAL2{
       }
       c->cd(8);
       TPaveText *text_tora = new TPaveText(0.2,0.2,0.8,0.8);
-      text_tora->AddText(Form("APV thr = %.0f fC",t_thr_T));
-      text_tora->AddText(Form("Time measured = %.2f ns",Get_Time()));
+      text_tora->AddText(Form("TORA thr = %.0f fC",V_thr_T));
+      text_tora->AddText(Form("Gain TORA = %.1f mV",Get_Gain_TORA()));
+      // text_tora->AddText(Form("Tau TORA = %.1f mV",Get_tau_TORA()));
+      text_tora->AddText(Form("Rising time = %.2f ns",Get_Time()));
+      text_tora->AddText(Form("Falling time = %.2f ns",Get_t_falling_T()));
+      text_tora->AddText(Form("ToT = %.2f ns",Get_t_falling_T()-Get_Time()));
       text_tora->AddText(Form("Charge measured = %.2f fC",Get_Charge()));
+      text_tora->AddText(Form("Voltage at Qmeas = %.2f mV",Get_Charge()*Get_Gain_TORA()));
       text_tora->AddText(Form("Max charge collected = %.2f fC",Get_Histo_tot()->GetMaximum()));
       text_tora->Draw();      
       c->SaveAs(Form("pdf/Event_%i_Channel_%i.pdf",ievent,Get_ChannelID()));
       c->SaveAs(Form("pdf/Event_%i_Channel_%i.png",ievent,Get_ChannelID()));
+
+      // float t_thr_E = Get_Time();
+      // float V_Q     = Get_Charge()*gain_TIGER;
+      // if(Get_AboveThr_E()){
+      //   TLine *l_t_thr_E = new TLine(Get_t_thr_E(),Get_Histo_tiger_E()->GetMinimum()-10,Get_t_thr_E(),V_thr_E);
+      //   TLine *l_V_thr_E = new TLine(0,V_thr_E,Get_t_thr_E(),V_thr_E);
+      //   TLine *l_t_Q     = new TLine(Get_t_Q_E(),Get_Histo_tiger_E()->GetMinimum()-10,Get_t_Q_E(),V_Q);
+      //   TLine *l_V_Q     = new TLine(0,V_Q,Get_t_Q_E(),V_Q);
+      //   l_V_thr_E->SetLineColor(kRed);
+      //   l_t_thr_E->SetLineColor(kRed);
+      //   l_t_Q->SetLineColor(kRed);
+      //   l_V_Q->SetLineColor(kRed);
+      //   l_V_thr_E->Draw("same");
+      //   l_t_thr_E->Draw("same");
+      //   l_t_Q->Draw("same");
+      //   l_V_Q->Draw("same");
+      // }
+      // else{
+      //   TLine *l_V_thr_E = new TLine(0,V_thr_E,n_ns,V_thr_E);
+      //   l_V_thr_E->SetLineColor(kRed);
+      //   l_V_thr_E->Draw("same");
+      // }
+      // c->cd(9);
+      // TPaveText *text_tiger = new TPaveText(0.2,0.2,0.8,0.8);
+      // text_tiger->AddText(Form("Tiger T thr = %.0f mV",V_thr_T));
+      // text_tiger->AddText(Form("Tiger E thr = %.0f mV",V_thr_E));
+      // text_tiger->AddText(Form("Time measured = %.2f ns",Get_Time()));
+      // text_tiger->AddText(Form("Charge measured = %.2f fC",Get_Charge()));
+      // text_tiger->AddText(Form("Voltage at Qmeas = %.2f mV",Get_Charge()*gain_TIGER));
+      // text_tiger->AddText(Form("Time at Qmeas = %.2f ns",Get_t_Q_E()));
+      // text_tiger->AddText(Form("Time at thr_E = %.2f ns",Get_t_thr_E()));
+      // text_tiger->AddText(Form("Max charge collected = %.2f fC",Get_Histo_tot()->GetMaximum()));
+      // text_tiger->Draw();
+      // c->SaveAs(Form("pdf/Event_%i_Channel_%i.pdf",ievent,Get_ChannelID()));
+      // c->SaveAs(Form("pdf/Event_%i_Channel_%i.png",ievent,Get_ChannelID()));
+
       delete c;
     };
   
@@ -372,6 +423,7 @@ namespace PARSIFAL2{
     float     saturation_apv;
     float     saturation_tiger;
     float     saturation_tora;
+    double    gain_TORA;
     //Function
     void Set_Position          (Position io) {position=io;};
   };

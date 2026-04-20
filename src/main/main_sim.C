@@ -79,8 +79,9 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_TIGER_thr_E(stod(var[14]));
     rwell->Set_TIGER_thr_T(stod(var[15]));
     rwell->Set_TORA_thr_T(stod(var[16]));
-    rwell->Set_TORA_gain(stod(var[17]));
+    rwell->Set_gain_TORA(stod(var[17]));
     rwell->Set_TORA_tau(stod(var[18]));
+    rwell->Update_param_TORA();
     rwell->Run();
     rwell->Terminate(); 
     delete rwell;

@@ -146,11 +146,11 @@ namespace PARSIFAL2{
       cout<<"************************************************"<<endl;
       signal->Set_TORA_thr_T(io);
     }
-    void Set_TORA_gain(double io){
+    void Set_gain_TORA(double io){
       cout<<"************************************************"<<endl;
       cout<<"TORA GAIN value set to : "<<io<<endl;
       cout<<"************************************************"<<endl;
-      signal->Set_TORA_gain(io);
+      signal->Set_gain_TORA(io);
     }
     void Set_TORA_tau(double io){
       cout<<"************************************************"<<endl;
@@ -158,7 +158,9 @@ namespace PARSIFAL2{
       cout<<"************************************************"<<endl;
       signal->Set_TORA_tau(io);
     }
-    
+    void Update_param_TORA(){
+      signal->Update_param_TORA();
+    }
   private:
     //Input variables
     int nShots = 10;

@@ -6,7 +6,7 @@ bool print_plot_all = 0;
 bool print_plot_above_thr = 1;
 bool print_plot_middle = 0; //also print waveform on file
 bool print_plot_charge_above = 0;
-bool plot_histo_Qt_APV = 1;
+bool plot_histo_Qt_APV = 0;
 
 PARSIFAL::PARSIFAL() {
 }
@@ -136,26 +136,26 @@ void PARSIFAL::Run(){
     if(print_plot_all){ // Print all the channels
       for(int i=0;i<channels.size();i++) {
         cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
-	channels.at(i)->Print_Time(event);
+	      channels.at(i)->Print_Time(event);
       }
       Plot_PDF_Channels();
     }
     if(print_plot_middle){ //print the channel in the middle
       for(int i=0;i<channels.size();i++) {
-	if(i!=(int)(geo->Get_NumberOfStrip1()/2.)) continue;
-	cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
+        if(i!=(int)(geo->Get_NumberOfStrip1()/2.)) continue;
+        cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
         channels.at(i)->Print_Time(event);
-	for(int itime=0;itime<channels.at(i)->Get_Histo_cur()->GetNbinsX()-1;itime++){
-	  file_txt<<channels.at(i)->Get_Histo_cur()->GetBinContent(itime+1);
-	  if(itime<channels.at(i)->Get_Histo_cur()->GetNbinsX()-2) file_txt<<",";
-	}
-	file_txt<<endl;
+        for(int itime=0;itime<channels.at(i)->Get_Histo_cur()->GetNbinsX()-1;itime++){
+          file_txt<<channels.at(i)->Get_Histo_cur()->GetBinContent(itime+1);
+          if(itime<channels.at(i)->Get_Histo_cur()->GetNbinsX()-2) file_txt<<",";
+        }
+        file_txt<<endl;
       }
     }
     if(print_plot_charge_above){ //Print channels with charge above 0
       for(int i=0;i<channels.size();i++) {
         if(channels.at(i)->Get_Charge()<=0) continue;
-	cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
+	      cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
         channels.at(i)->Print_Time(event);
       }
     }
@@ -518,14 +518,14 @@ void PARSIFAL::Write_oFile(){
     }
     else{
       for(int i=0;i<primi.size();i++){
-	primary_positionX.push_back(primi.at(i)->Get_Position().Get_X());
-	primary_positionY.push_back(primi.at(i)->Get_Position().Get_Y());
-	primary_positionZ.push_back(primi.at(i)->Get_Position().Get_Z());
-	primary_positionT.push_back(primi.at(i)->Get_Position().Get_T());
-	primary_secondary.push_back(primi.at(i)->Get_NumberOfSecondary());
-	primary_ID.push_back(i);
-	if(secondary_gain.empty() || secondary_gain.size()) secondary_gain.push_back(0);
-	else secondary_gain.push_back(secondary.at(i)->Get_GainedElectrons());
+        primary_positionX.push_back(primi.at(i)->Get_Position().Get_X());
+        primary_positionY.push_back(primi.at(i)->Get_Position().Get_Y());
+        primary_positionZ.push_back(primi.at(i)->Get_Position().Get_Z());
+        primary_positionT.push_back(primi.at(i)->Get_Position().Get_T());
+        primary_secondary.push_back(primi.at(i)->Get_NumberOfSecondary());
+        primary_ID.push_back(i);
+        if(secondary_gain.empty() || secondary_gain.size()) secondary_gain.push_back(0);
+        else secondary_gain.push_back(secondary.at(i)->Get_GainedElectrons());
       }
     }
   }
@@ -595,39 +595,39 @@ void PARSIFAL::Write_oFile(){
     }
     else{
       for(int i=0;i<channels.size();i++){
-	channel_ID.push_back(channels.at(i)->Get_ChannelID());
-	channel_type.push_back(channels.at(i)->Get_Type());
-	channel_charge.push_back(channels.at(i)->Get_Charge());
-	channel_time.push_back(channels.at(i)->Get_Time());
-	//channel_dtime.push_back(channels.at(i)->Get_dTime());
-	channel_above_thr.push_back(channels.at(i)->Get_AboveThr());
-	channel_above_thr_E.push_back(channels.at(i)->Get_AboveThr_E());
+        channel_ID.push_back(channels.at(i)->Get_ChannelID());
+        channel_type.push_back(channels.at(i)->Get_Type());
+        channel_charge.push_back(channels.at(i)->Get_Charge());
+        channel_time.push_back(channels.at(i)->Get_Time());
+        //channel_dtime.push_back(channels.at(i)->Get_dTime());
+        channel_above_thr.push_back(channels.at(i)->Get_AboveThr());
+        channel_above_thr_E.push_back(channels.at(i)->Get_AboveThr_E());
         channel_above_thr_T.push_back(channels.at(i)->Get_AboveThr_T());
-	channel_t_rising_raw.push_back(channels.at(i)->Get_t_rising_raw());
-	channel_t_rising_E.push_back(channels.at(i)->Get_t_rising_E());
-	channel_t_rising_T.push_back(channels.at(i)->Get_t_rising_T());
-	channel_t_falling_raw.push_back(channels.at(i)->Get_t_falling_raw());
-	channel_t_falling_E.push_back(channels.at(i)->Get_t_falling_E());
-	channel_t_falling_T.push_back(channels.at(i)->Get_t_falling_T());
-	channel_positionX.push_back(channels.at(i)->Get_Position().Get_X());
-	channel_positionY.push_back(channels.at(i)->Get_Position().Get_Y());
-	channel_positionZ.push_back(channels.at(i)->Get_Position().Get_Z());
-	channel_positionPhi.push_back(channels.at(i)->Get_Position().Get_Phi());
-	channel_n_electrons.push_back(channels.at(i)->Get_N_electrons());			     
-	if(0){
-	  file->cd();
-	  TCanvas *cc1 = new TCanvas("cc1","cc1",800,600);
-	  cc1->cd();
-	  channels.at(i)->Get_Histo_raw()->Write();
-	  cc1->SaveAs((TString)Form("delete/raw_%i_%i.root",event,i));
-	  channels.at(i)->Get_Histo_apv()->Write();
-	  cc1->SaveAs((TString)Form("delete/APV_%i_%i.root",event,i));
-	  channels.at(i)->Get_Histo_int_apv()->Write();
-	  cc1->SaveAs((TString)Form("delete/int_%i_%i.root",event,i));
-	  channels.at(i)->Get_Histo_cap()->Write();
-	  cc1->SaveAs((TString)Form("delete/cap_%i_%i.root",event,i));
-	  delete cc1;
-	}
+        channel_t_rising_raw.push_back(channels.at(i)->Get_t_rising_raw());
+        channel_t_rising_E.push_back(channels.at(i)->Get_t_rising_E());
+        channel_t_rising_T.push_back(channels.at(i)->Get_t_rising_T());
+        channel_t_falling_raw.push_back(channels.at(i)->Get_t_falling_raw());
+        channel_t_falling_E.push_back(channels.at(i)->Get_t_falling_E());
+        channel_t_falling_T.push_back(channels.at(i)->Get_t_falling_T());
+        channel_positionX.push_back(channels.at(i)->Get_Position().Get_X());
+        channel_positionY.push_back(channels.at(i)->Get_Position().Get_Y());
+        channel_positionZ.push_back(channels.at(i)->Get_Position().Get_Z());
+        channel_positionPhi.push_back(channels.at(i)->Get_Position().Get_Phi());
+        channel_n_electrons.push_back(channels.at(i)->Get_N_electrons());			     
+        if(0){
+          file->cd();
+          TCanvas *cc1 = new TCanvas("cc1","cc1",800,600);
+          cc1->cd();
+          channels.at(i)->Get_Histo_raw()->Write();
+          cc1->SaveAs((TString)Form("delete/raw_%i_%i.root",event,i));
+          channels.at(i)->Get_Histo_apv()->Write();
+          cc1->SaveAs((TString)Form("delete/APV_%i_%i.root",event,i));
+          channels.at(i)->Get_Histo_int_apv()->Write();
+          cc1->SaveAs((TString)Form("delete/int_%i_%i.root",event,i));
+          channels.at(i)->Get_Histo_cap()->Write();
+          cc1->SaveAs((TString)Form("delete/cap_%i_%i.root",event,i));
+          delete cc1;
+        }
       }
     }
   }
@@ -645,15 +645,15 @@ void PARSIFAL::Write_oFile(){
     }
     else{
       for(int i=0;i<hit.size();i++){
-	hit_ID.push_back(hit.at(i)->Get_HitID());
-	hit_channelID.push_back(hit.at(i)->Get_ChannelID());
-	hit_clusterID.push_back(hit.at(i)->Get_ClusterID());
-	hit_type.push_back(hit.at(i)->Get_Type());
-	hit_charge.push_back(hit.at(i)->Get_Charge());
-	hit_time.push_back(hit.at(i)->Get_Time());
-	hit_dtime.push_back(hit.at(i)->Get_dTime());
-	hit_positionX.push_back(hit.at(i)->Get_Position().Get_X());
-	hit_positionY.push_back(hit.at(i)->Get_Position().Get_Y());
+        hit_ID.push_back(hit.at(i)->Get_HitID());
+        hit_channelID.push_back(hit.at(i)->Get_ChannelID());
+        hit_clusterID.push_back(hit.at(i)->Get_ClusterID());
+        hit_type.push_back(hit.at(i)->Get_Type());
+        hit_charge.push_back(hit.at(i)->Get_Charge());
+        hit_time.push_back(hit.at(i)->Get_Time());
+        hit_dtime.push_back(hit.at(i)->Get_dTime());
+        hit_positionX.push_back(hit.at(i)->Get_Position().Get_X());
+        hit_positionY.push_back(hit.at(i)->Get_Position().Get_Y());
       }    
     }
   }
@@ -674,19 +674,19 @@ void PARSIFAL::Write_oFile(){
     }
     else{
       for(int i=0;i<cluster1d.size();i++){
-	cluster1d_ID.push_back(cluster1d.at(i)->Get_ClusterID());
-	cluster1d_type.push_back(cluster1d.at(i)->Get_Type());
-	cluster1d_charge.push_back(cluster1d.at(i)->Get_Charge());
-	cluster1d_size.push_back(cluster1d.at(i)->Get_Size());
-	cluster1d_time0.push_back(cluster1d.at(i)->Get_Time0());
-	cluster1d_timeF.push_back(cluster1d.at(i)->Get_TimeF());
-	cluster1d_positionCC_X.push_back(cluster1d.at(i)->Get_Position_CC()->Get_X());
-	cluster1d_positionCC_Y.push_back(cluster1d.at(i)->Get_Position_CC()->Get_Y());
-	cluster1d_positionTPC_X.push_back(cluster1d.at(i)->Get_Position_TPC()->Get_X());
+        cluster1d_ID.push_back(cluster1d.at(i)->Get_ClusterID());
+        cluster1d_type.push_back(cluster1d.at(i)->Get_Type());
+        cluster1d_charge.push_back(cluster1d.at(i)->Get_Charge());
+        cluster1d_size.push_back(cluster1d.at(i)->Get_Size());
+        cluster1d_time0.push_back(cluster1d.at(i)->Get_Time0());
+        cluster1d_timeF.push_back(cluster1d.at(i)->Get_TimeF());
+        cluster1d_positionCC_X.push_back(cluster1d.at(i)->Get_Position_CC()->Get_X());
+        cluster1d_positionCC_Y.push_back(cluster1d.at(i)->Get_Position_CC()->Get_Y());
+        cluster1d_positionTPC_X.push_back(cluster1d.at(i)->Get_Position_TPC()->Get_X());
         cluster1d_positionTPC_Y.push_back(cluster1d.at(i)->Get_Position_TPC()->Get_Y());
-	cluster1d_high_Q.push_back(cluster1d.at(i)->Get_High_Q());
-	cluster1d_faster.push_back(cluster1d.at(i)->Get_Faster());
-	//for(int j=0;j<cluster1d.at(i)->Get_Size();j++) cluster1d_hitID->at(i).push_back(cluster1d.at(i)->Get_HitID(j));
+        cluster1d_high_Q.push_back(cluster1d.at(i)->Get_High_Q());
+        cluster1d_faster.push_back(cluster1d.at(i)->Get_Faster());
+	      //for(int j=0;j<cluster1d.at(i)->Get_Size();j++) cluster1d_hitID->at(i).push_back(cluster1d.at(i)->Get_HitID(j));
       }    
     }
   }
