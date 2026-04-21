@@ -330,7 +330,7 @@ namespace PARSIFAL2{
       }
       c->cd(8);
       TPaveText *text_tora = new TPaveText(0.2,0.2,0.8,0.8);
-      text_tora->AddText(Form("TORA thr = %.0f fC",V_thr_T));
+      text_tora->AddText(Form("TORA thr = %.0f mV",V_thr_T));
       text_tora->AddText(Form("Gain TORA = %.1f mV",Get_Gain_TORA()));
       // text_tora->AddText(Form("Tau TORA = %.1f mV",Get_tau_TORA()));
       text_tora->AddText(Form("Rising time = %.2f ns",Get_Time()));

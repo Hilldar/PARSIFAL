@@ -441,10 +441,6 @@ namespace PARSIFAL2{
       // channel.at(ich)->Set_V_thr_T(thrT_TORA);   
         // channel.at(ich)->Get_Histo_tora_E()->SetBinContent(jt,0);
     }
-    cout << " " << endl; 
-    cout << "Gain TORA set to: "<< gain_TORA << endl;  
-    cout << "Thr TORA set to: "<< thrT_TORA << endl;  
-    cout << " " << endl;
   }
 
   /*
@@ -972,7 +968,10 @@ namespace PARSIFAL2{
   //   ch->Set_t_Q_E(time_peak);
   //   float charge = h_time->GetBinContent((int)time_peak)/gain_TORA;
   //   if(TIGER_Get_Maximum) charge = h_time->GetMaximum()/gain_TORA;
-    float charge = h_time->GetMaximum()/gain_TORA;
+    // float charge = h_time->GetMaximum()/gain_TORA;
+    float charge = h_time->GetBinContent(h_time->GetMaximumBin())/gain_TORA;
+    // cout << "charge (mV): " << h_time->GetMaximum() << "-> " << h_time->GetBinCenter(h_time->GetMaximumBin()) << "-> " << h_time->GetBinContent(h_time->GetMaximumBin()) << endl;
+    // cout << "charge (fC): " << charge << endl;
     return charge;
   }
 

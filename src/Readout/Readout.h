@@ -37,7 +37,7 @@ namespace PARSIFAL2{
     void      	      	       Set_TIGER_thr_T   (double io){thrT_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TIGER);};
     void                       Set_gain_TORA     (double io){gain_TORA=io;};
     void                       Set_TORA_tau      (double io){tau_TORA=io;};
-    void      	      	       Set_TORA_thr_T_mV (double io){thrT_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TORA); cout << "TORA thr set to: "<< io << endl ; };
+    void      	      	       Set_TORA_thr_T_mV (double io){thrT_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TORA);};
     void      	      	       Set_TORA_thr_T    (double io){thrT_TORA=io;};
     void                       Set_APV_Plot_Hit  (vector<TH1F*> io){_histo_hit_Qt_APV=io;};
     void                       Update_param_TORA ();
