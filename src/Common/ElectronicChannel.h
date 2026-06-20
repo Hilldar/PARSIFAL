@@ -16,6 +16,7 @@ namespace PARSIFAL2{
     h_time_res      = new TH1D();
     h_time_cap      = new TH1D();
     h_time_cur      = new TH1D();
+    h_time_cur_FFT  = new TH1D();
     h_time_cur_buffer = new TH1D();
     h_time_int_apv  = new TH1D();
     h_time_int_tigT = new TH1D();
@@ -38,7 +39,9 @@ namespace PARSIFAL2{
       h_time_cap       = new TH1D(Form("  cap_%i_%i",tipo,ich),Form("              cap_%i_%i",tipo,ich),timebin_APV,0,nbin);     //capacitive induction
       //Electronics input
       h_time_cur       = new TH1D(Form("  cur_%i_%i",tipo,ich),Form("Current       cur_%i_%i",tipo,ich),n_ns, 0, n_ns);          //current after the resistive
+      h_time_cur_FFT   = new TH1D(Form("  cur__FFT%i_%i",tipo,ich)              ,Form("Current       cur__FFT%i_%i",tipo,ich)       ,n_ns, 0, n_ns);                         //current after FFT filter
       h_time_cur_buffer= new TH1D(Form("  cur_buffer_%i_%i",tipo,ich),Form("Current       cur_buffer_%i_%i",tipo,ich),n_ns+n_ns_buffer, -n_ns_buffer,  n_ns); //raw signal + buffer induced by electrons+ions
+      h_time_cur_buffer_FFT   = new TH1D(Form("  cur_buffer_FFT_%i_%i",tipo,ich),Form("Current       cur_buffer_FFT_%i_%i",tipo,ich),n_ns+n_ns_buffer, -n_ns_buffer,  n_ns); // buffer current after FFT filter 
       //Electronics true
       h_time_int_apv   = new TH1D(Form("  int_%i_%i",tipo,ich),Form("Charge[fC]    int_%i_%i",tipo,ich),n_ns, 0, n_ns);          //avp integrator circuit
       h_time_int_tigT  = new TH1D(Form("tig_T_%i_%i",tipo,ich),Form("Voltage[mV] tig_T_%i_%i",tipo,ich),n_ns, 0,  n_ns);         //tiger Tbranch signal
@@ -53,6 +56,7 @@ namespace PARSIFAL2{
       h_time_res->GetXaxis()->SetTitle("Time [ns]");
       h_time_cap->GetXaxis()->SetTitle("Time [ns]");
       h_time_cur->GetXaxis()->SetTitle("Time [ns]");
+      h_time_cur_FFT->GetXaxis()->SetTitle("Time [ns]");
       h_time_int_apv->GetXaxis()->SetTitle("Time [ns]");
       h_time_int_tigT->GetXaxis()->SetTitle("Time [ns]");
       h_time_int_tigE->GetXaxis()->SetTitle("Time [ns]");
@@ -64,6 +68,7 @@ namespace PARSIFAL2{
       h_time_res->GetYaxis()->SetTitle("Charge [fC]");
       h_time_cap->GetYaxis()->SetTitle("Current [1 fC / 1 ns]");
       h_time_cur->GetYaxis()->SetTitle("Current [1 fC / 1 ns]");
+      h_time_cur_FFT->GetYaxis()->SetTitle("Current [1 fC / 1 ns]");
       h_time_int_apv->GetYaxis()->SetTitle("Charge [fC]");
       h_time_int_tigT->GetYaxis()->SetTitle("Voltage [1 mV / 1 ns]");
       h_time_int_tigE->GetYaxis()->SetTitle("Voltage [1 mV / 1 ns]");
@@ -75,10 +80,12 @@ namespace PARSIFAL2{
       h_time_res->GetYaxis()->SetTitleOffset(0.9);
       h_time_cap->GetYaxis()->SetTitleOffset(0.9);
       h_time_cur->GetYaxis()->SetTitleOffset(0.9);
+      h_time_cur_FFT->GetYaxis()->SetTitleOffset(0.9);
       h_time_int_apv->GetYaxis()->SetTitleOffset(0.9);
       h_time_int_tigT->GetYaxis()->SetTitleOffset(0.9);
       h_time_int_tigE->GetYaxis()->SetTitleOffset(0.9);
       h_time_apv->GetYaxis()->SetTitleOffset(0.9);
+      h_time_apv->GetYaxis()->SetRangeUser(-200,2000);
       h_time_int_tora->GetYaxis()->SetTitleOffset(0.9);
 
       h_time_int_tigT->GetYaxis()->SetRangeUser(-200,900);
@@ -97,7 +104,9 @@ namespace PARSIFAL2{
       h_time_res->~TH1D();
       h_time_cap->~TH1D();
       h_time_cur->~TH1D();
+      h_time_cur_FFT->~TH1D();
       h_time_cur_buffer->~TH1D();
+      h_time_cur_buffer_FFT->~TH1D();
       h_time_int_apv->~TH1D();
       h_time_int_tigT->~TH1D();
       h_time_int_tigE->~TH1D();
@@ -140,7 +149,9 @@ namespace PARSIFAL2{
     TH1D*     Get_Histo_res     ()          {return h_time_res;};
     TH1D*     Get_Histo_cap     ()          {return h_time_cap;};
     TH1D*     Get_Histo_cur     ()          {return h_time_cur;};
+    TH1D*     Get_Histo_cur_FFT ()          {return h_time_cur_FFT;};
     TH1D*     Get_Histo_cur_buffer()        {return h_time_cur_buffer;};
+    TH1D*     Get_Histo_cur_buffer_FFT()    {return h_time_cur_buffer_FFT;};
     TH1D*     Get_Histo_int_apv ()          {return h_time_int_apv;};
     TH1D*     Get_Histo_tiger_E ()          {return h_time_int_tigE;};
     TH1D*     Get_Histo_tiger_T ()          {return h_time_int_tigT;};
@@ -187,7 +198,9 @@ namespace PARSIFAL2{
       h_time_res->Reset();
       h_time_cap->Reset();
       h_time_cur->Reset();
+      h_time_cur_FFT->Reset();
       h_time_cur_buffer->Reset();
+      h_time_cur_buffer_FFT->Reset();
       h_time_int_apv->Reset();
       h_time_int_tigE->Reset();
       h_time_int_tigT->Reset();
@@ -208,7 +221,7 @@ namespace PARSIFAL2{
       c->cd(3);
       c->cd(4); h_time_cur->Draw("hist");
       c->cd(5); h_time_res->Draw();
-      c->cd(6);
+      c->cd(6); h_time_cur_FFT->Draw("hist");
       c->cd(7); h_time_int_apv->Draw();
       c->cd(8);
       h_time_apv->Draw();
@@ -387,7 +400,9 @@ namespace PARSIFAL2{
     TH1D*     h_time_res;
     TH1D*     h_time_cap;
     TH1D*     h_time_cur;
+    TH1D*     h_time_cur_FFT;
     TH1D*     h_time_cur_buffer;
+    TH1D*     h_time_cur_buffer_FFT;
     TH1D*     h_time_int_apv;
     TH1D*     h_time_int_tigE;
     TH1D*     h_time_int_tigT;

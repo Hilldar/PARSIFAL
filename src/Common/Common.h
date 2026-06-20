@@ -24,6 +24,7 @@ namespace PARSIFAL2{
   const bool NO_Readout              = false;
   const bool NO_Saturation           = false;
   const bool NO_Noise                = false;
+  const bool NO_FFT                  = false;
   const bool NO_Capacitive           = true;
   const bool NO_Hit                  = false;
   const bool NO_Cluster              = false;
