@@ -45,6 +45,10 @@ namespace PARSIFAL2{
     void Set_TORA_tau         (double io){  reado->Set_TORA_tau         (io);};
     void Set_APV_Plot_Hit     (vector<TH1F*> io){reado->Set_APV_Plot_Hit(io);};
     void Update_param_TORA    (){ reado->Update_param_TORA();};
+    void Set_FFT_fmin         (double io){  reado->Set_FFT_fmin         (io);};
+    void Set_FFT_fmax         (double io){  reado->Set_FFT_fmax         (io);};
+
+    
     
     //General
     int  Get_Total_Electron_Gained()         {if(!fast_simulation) return gain->Get_Total_Electron_Gained(); else return tot_ele_gained;};
