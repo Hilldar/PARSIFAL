@@ -6,6 +6,7 @@
 #include "Common/Secondary.h"
 #include "Common/ElectronicChannel.h"
 #include "TF1.h"
+#include "TVirtualFFT.h"
 using namespace std;
 namespace PARSIFAL2{
   class Readout{
@@ -41,6 +42,10 @@ namespace PARSIFAL2{
     void      	      	       Set_TORA_thr_T    (double io){thrT_TORA=io;};
     void                       Set_APV_Plot_Hit  (vector<TH1F*> io){_histo_hit_Qt_APV=io;};
     void                       Update_param_TORA ();
+    void                       Set_FFT_fmin      (double io){FFT_fmin=io;};
+    void      	      	       Set_FFT_fmax      (double io){FFT_fmax=io;};
+    
+
   private:
     //Variable
     bool      PrintInfo;
@@ -74,6 +79,9 @@ namespace PARSIFAL2{
     float     IT_Lenght ; //ns
     float     IT_amplitude; //fC/ns
     float     IT_ratio_fast_slow; // signal fraction due to ions and (1-ratio) due to electrons
+    //FFT filter
+    double    FFT_fmin; //high-pass filter HZ
+    double    FFT_fmax; //low-pass filter  Hz
     //Function
     void      Initialize();
     void      Set_PrintInfo     (bool io) {PrintInfo=io;};
@@ -96,6 +104,7 @@ namespace PARSIFAL2{
     //void      Integration_APV();
     //void      Integration_TIGER();
     void      Integration();
+    void      Filtering();
     void      Extract_Charge_Time();
     void      Capacitive_Induction();
     void      Injection_External_Signal();

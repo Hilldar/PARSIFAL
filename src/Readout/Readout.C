@@ -24,6 +24,9 @@ namespace PARSIFAL2{
     IT_Lenght          = 170; // ns
     IT_amplitude       = 0.00588; // fC/ns = 1/IT_Length
     IT_ratio_fast_slow = 0.85; // 85% of the signal comes from ions and 15% from electrons
+
+    FFT_fmin = 0;
+    FFT_fmax = 1e9;
     
     if(Get_PrintInfo()){
       cout<<"----    Readout    ----"<<endl;
@@ -158,6 +161,8 @@ namespace PARSIFAL2{
     //Set electronics on channels and threshold
     for(int ich=0;ich<channel.size();ich++){
       channel.at(ich)->Set_Electronics(Get_Electronics());     
+      channel.at(ich)->Set_V_thr_T(thrT_TIGER);
+      channel.at(ich)->Set_V_thr_E(thrE_TIGER);  
     }
     //init
     if(Get_Electronics()==0){
@@ -328,8 +333,8 @@ namespace PARSIFAL2{
         if(abs(ele->Get_PositionFinal().Get_Y()-channel.at(ich)->Get_Position().Get_Y())<0.5*geometry->Get_Pitch2()){
           channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
           channel.at(ich)->Add_electrons(1);
-	  return ich;
-	}
+          return ich;
+        }
       }
       if(type==channel.at(ich)->Get_Type() && type==Phiview){
         double Phi_Pitch = abs(channel.at(1)->Get_Position().Get_Phi()-channel.at(0)->Get_Position().Get_Phi());
@@ -337,7 +342,7 @@ namespace PARSIFAL2{
           channel.at(ich)->Fill_Time(ele->Get_PositionFinal().Get_T(),1);
           channel.at(ich)->Add_electrons(1);
           return ich;
-	}
+	      }
       }
     }
     return -1;
@@ -345,9 +350,14 @@ namespace PARSIFAL2{
   
   void Readout::Simulate_Electronics(){
     Injection_External_Signal();
-    if(Get_Electronics()==0) Simulate_APV();
-    if(Get_Electronics()==1) Simulate_TIGER();
-    if(Get_Electronics()==2) Simulate_TORA();
+    Background();
+    Filtering();
+    Integration();
+    Extract_Charge_Time();
+    //if(Get_Electronics()==0) Simulate_APV();
+    //if(Get_Electronics()==1) Simulate_TIGER();
+    //if(Get_Electronics()==2) Simulate_TORA();
+
     //Analysis
     Measure_Signal_Lenght();
     return;
@@ -538,21 +548,24 @@ namespace PARSIFAL2{
     #pragma omp parallel for
     for(int ich=0;ich<channel.size();ich++){
       //Copy the buffer on the final one
-      for(int it = n_ns_buffer+1; it < n_ns+n_ns_buffer; it++) channel.at(ich)->Get_Histo_cur()->AddBinContent(it-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it));
+      for(int it = n_ns_buffer+1; it < n_ns+n_ns_buffer; it++) {
+        channel.at(ich)->Get_Histo_cur()->AddBinContent(it-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it));
+        channel.at(ich)->Get_Histo_cur_FFT()->AddBinContent(it-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer_FFT()->GetBinContent(it));
+      }
       //Shaper
-      if(channel.at(ich)->Get_Histo_cur_buffer()->GetMaximum()==0) continue;
+      if(channel.at(ich)->Get_Histo_cur_buffer_FFT()->GetMaximum()==0) continue;
       for(int it = 1; it < n_ns+n_ns_buffer; it++) {
         for(int jt = it; jt < n_ns+n_ns_buffer; jt++){
           if(jt>n_ns_buffer){
             if(Get_Electronics()==0){
-              channel.at(ich)->Get_Histo_int_apv()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*APV_shaper(jt-it));
+              channel.at(ich)->Get_Histo_int_apv()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer_FFT()->GetBinContent(it)*APV_shaper(jt-it));
             }
             if(Get_Electronics()==1){
-              channel.at(ich)->Get_Histo_tiger_T()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*T_branch(jt-it));
-              channel.at(ich)->Get_Histo_tiger_E()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*E_branch(jt-it));
+              channel.at(ich)->Get_Histo_tiger_T()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer_FFT()->GetBinContent(it)*T_branch(jt-it));
+              channel.at(ich)->Get_Histo_tiger_E()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer_FFT()->GetBinContent(it)*E_branch(jt-it));
             }
             if(Get_Electronics()==2){
-              channel.at(ich)->Get_Histo_int_tora()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*TORA_shaper(jt-it));
+              channel.at(ich)->Get_Histo_int_tora()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer_FFT()->GetBinContent(it)*TORA_shaper(jt-it));
               // channel.at(ich)->Get_Histo_tiger_E()->AddBinContent(jt-n_ns_buffer,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(it)*E_branch(jt-it));
             }
           }
@@ -688,6 +701,64 @@ namespace PARSIFAL2{
     return ch;
   }
 
+
+  void Readout::Filtering(){
+    double freq_cut_min = FFT_fmin; //Hz
+    double freq_cut_max = FFT_fmax;   //Hz
+    if(NO_FFT || (FFT_fmin==0 && FFT_fmax==0)){
+      for(int ich=0;ich<channel.size();ich++){
+        for(int ii=0;ii<channel.at(ich)->Get_Histo_cur_buffer()->GetNbinsX();ii++){
+          channel.at(ich)->Get_Histo_cur_buffer_FFT()->SetBinContent(ii,channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(ii));
+        }
+      }
+      return;
+    }
+    //#pragma omp parallel for
+    for(int ich=0;ich<channel.size();ich++){
+      int nbin_histo_cur = channel.at(ich)->Get_Histo_cur_buffer()->GetNbinsX();
+      //init
+      vector<double> v_histo_cur(nbin_histo_cur);
+      vector<double> v_histo_cur_FFT(nbin_histo_cur);
+      for(int ii=0;ii<nbin_histo_cur;ii++){
+	      v_histo_cur[ii] = channel.at(ich)->Get_Histo_cur_buffer()->GetBinContent(ii);
+      }
+      // FFT
+      TVirtualFFT *fft_r2c = TVirtualFFT::FFT(1, &nbin_histo_cur, "R2C EX");
+      fft_r2c->SetPoints(&v_histo_cur[0]);
+      fft_r2c->Transform();
+      int n_freq_bins = (nbin_histo_cur / 2) + 1;
+      std::vector<double> re_out(n_freq_bins);
+      std::vector<double> im_out(n_freq_bins);
+      fft_r2c->GetPointsComplex(&re_out[0], &im_out[0]);
+      //Frequency Filter
+      double cut_hz = 0.5e6; //Hz
+      for (int k = 0; k < n_freq_bins; k++) {
+        double fs_hz = 1e9;
+        double current_freq_hz = (double)k * fs_hz / nbin_histo_cur;
+        if (current_freq_hz < freq_cut_min ||   // High-pass
+            current_freq_hz > freq_cut_max ) {  // Low-pass
+          re_out[k] = 0.0;
+          im_out[k] = 0.0;
+        }
+      }
+      // Inverse FFT
+      TVirtualFFT *fft_c2r = TVirtualFFT::FFT(1, &nbin_histo_cur, "C2R EX");
+      fft_c2r->SetPointsComplex(&re_out[0], &im_out[0]);
+      fft_c2r->Transform();
+      // Ottieni i punti nel dominio del tempo e normalizza per 1/N
+      std::vector<double> wf_filtered(nbin_histo_cur);
+      Double_t *wf_filtered_raw = new Double_t[nbin_histo_cur];
+      fft_c2r->GetPoints(wf_filtered_raw);
+      for(int j=0; j<nbin_histo_cur; ++j) {
+	      wf_filtered[j] = wf_filtered_raw[j] / nbin_histo_cur; // Normalizzazione ROOT
+      }
+      // Fill
+      for(int ii=0;ii<nbin_histo_cur;ii++){
+        v_histo_cur_FFT[ii] = wf_filtered[ii];
+        channel.at(ich)->Get_Histo_cur_buffer_FFT()->SetBinContent(ii,v_histo_cur_FFT[ii]);
+      }
+    }
+  }
 
   void Readout::Extract_Charge_Time(){
     bool print_here = true;
