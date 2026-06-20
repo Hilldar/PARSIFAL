@@ -50,7 +50,21 @@ namespace PARSIFAL2{
     */
 
     //T2K model
-    double sigma_res(double t, double t0){return (sqrt(2*sigma0*sigma0*(t-t0)/tau));}
+    // double sigma_res(double t, double t0){return (sqrt(2*sigma0*sigma0*(t-t0)/tau));}
+    double sigma_res(double t, double t0){
+      if(false){ //Morello
+        return sigma0*(1+(t-t0)/tau);
+      }
+      if(false){ // T2K
+        return (sqrt(2*sigma0*sigma0*(t-t0)/tau));
+      }
+      if(true){ // T2K+shepherd
+        double t_ion_tail = 50;
+        if((t-t0)<t_ion_tail) return (sqrt(2./3*sigma0*sigma0*(t-t0)/tau));
+        else         	        return (sqrt(2./3*sigma0*sigma0*(2*(t-t0)+sqrt((t-t0)*(t-t0-t_ion_tail))-t_ion_tail)/tau));
+      }
+      return 0;
+    }	
     double left (double pitch, int strip_step, double t0, double t){ return (-pitch/2. + strip_step*pitch)/(sqrt(2.)*sigma_res(t,t0));}
     double right(double pitch, int strip_step, double t0, double t){ return ( pitch/2. + strip_step*pitch)/(sqrt(2.)*sigma_res(t,t0));}
     double Q_t  (double pitch, int strip_step, double t0, double t, double q){if(t>=t0) return (q/2.*(TMath::Erf(right(pitch,strip_step,t0,t))-TMath::Erf(left(pitch,strip_step,t0,t)))); else return 0;}
