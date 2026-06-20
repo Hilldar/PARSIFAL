@@ -62,13 +62,13 @@ void PARSIFAL::Initialization_rwell(){
   cout<<"Ciao"<<endl;
   file = new TFile(name_outfile,"RECREATE");
   tree = new TTree("tree","tree");
-  geo = Planar1D(0.4, 6);
+  geo = Planar1D(strip_pitch, 6);
   D4 = new Position(0,0,0,0);
   party = new Particle(2, D4, party_angle_xz[0], -0.0, geo);
   ionio = new Ionization(party,geo);
   //signal = new Signal(1,0,Bfield,geo); //APV
   // signal = new Signal(1,1,Bfield,geo); //TIGER
-  signal = new Signal(1,2,Bfield,geo); //TORA
+  signal = new Signal(1,electronics_type,Bfield,geo); //TORA
   recon = new Reconstruction(1,geo);
   event=0;
   Initialize_oFile();

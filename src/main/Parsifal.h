@@ -161,6 +161,30 @@ namespace PARSIFAL2{
     void Update_param_TORA(){
       signal->Update_param_TORA();
     }
+    void Set_FFT_fmin(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"FFT high-pass filter minimum frequency set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      signal->Set_FFT_fmin(io);
+    }
+    void Set_FFT_fmax(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"FFT low-pass filter maximum frequency set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      signal->Set_FFT_fmax(io);
+    }
+    void Set_Electronics(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"Electronics (APV=0/TIGER=1/TORA=2) set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      electronics_type=io;
+    }
+    void Set_Strip_Pitch(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"Strip pitch set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      strip_pitch=io;
+    }
   private:
     //Input variables
     int nShots = 10;
@@ -183,7 +207,8 @@ namespace PARSIFAL2{
     TTree *tree;	
     TRint *gRoot;
     int   run_number;
-    
+    int   electronics_type;
+    float strip_pitch;
     //Output variables
     TString name_outfile="data/ciao.root";
     int event;
