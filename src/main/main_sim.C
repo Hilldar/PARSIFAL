@@ -27,10 +27,10 @@ void Run_i(string folder_i, int angle_i){
   // 16 -> TORA v_thr_T [fC]
   // 17 -> TORA gain
   // 18 -> TORA peak_time (tau)
-  // 19 -> Electronics (0=APV,1=TIGER,2=TORA)
-  // 20 -> Pitch Strip
-  // 21 -> FFT min freq. cut
-  // 22 -> FFT max freq. cut
+  // 19 -> FFT min freq. cut
+  // 20 -> FFT max freq. cut
+  // 21 -> Electronics (0=APV,1=TIGER,2=TORA)
+  // 22 -> Pitch Strip
   var[0]="?";
   while(infile>>var[0]>>var[1]>>var[2]>>var[3]>>var[4]>>var[5]>>var[6]>>var[7]>>var[8]>>var[9]>>var[10]>>var[11]>>var[12]>>var[13]>>var[14]>>var[15]>>var[16]>>var[17]>>var[18]>>var[19]>>var[20]>>var[21]>>var[22]){
     if(var[0]==folder_i) {
@@ -71,8 +71,8 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_Particle_AngleXZ(aangle);
     rwell->Set_OutfileName(folder_i,name_ang);
     rwell->Set_nShots(stoi(var[1])); 
-    rwell->Set_Electronics(stod(var[19]));
-    rwell->Set_Strip_Pitch(stod(var[20]));
+    rwell->Set_Electronics(stod(var[21]));
+    rwell->Set_Strip_Pitch(stod(var[22]));
     // Init
     rwell->Initialization_rwell();
     // POst Init
@@ -93,8 +93,8 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_TORA_thr_T(stod(var[16]));
     rwell->Set_gain_TORA(stod(var[17]));
     rwell->Set_TORA_tau(stod(var[18]));
-    rwell->Set_FFT_fmin(stod(var[21]));
-    rwell->Set_FFT_fmax(stod(var[22]));
+    rwell->Set_FFT_fmin(stod(var[19]));
+    rwell->Set_FFT_fmax(stod(var[20]));
     rwell->Update_param_TORA();
     // Run
     rwell->Run();
@@ -103,7 +103,10 @@ void Run_i(string folder_i, int angle_i){
   }
   return;
 }
-
+  // 19 -> FFT min freq. cut
+  // 20 -> FFT max freq. cut
+  // 21 -> Electronics (0=APV,1=TIGER,2=TORA)
+  // 22 -> Pitch Strip
 
 int main(int argc, char* argv[]){
   if(argc<2) {
