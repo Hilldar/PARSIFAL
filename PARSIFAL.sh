@@ -1,7 +1,8 @@
 #
 # Authors:
-# Riccardo Farinelli <rfarinelli@fe.infn.it>
-# Lia Lavezzi        <lia.lavezzi@to.infn.it>
+# Riccardo Farinelli 	<rfarinelli@fe.infn.it>
+# Lia Lavezzi        	<lia.lavezzi@to.infn.it>
+# Francesco Chiapponi	<chiappon@bo.infn.it>
 #
 # All rights reserved
 # For the licensing terms see $PARSIFAL/LICENSE
@@ -25,7 +26,7 @@ fi
 ##################
 # PARSIFAL:BEGIN #
 ##################
-start=`date +%s`
+start=$(date +%s.%N)
 cd $PARSIFAL
 #################
 # PARSIFAL:NAME #
@@ -42,8 +43,11 @@ while getopts "MmehSAO" OPTION; do
 	    echo "Hello world"
 	    ;;
 	h)
-            echo "Usage:"
-            echo ""
+		echo "Default directory:"
+	    echo "   "$PARSIFAL
+	    echo " "
+        echo "Usage:"
+        echo ""
 	    echo "   -m     ->   make PARSIFAL"
 	    echo "   -M     ->   make clean all"
             echo "   -e     ->   to execute echo \"hello world\""
@@ -67,8 +71,8 @@ while getopts "MmehSAO" OPTION; do
 	    mv pdf/* pdf/backup/.
 	    if [ -z $3 ]
 	    then 
-		./bin/Simulate $2
-		./bin/Analysis $2
+		./bin/Simulate $2 0
+		./bin/Analysis $2 0
 	    else
 		if [ $2 -ge 0 ]
 		then
@@ -103,5 +107,7 @@ done
 # PARSIFAL:TERMINATE #
 ######################
 cd $QUI
-echo "Duration: $((($(date +%s)-$start))) seconds"
+end=$(date +%s.%N)
+echo ""
+echo "Duration of the used command: $(awk -v s="$start" -v e="$end" 'BEGIN {print e - s}') seconds"
 echo
