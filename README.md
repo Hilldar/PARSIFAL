@@ -49,3 +49,5 @@ reduced the freq range in the noise. modifield the white noise
 moved from Morello to T2K resistive model	
 ### 2025.10.15
 modified noise calibrations
+### 2026.06.30
+Included Tora Asic and tuning of APV and TIGER
