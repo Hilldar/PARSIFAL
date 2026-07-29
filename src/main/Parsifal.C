@@ -3,7 +3,7 @@
 using namespace PARSIFAL2;
 
 bool print_plot_all = 0;
-bool print_plot_above_thr = 0;
+bool print_plot_above_thr = 1;
 bool print_plot_middle = 0; //also print waveform on file
 bool print_plot_charge_above = 0;
 bool plot_histo_Qt_APV = 0;

@@ -1020,23 +1020,23 @@ namespace PARSIFAL2{
         break;
       }
     }
-  //   ch->Set_t_thr_E(time_thr);
-  //   ch->Set_t_rising_E(time_thr);
-  //   ch->Set_t_falling_E(time_falling);
-  //   //Saturation
-  //   ch->Set_Saturation_TIGER(r->Gaus(saturation_TIGER,sigma_saturation_TIGER));
-  //   float q_peak  = ch->Get_Saturation_TIGER();
-  //   if(!NO_Saturation){
-  //     for(int i=1;i<maxbin;i++) {
-	//       if(h_time->GetBinContent(i)>saturation_TIGER) h_time->SetBinContent(i,q_peak);
-  //     }
-  //   }
-  //   time_thr = ((int)(time_thr/timestep_TIGER))*timestep_TIGER;
-  //   float time_peak = time_thr + 4*6.25*(integration_time_TIGER+0.5);
-  //   if(time_thr<0 || time_peak>=maxbin) return -1;
-  //   ch->Set_AboveThr_E(true);
-  //   time_peak = ((int)(time_peak/timestep_TIGER))*timestep_TIGER;
-  //   ch->Set_t_Q_E(time_peak);
+    ch->Set_t_thr_E(time_thr);
+    ch->Set_t_rising_E(time_thr);
+    ch->Set_t_falling_E(time_falling);
+    //Saturation
+    ch->Set_Saturation_TORA(r->Gaus(saturation_TORA,sigma_saturation_TORA));
+    float q_peak  = ch->Get_Saturation_TORA();
+    if(!NO_Saturation){
+      for(int i=1;i<maxbin;i++) {
+	      if(h_time->GetBinContent(i)>saturation_TORA) h_time->SetBinContent(i,q_peak);
+      }
+    }
+    time_thr = ((int)(time_thr/timestep_TIGER))*timestep_TIGER;
+    float time_peak = time_thr + 4*6.25*(integration_time_TIGER+0.5);
+    if(time_thr<0 || time_peak>=maxbin) return -1;
+    ch->Set_AboveThr_E(true);
+    time_peak = ((int)(time_peak/timestep_TIGER))*timestep_TIGER;
+    ch->Set_t_Q_E(time_peak);
   //   float charge = h_time->GetBinContent((int)time_peak)/gain_TORA;
   //   if(TIGER_Get_Maximum) charge = h_time->GetMaximum()/gain_TORA;
     // float charge = h_time->GetMaximum()/gain_TORA;

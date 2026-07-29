@@ -79,6 +79,9 @@ namespace PARSIFAL2{
 
   //TORA
   const double timestep_TORA = 5; //ns
+  const double saturation_TORA = 600; //mV according to Maxim
+  const double sigma_saturation_TORA = 15;
+
   // const double saturation_TORA = -90 * gain_TORA + 1180; //mV (assuming linear relation betwenn gain and max input charge)
 
 

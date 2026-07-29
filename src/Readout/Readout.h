@@ -74,7 +74,7 @@ namespace PARSIFAL2{
     float     thrT_TORA;
     float     gain_TORA;
     float     tau_TORA;
-    double    saturation_TORA = -90 * gain_TORA + 1180; //mV (assuming linear relation betwenn gain and max input charge)
+     
     //ion tail signal contribution
     float     IT_Lenght ; //ns
     float     IT_amplitude; //fC/ns
