@@ -1,4 +1,4 @@
-bool skip_exp = false;
+bool skip_exp = true;
 
 TMultiGraph *mg_QS, *mg_QE, *mg_QR, *mg_gainQ, *mg_gainS, *mg_gainE, *mg_gainR, *mg_hvQ, *mg_hvS, *mg_hvE, *mg_hvR;
 TLegend *leg;
@@ -129,31 +129,32 @@ void HVscan(){
   g_hvR_exp->SetMarkerColor(kBlack);
   
   mg_QS = new TMultiGraph();
-  mg_QS->Add(g_dummy);
+  // mg_QS->Add(g_dummy);
   mg_QE = new TMultiGraph();
-  mg_QE->Add(g_dummy);
+  // mg_QE->Add(g_dummy);
   mg_QR = new TMultiGraph();
-  mg_QR->Add(g_dummy);
+  // mg_QR->Add(g_dummy);
   mg_gainQ = new TMultiGraph();
-  mg_gainQ->Add(g_dummy);
+  // mg_gainQ->Add(g_dummy);
   mg_gainS = new TMultiGraph();
-  mg_gainS->Add(g_dummy);
+  // mg_gainS->Add(g_dummy);
   mg_gainE = new TMultiGraph();
-  mg_gainE->Add(g_dummy);
+  // mg_gainE->Add(g_dummy);
   mg_gainR = new TMultiGraph();
-  mg_gainR->Add(g_dummy);
+  // mg_gainR->Add(g_dummy);
   mg_hvQ = new TMultiGraph();
-  mg_hvQ->Add(g_dummy);
+  // mg_hvQ->Add(g_dummy);
   mg_hvS = new TMultiGraph();
-  mg_hvS->Add(g_dummy);
+  // mg_hvS->Add(g_dummy);
   mg_hvE = new TMultiGraph();
-  mg_hvE->Add(g_dummy);
+  // mg_hvE->Add(g_dummy);
   mg_hvR = new TMultiGraph();
-  mg_hvR->Add(g_dummy);
+  // mg_hvR->Add(g_dummy);
 
   
-  leg = new TLegend(0.12,0.55,0.88,0.88);
-  leg->AddEntry(g_QS_exp, name_leg.c_str(),"lp");
+  // leg = new TLegend(0.40,0.65,0.88,0.88);
+  leg = new TLegend(0.40,0.45,0.88,0.88);
+  // leg->AddEntry(g_QS_exp, name_leg.c_str(),"lp");
 
   TString name = "ciao";
   name = Fill();
@@ -311,7 +312,7 @@ void Add_scan_APV(int runID_i, int runID_f, int color, string legenda){
   int good_run=0;
   vector<double> v_q, v_s, v_e, v_r, v_eq, v_es, v_ee, v_er;
   for(int i_run=runID_i;i_run<=runID_f;i_run++){
-    string filename = Form("../../data/%i/summary.txt",i_run);
+    string filename = Form("../../data/tora_1000_EventsPerRun/%i/summary.txt",i_run);
     std::ifstream file(filename);
     if(!file.good()) continue;
     good_run++;
@@ -418,7 +419,7 @@ void Add_scan_TIGER(int runID_i, int runID_f, int color, string legenda){
   int good_run=0;
   vector<double> v_q, v_s, v_e, v_r, v_eq, v_es, v_ee, v_er;
   for(int i_run=runID_i;i_run<=runID_f;i_run++){
-    string filename = Form("../../data/%i/summary.txt",i_run);
+    string filename = Form("../../data/tora_100_EventsPerRun/%i/summary.txt",i_run);
     std::ifstream file(filename);
     if(!file.good()) {
       cout<<"-------------------------"<<endl;
@@ -550,10 +551,44 @@ TString Fill(){
   nome="TIGER_TUNED_DATA.pdf";
   */
 
+  /*
   //TUNED APV
   Add_scan_APV(30, 39, 2, "Simulated data - APV");
   nome="APV_TUNED_DATA.pdf";
-    
+  */
+
+  
+  //TEST APV
+  // Add_scan_APV(130, 139, 2, "tau=250ns - gain=12.0mV/fC");
+  // Add_scan_APV(160, 169, 3, "tau=250ns - gain=2.0mV/fC");
+  // Add_scan_APV(90, 99, 4, "tau=25ns - gain=12.0mV/fC");
+  // Add_scan_APV(120, 129, 5, "tau=25ns - gain=2.0mV/fC");
+  // nome="TORA_hv_scan_1000evn_t25-250.pdf";
+
+  // Add_scan_APV(50, 59, 2, "tau=150ns - gain=12.0mV/fC");
+  // Add_scan_APV(80, 89, 3, "tau=150ns - gain=2.0mV/fC");
+  // Add_scan_APV(170, 179, 4, "tau=50ns - gain=12.0mV/fC");
+  // Add_scan_APV(200, 209, 5, "tau=50ns - gain=2.0mV/fC");
+  // nome="TORA_hv_scan_1000evn_t50-150.pdf";
+
+  // Test APV - all shaping times
+  Add_scan_APV(130, 139, 2, "tau=250ns - gain=12.0mV/fC");
+  Add_scan_APV(160, 169, 3, "tau=250ns - gain=2.0mV/fC");
+  Add_scan_APV(50, 59, 6, "tau=150ns - gain=12.0mV/fC");
+  Add_scan_APV(80, 89, 7, "tau=150ns - gain=2.0mV/fC");
+  Add_scan_APV(170, 179, 8, "tau=50ns - gain=12.0mV/fC");
+  Add_scan_APV(200, 209, 9, "tau=50ns - gain=2.0mV/fC");
+  Add_scan_APV(90, 99, 4, "tau=25ns - gain=12.0mV/fC");
+  Add_scan_APV(120, 129, 5, "tau=25ns - gain=2.0mV/fC");
+  nome="TORA_hv_scan_1000evn_tAll.pdf";
+
+  //TEST APV no noise
+  // Add_scan_APV(210, 219, 2, "tau=250ns - gain=12.0mV/fC");
+  // Add_scan_APV(230, 239, 3, "tau=250ns - gain=2.0mV/fC");
+  // Add_scan_APV(220, 229, 4, "tau=25ns - gain=12.0mV/fC");
+  // Add_scan_APV(240, 249, 6, "tau=25ns - gain=2.0mV/fC");
+  // nome="TORA_hv_scan_100evn_noNoise.pdf";
+
   // return macro
   return nome;
   
