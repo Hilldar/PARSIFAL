@@ -18,3 +18,5 @@ pdf
 pdf/*
 data
 data/*
+src/Plot/*.pdf
+src/Plot
