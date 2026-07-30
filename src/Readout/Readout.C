@@ -1051,7 +1051,6 @@ namespace PARSIFAL2{
     float charge = h_time->GetBinContent(h_time->GetMaximumBin())/gain_TORA;
     // cout << "charge (mV): " << h_time->GetMaximum() << "-> " << h_time->GetBinCenter(h_time->GetMaximumBin()) << "-> " << h_time->GetBinContent(h_time->GetMaximumBin()) << endl;
     // cout << "charge (fC): " << charge << endl;
-    cout << "charge: " << charge << " trail: " << thrTrail_TORA/gain_TORA << endl;
     if (charge <= thrTrail_TORA/gain_TORA) return -1;
 
     return charge;
