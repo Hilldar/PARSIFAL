@@ -183,6 +183,8 @@ namespace PARSIFAL2{
     void      Set_AboveThr_E    (bool   io) {above_thr_E=io;};
     void      Set_V_thr_T       (float  io) {V_thr_T=io;};
     void      Set_V_thr_E       (float  io) {V_thr_E=io;};
+    void      Set_V_thrRise       (float  io) {V_thrRise=io;};
+    void      Set_V_thrTrail       (float  io) {V_thrTrail=io;};
     void      Set_Saturation_APV(float  io) {saturation_apv=io;};
     void      Set_Saturation_TIGER(float  io) {saturation_tiger=io;};
     void      Set_Saturation_TORA(float  io) {saturation_tora=io;};
@@ -322,28 +324,29 @@ namespace PARSIFAL2{
       float t_thr_T = Get_Time();
       float t_thr_Tfall = Get_t_falling_T();
       if(Get_AboveThr_T()){
-        TLine *l_t_thr_T = new TLine(t_thr_T,h_time_int_tora->GetMinimum()-10,t_thr_T,V_thr_T);
-        TLine *l_V_thr_T = new TLine(0,V_thr_T,t_thr_T,V_thr_T);
+        TLine *l_t_thr_T = new TLine(t_thr_T,h_time_int_tora->GetMinimum()-10,t_thr_T,V_thrRise);
+        TLine *l_V_thr_T = new TLine(0,V_thrRise,t_thr_T,V_thrRise);
         l_V_thr_T->SetLineColor(kRed);
         l_t_thr_T->SetLineColor(kRed);
         l_V_thr_T->Draw("same");
         l_t_thr_T->Draw("same");
 
-        TLine *l_t_thr_Tfall = new TLine(t_thr_Tfall,h_time_int_tora->GetMinimum()-10,t_thr_Tfall,V_thr_T);
-        TLine *l_V_thr_Tfall = new TLine(0,V_thr_T,t_thr_Tfall,V_thr_T);
-        l_V_thr_Tfall->SetLineColor(kRed);
+        TLine *l_t_thr_Tfall = new TLine(t_thr_Tfall,h_time_int_tora->GetMinimum()-10,t_thr_Tfall,V_thrTrail);
+        TLine *l_V_thr_Tfall = new TLine(0,V_thrTrail,t_thr_Tfall,V_thrTrail);
+        l_V_thr_Tfall->SetLineColor(kGreen);
         l_t_thr_Tfall->SetLineColor(kGreen);
         l_V_thr_Tfall->Draw("same");
         l_t_thr_Tfall->Draw("same");
       }
       else{
-        TLine *l_V_thr_T = new TLine(0,V_thr_T,n_ns,V_thr_T);
+        TLine *l_V_thr_T = new TLine(0,V_thrRise,n_ns,V_thrRise);
         l_V_thr_T->SetLineColor(kRed);
         l_V_thr_T->Draw("same");  
       }
       c->cd(8);
       TPaveText *text_tora = new TPaveText(0.2,0.2,0.8,0.8);
-      text_tora->AddText(Form("TORA thr = %.0f mV",V_thr_T));
+      text_tora->AddText(Form("TORA thr Rising edge = %.0f mV",V_thrRise));
+      text_tora->AddText(Form("TORA thr Trailing edge = %.0f mV",V_thrTrail));
       text_tora->AddText(Form("Gain TORA = %.1f mV",Get_Gain_TORA()));
       // text_tora->AddText(Form("Tau TORA = %.1f mV",Get_tau_TORA()));
       text_tora->AddText(Form("Rising time = %.2f ns",Get_Time()));
@@ -435,6 +438,8 @@ namespace PARSIFAL2{
     double    t_falling_T;
     float     V_thr_T;
     float     V_thr_E;
+    float     V_thrRise;
+    float     V_thrTrail;
     float     saturation_apv;
     float     saturation_tiger;
     float     saturation_tora;

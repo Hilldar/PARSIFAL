@@ -6,7 +6,7 @@ void Run_i(string folder_i, int angle_i){
   double aangle = angle_i*TMath::DegToRad();
   ifstream infile;
   infile.open("run_list.txt", ios::out | ios::app | ios::binary);
-  const int var_size = 23;
+  const int var_size = 24;
   string var[var_size];
   // 0  -> runID
   // 1  -> nEvent
@@ -32,7 +32,7 @@ void Run_i(string folder_i, int angle_i){
   // 21 -> Electronics (0=APV,1=TIGER,2=TORA)
   // 22 -> Pitch Strip
   var[0]="?";
-  while(infile>>var[0]>>var[1]>>var[2]>>var[3]>>var[4]>>var[5]>>var[6]>>var[7]>>var[8]>>var[9]>>var[10]>>var[11]>>var[12]>>var[13]>>var[14]>>var[15]>>var[16]>>var[17]>>var[18]>>var[19]>>var[20]>>var[21]>>var[22]){
+  while(infile>>var[0]>>var[1]>>var[2]>>var[3]>>var[4]>>var[5]>>var[6]>>var[7]>>var[8]>>var[9]>>var[10]>>var[11]>>var[12]>>var[13]>>var[14]>>var[15]>>var[16]>>var[17]>>var[18]>>var[19]>>var[20]>>var[21]>>var[22]>>var[23]){
     if(var[0]==folder_i) {
       nshot = stoi(var[1]);
       break;
@@ -71,8 +71,8 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_Particle_AngleXZ(aangle);
     rwell->Set_OutfileName(folder_i,name_ang);
     rwell->Set_nShots(stoi(var[1])); 
-    rwell->Set_Electronics(stod(var[21]));
-    rwell->Set_Strip_Pitch(stod(var[22]));
+    rwell->Set_Electronics(stod(var[22]));
+    rwell->Set_Strip_Pitch(stod(var[23]));
     // Init
     rwell->Initialization_rwell();
     // POst Init
@@ -90,11 +90,12 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_APV_thr(stod(var[13]));
     rwell->Set_TIGER_thr_E(stod(var[14]));
     rwell->Set_TIGER_thr_T(stod(var[15]));
-    rwell->Set_TORA_thr_T(stod(var[16]));
-    rwell->Set_gain_TORA(stod(var[17]));
-    rwell->Set_TORA_tau(stod(var[18]));
-    rwell->Set_FFT_fmin(stod(var[19]));
-    rwell->Set_FFT_fmax(stod(var[20]));
+    rwell->Set_TORA_thr_rise(stod(var[16]));
+    rwell->Set_TORA_thr_trail(stod(var[17]));
+    rwell->Set_gain_TORA(stod(var[18]));
+    rwell->Set_TORA_tau(stod(var[19]));
+    rwell->Set_FFT_fmin(stod(var[20]));
+    rwell->Set_FFT_fmax(stod(var[21]));
     rwell->Update_param_TORA();
     // Run
     rwell->Run();

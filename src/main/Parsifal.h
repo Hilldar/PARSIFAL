@@ -140,11 +140,17 @@ namespace PARSIFAL2{
       cout<<"************************************************"<<endl;
       signal->Set_TIGER_thr_T(io);
     }
-    void Set_TORA_thr_T(double io){
+    void Set_TORA_thr_rise(double io){
       cout<<"************************************************"<<endl;
-      cout<<"TORA threshold T branch value set to : "<<io<<endl;
+      cout<<"TORA rising edge threshold value set to : "<<io<<endl;
       cout<<"************************************************"<<endl;
-      signal->Set_TORA_thr_T(io);
+      signal->Set_TORA_thr_rise(io);
+    }
+    void Set_TORA_thr_trail(double io){
+      cout<<"************************************************"<<endl;
+      cout<<"TORA trailing edge threshold value set to : "<<io<<endl;
+      cout<<"************************************************"<<endl;
+      signal->Set_TORA_thr_trail(io);
     }
     void Set_gain_TORA(double io){
       cout<<"************************************************"<<endl;

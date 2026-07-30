@@ -18,7 +18,7 @@ namespace PARSIFAL2{
     TIGER_Get_Maximum = false;
     
     // gain_TORA     =  12.7; //fC/mV
-    thrT_TORA     =  10;  // threshold_fC*gain_TIGER;
+    thrRise_TORA     =  10;  // threshold_fC*gain_TIGER;
     // thrE_TORA 	  = 10;  // threshold_fC*gain_TIGER;
 
     IT_Lenght          = 170; // ns
@@ -177,7 +177,7 @@ namespace PARSIFAL2{
     }
     if(Get_Electronics()==2){
       for(int ich=0;ich<channel.size();ich++){
-        channel.at(ich)->Set_V_thr_T(thrT_TORA);   
+        channel.at(ich)->Set_V_thr_T(thrRise_TORA);   
       }
       Initialize_TORA();
     }
@@ -443,12 +443,15 @@ namespace PARSIFAL2{
 
   void Readout::Update_param_TORA(){
     gain_TORA  =  Get_gain_TORA();     
-    thrT_TORA  =  Get_thr_TORA();
-    Set_TORA_thr_T_mV(thrT_TORA);
-    // Set_TORA_thr_T(thrT_TORA);
+    thrRise_TORA  =  Get_thrRise_TORA();
+    thrTrail_TORA  =  Get_thrTrail_TORA();
+    Set_TORA_thr_rise_mV(thrRise_TORA);
+    Set_TORA_thr_trail_mV(thrTrail_TORA);
+
+    // Set_TORA_thr_rise(thrRise_TORA);
     for(int ich=0;ich<channel.size();ich++){
       channel.at(ich)->Set_Gain_TORA(gain_TORA);
-      // channel.at(ich)->Set_V_thr_T(thrT_TORA);   
+      // channel.at(ich)->Set_V_thr_T(thrRise_TORA);   
         // channel.at(ich)->Get_Histo_tora_E()->SetBinContent(jt,0);
     }
   }
@@ -1008,32 +1011,37 @@ namespace PARSIFAL2{
     float time_falling = -999; // falling edge
     ch->Set_AboveThr_E(false);
     for(int i=1;i<maxbin-1;i++) {
-      if(h_time->GetBinContent(i)>thrT_TORA) {
+      if(h_time->GetBinContent(i)>thrRise_TORA) {
         time_thr = i;
-        break;
-      }
-    }
-    for(int i=time_thr;i<maxbin;i++) {
-      if(i==maxbin-1) time_falling=2*maxbin;
-      if(h_time->GetBinContent(i)<thrT_TORA) {
-        time_falling = i-1;
         break;
       }
     }
     ch->Set_t_thr_E(time_thr);
     ch->Set_t_rising_E(time_thr);
-    ch->Set_t_falling_E(time_falling);
+  
     //Saturation
     ch->Set_Saturation_TORA(r->Gaus(saturation_TORA,sigma_saturation_TORA));
     float q_peak  = ch->Get_Saturation_TORA();
+    int timestamp_at_peak = h_time->GetMaximumBin();
     if(!NO_Saturation){
       for(int i=1;i<maxbin;i++) {
-	      if(h_time->GetBinContent(i)>saturation_TORA) h_time->SetBinContent(i,q_peak);
+	      if(h_time->GetBinContent(i)>saturation_TORA) h_time->SetBinContent(i,q_peak); timestamp_at_peak=i;
       }
     }
     time_thr = ((int)(time_thr/timestep_TIGER))*timestep_TIGER;
     float time_peak = time_thr + 4*6.25*(integration_time_TIGER+0.5);
-    if(time_thr<0 || time_peak>=maxbin) return -1;
+    
+    for(int i=timestamp_at_peak; i<maxbin; i++) {
+      if(i==maxbin-1) time_falling=2*maxbin;
+      if(h_time->GetBinContent(i)<thrTrail_TORA) {
+        time_falling = i-1;
+        break;
+      }
+    }
+    ch->Set_t_falling_E(time_falling);
+
+    if(time_thr<0 || time_peak>=maxbin || time_falling<0 || time_falling>=maxbin) return -1;  //DOMANDA: esiste un tempo massimo oltre al quale se non viene ricevuto un t_falling la misura si interrompe (nel caso in cui thrTrailing sia > thrRise)
+
     ch->Set_AboveThr_E(true);
     time_peak = ((int)(time_peak/timestep_TIGER))*timestep_TIGER;
     ch->Set_t_Q_E(time_peak);
@@ -1043,6 +1051,9 @@ namespace PARSIFAL2{
     float charge = h_time->GetBinContent(h_time->GetMaximumBin())/gain_TORA;
     // cout << "charge (mV): " << h_time->GetMaximum() << "-> " << h_time->GetBinCenter(h_time->GetMaximumBin()) << "-> " << h_time->GetBinContent(h_time->GetMaximumBin()) << endl;
     // cout << "charge (fC): " << charge << endl;
+    cout << "charge: " << charge << " trail: " << thrTrail_TORA/gain_TORA << endl;
+    if (charge <= thrTrail_TORA/gain_TORA) return -1;
+
     return charge;
   }
 
@@ -1054,15 +1065,15 @@ namespace PARSIFAL2{
     float efine_time_thr=0;
     ch->Set_AboveThr_T(false);
     for(int i=1;i<maxbin-1;i++) {
-      if(h_time->GetBinContent(i)>thrT_TORA) {
+      if(h_time->GetBinContent(i)>thrRise_TORA) {
         time_thr = i;
         ch->Set_AboveThr_T(true);
         break;
       }
     }
-    for(int i=time_thr+1;i<maxbin;i++) {
+    for(int i=h_time->GetMaximumBin();i<maxbin;i++) {
       if(i==maxbin-1) time_falling=2*maxbin;
-      if(h_time->GetBinContent(i)<thrT_TORA) {
+      if(h_time->GetBinContent(i)<thrTrail_TORA) {
         time_falling = i-1;
 	      break;
       }
@@ -1073,7 +1084,7 @@ namespace PARSIFAL2{
     // TFine
     // if(enable_tfine_tiger){
     //   if(time_thr!=0){
-	  //     efine_time_thr = 1 - (thrT_TORA-h_time->GetBinContent(time_thr-1))/(h_time->GetBinContent(time_thr)-h_time->GetBinContent(time_thr-1));
+	  //     efine_time_thr = 1 - (thrRise_TORA-h_time->GetBinContent(time_thr-1))/(h_time->GetBinContent(time_thr)-h_time->GetBinContent(time_thr-1));
     //   }
     // }
 
@@ -1084,7 +1095,7 @@ namespace PARSIFAL2{
     //     if(h_time->GetBinContent(i)>saturation_TORA) h_time->SetBinContent(i,q_peak);
     //   }
     // }
-    if(time_thr<0) return time_thr;
+    if(time_thr<0 || time_falling<0) return time_thr;
     //digitize the time in timestep 6.25ns
     time_thr = ((int)(1+time_thr/timestep_TORA))*timestep_TORA - efine_time_thr*timestep_TORA;
     return time_thr;

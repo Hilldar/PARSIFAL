@@ -40,7 +40,8 @@ namespace PARSIFAL2{
     void Set_APV_thr          (double io){  reado->Set_APV_thr          (io);};
     void Set_TIGER_thr_E      (double io){  reado->Set_TIGER_thr_E  	  (io);};
     void Set_TIGER_thr_T      (double io){  reado->Set_TIGER_thr_T      (io);};
-    void Set_TORA_thr_T       (double io){  reado->Set_TORA_thr_T       (io);};
+    void Set_TORA_thr_rise    (double io){  reado->Set_TORA_thr_rise    (io);};
+    void Set_TORA_thr_trail   (double io){  reado->Set_TORA_thr_trail   (io);};
     void Set_gain_TORA        (double io){  reado->Set_gain_TORA        (io);};
     void Set_TORA_tau         (double io){  reado->Set_TORA_tau         (io);};
     void Set_APV_Plot_Hit     (vector<TH1F*> io){reado->Set_APV_Plot_Hit(io);};

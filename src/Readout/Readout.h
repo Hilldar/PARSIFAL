@@ -38,8 +38,10 @@ namespace PARSIFAL2{
     void      	      	       Set_TIGER_thr_T   (double io){thrT_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TIGER);};
     void                       Set_gain_TORA     (double io){gain_TORA=io;};
     void                       Set_TORA_tau      (double io){tau_TORA=io;};
-    void      	      	       Set_TORA_thr_T_mV (double io){thrT_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TORA);};
-    void      	      	       Set_TORA_thr_T    (double io){thrT_TORA=io;};
+    void      	      	       Set_TORA_thr_rise_mV (double io){thrRise_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thrRise(thrRise_TORA);};
+    void      	      	       Set_TORA_thr_rise    (double io){thrRise_TORA=io;};
+    void      	      	       Set_TORA_thr_trail_mV (double io){thrTrail_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thrTrail(thrTrail_TORA);};
+    void      	      	       Set_TORA_thr_trail    (double io){thrTrail_TORA=io;};
     void                       Set_APV_Plot_Hit  (vector<TH1F*> io){_histo_hit_Qt_APV=io;};
     void                       Update_param_TORA ();
     void                       Set_FFT_fmin      (double io){FFT_fmin=io;};
@@ -71,7 +73,8 @@ namespace PARSIFAL2{
     float     thrE_TIGER;
     bool      TIGER_Get_Maximum;
     //tora
-    float     thrT_TORA;
+    float     thrRise_TORA;
+    float     thrTrail_TORA;
     float     gain_TORA;
     float     tau_TORA;
      
@@ -120,7 +123,8 @@ namespace PARSIFAL2{
     double    Get_Time_TORA(ElectronicChannel *ch);
     double    Get_dTime_TORA(ElectronicChannel *ch);
     double    Get_gain_TORA() {return gain_TORA;};
-    double    Get_thr_TORA() {return thrT_TORA;};
+    double    Get_thrRise_TORA() {return thrRise_TORA;};
+    double    Get_thrTrail_TORA() {return thrTrail_TORA;};
 
 
     //Variable capacitive effect
