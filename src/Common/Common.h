@@ -64,6 +64,7 @@ namespace PARSIFAL2{
   const double fC_to_ADC = 30;
   const double saturation_APV = 1970;
   const double sigma_saturation_APV = 71;
+  const double e_noise_amplitude_APV = 0.5; //fC            // NB. value to be verified
   //const double ele_to_ADC = ele_to_fC * fC_to_ADC;
   //Readout - Induction TIGER
   const double jitter_TIGER = 2;
@@ -76,11 +77,13 @@ namespace PARSIFAL2{
   const double saturation_TIGER = 612;
   const double sigma_saturation_TIGER = 15;
   const bool   enable_tfine_tiger = true;
+  const double e_noise_amplitude_TIGER = 0.5; //fC          // NB. value to be verified
 
   //TORA
   const double timestep_TORA = 5; //ns
   const double saturation_TORA = 600; //mV according to Maxim
   const double sigma_saturation_TORA = 15;
+  const double e_noise_amplitude_TORA = 0.65; //fC
 
   // const double saturation_TORA = -90 * gain_TORA + 1180; //mV (assuming linear relation betwenn gain and max input charge)
 

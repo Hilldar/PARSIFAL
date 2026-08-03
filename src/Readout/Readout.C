@@ -99,7 +99,7 @@ namespace PARSIFAL2{
         //float slope = 35.31;
         //2025.10.15
         float slope = 44.14;
-        noise_amplitude = sigma_noise_fC/slope;
+        noise_amplitude = sqrt(pow(sigma_noise_fC,2) + pow(e_noise_amplitude_APV,2)) / slope;
       }
       if(Get_Electronics()==1){
         //(noise_amplitude = 0.005; // TIGER: E-branch
@@ -108,11 +108,11 @@ namespace PARSIFAL2{
         //float slope = 27.73;
         //2025.10.15
         float slope = 43.48;
-        noise_amplitude = sigma_noise_fC/slope;
+        noise_amplitude = sqrt(pow(sigma_noise_fC,2) + pow(e_noise_amplitude_TIGER,2)) / slope;
       }
       if(Get_Electronics()==2){
         float slope = 43.48; // temporary value : to be tuned
-        noise_amplitude = sigma_noise_fC/slope;
+        noise_amplitude = sqrt(pow(sigma_noise_fC,2) + pow(e_noise_amplitude_TORA,2)) / slope; 
       }
     }
   };

@@ -58,7 +58,7 @@ namespace PARSIFAL2{
     Geometry *geometry;
     vector<ElectronicChannel*> channel;
     //noise
-    float     noise_amplitude;
+    float     noise_amplitude; 
     double    sigma_noise_fC;
     double    threshold_fC;
     const float max_freq_noise = 340e-3; // 340 MHz (1timebin = 1ns)
