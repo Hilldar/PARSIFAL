@@ -111,8 +111,10 @@ namespace PARSIFAL2{
         noise_amplitude = sqrt(pow(sigma_noise_fC,2) + pow(e_noise_amplitude_TIGER,2)) / slope;
       }
       if(Get_Electronics()==2){
-        float slope = 43.48; // temporary value : to be tuned
-        noise_amplitude = sqrt(pow(sigma_noise_fC,2) + pow(e_noise_amplitude_TORA,2)) / slope; 
+        // float slope = 43.48; // temporary value : to be tuned
+        float slope = 139.521-10064.3/(tau_TORA+77.102); //tau_TORA = shaping time 
+        noise_amplitude = sigma_noise_fC/slope; // TORA: STD sigma noise = slope * max amplitude input noise current  
+
       }
     }
   };

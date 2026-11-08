@@ -152,8 +152,10 @@ void HVscan(){
   // mg_hvR->Add(g_dummy);
 
   
-  // leg = new TLegend(0.40,0.65,0.88,0.88);
-  leg = new TLegend(0.40,0.45,0.88,0.88);
+  // leg = new TLegend(0.40,0.8,0.88,0.88);
+  // leg = new TLegend(0.40,0.7,0.88,0.88);
+  // leg = new TLegend(0.40,0.59,0.88,0.88);
+  leg = new TLegend(0.40,0.5,0.88,0.88);
   // leg->AddEntry(g_QS_exp, name_leg.c_str(),"lp");
 
   TString name = "ciao";
@@ -205,7 +207,7 @@ void HVscan(){
   //c1->cd(3);
   mg_QR->Draw("APL");
   mg_QR->GetXaxis()->SetRangeUser(0,200);
-  mg_QR->GetYaxis()->SetRangeUser(0,1000);
+  mg_QR->GetYaxis()->SetRangeUser(0,500);
   mg_QR->SetTitle("HV scan SIM + EXP");
   mg_QR->GetXaxis()->SetTitle("Charge [fC]");
   mg_QR->GetYaxis()->SetTitle("Spatial resolution [um]");
@@ -249,7 +251,7 @@ void HVscan(){
   //Gain vs Resolution
   mg_gainR->Draw("APL");
   mg_gainR->GetXaxis()->SetRangeUser(0,20000);
-  mg_gainR->GetYaxis()->SetRangeUser(0,1000);
+  mg_gainR->GetYaxis()->SetRangeUser(0,500);
   mg_gainR->SetTitle("HV scan SIM + EXP");
   mg_gainR->GetXaxis()->SetTitle("Gain");
   mg_gainR->GetYaxis()->SetTitle("Resolution");
@@ -293,7 +295,7 @@ void HVscan(){
   //HV vs Resolution
   mg_hvR->Draw("APL");
   mg_hvR->GetXaxis()->SetRangeUser(500,700);
-  mg_hvR->GetYaxis()->SetRangeUser(0,1000);
+  mg_hvR->GetYaxis()->SetRangeUser(0,500);
   mg_hvR->SetTitle("HV scan SIM + EXP");
   mg_hvR->GetXaxis()->SetTitle("HV [V]");
   mg_hvR->GetYaxis()->SetTitle("Resolution");
@@ -312,7 +314,7 @@ void Add_scan_APV(int runID_i, int runID_f, int color, string legenda){
   int good_run=0;
   vector<double> v_q, v_s, v_e, v_r, v_eq, v_es, v_ee, v_er;
   for(int i_run=runID_i;i_run<=runID_f;i_run++){
-    string filename = Form("../../data/tora_1000_EventsPerRun/%i/summary.txt",i_run);
+    string filename = Form("../../data/tora_1000_EventsPerRun_doubleThr4_6_extNoise0.5_tau25_250_shaper1ord_3ord/%i/summary.txt",i_run);
     std::ifstream file(filename);
     if(!file.good()) continue;
     good_run++;
@@ -419,7 +421,7 @@ void Add_scan_TIGER(int runID_i, int runID_f, int color, string legenda){
   int good_run=0;
   vector<double> v_q, v_s, v_e, v_r, v_eq, v_es, v_ee, v_er;
   for(int i_run=runID_i;i_run<=runID_f;i_run++){
-    string filename = Form("../../data/tora_100_EventsPerRun/%i/summary.txt",i_run);
+    string filename = Form("../../data/tora_1000_EventsPerRun_doubleThr4_6_extNoise0.5_tau25_250_shaper1ord_3ord/%i/summary.txt",i_run);
     std::ifstream file(filename);
     if(!file.good()) {
       cout<<"-------------------------"<<endl;
@@ -572,15 +574,11 @@ TString Fill(){
   // nome="TORA_hv_scan_1000evn_t50-150.pdf";
 
   // Test APV - all shaping times
-  Add_scan_APV(130, 139, 2, "tau=250ns - gain=12.0mV/fC");
-  Add_scan_APV(160, 169, 3, "tau=250ns - gain=2.0mV/fC");
-  Add_scan_APV(50, 59, 6, "tau=150ns - gain=12.0mV/fC");
-  Add_scan_APV(80, 89, 7, "tau=150ns - gain=2.0mV/fC");
-  Add_scan_APV(170, 179, 8, "tau=50ns - gain=12.0mV/fC");
-  Add_scan_APV(200, 209, 9, "tau=50ns - gain=2.0mV/fC");
-  Add_scan_APV(90, 99, 4, "tau=25ns - gain=12.0mV/fC");
-  Add_scan_APV(120, 129, 5, "tau=25ns - gain=2.0mV/fC");
-  nome="TORA_hv_scan_1000evn_tAll.pdf";
+  Add_scan_APV(740, 749, 2, "tau=25ns - shaper=1st order");
+  Add_scan_APV(750, 759, 3, "tau=250ns - shaper=1st order");
+  Add_scan_APV(760, 769, 4, "tau=25ns - shaper=3rd order");
+  Add_scan_APV(770, 779, 6, "tau=250ns - shaper=3rd order");
+  nome="TORA_hv_scan_1000evn_t25-250_doubleThr4_6_extNoise0.5_shaper1ord_3ord.pdf";
 
   //TEST APV no noise
   // Add_scan_APV(210, 219, 2, "tau=250ns - gain=12.0mV/fC");

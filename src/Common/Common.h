@@ -49,7 +49,7 @@ namespace PARSIFAL2{
   const bool   Write_Output_File = true; // anche se falso, ci sono cmq problemi di memoria
   const bool   fast_simulation = true; // se falso va inserito limite sul numero di eventi o sull'utilizzo della memoria
   //Readout
-  #define n_ns 1000//1000//675
+  #define n_ns 1500//1000//675
   #define n_ns_buffer 500
   //const double sigma_noise_fC = 2.0; //fC
   //Readout - Induction APV

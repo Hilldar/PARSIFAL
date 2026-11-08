@@ -158,6 +158,10 @@ namespace PARSIFAL2{
       if (t > 0) return gain_TORA * TMath::Exp(1.)*(t/tau_TORA*TMath::Exp(-t/tau_TORA));
       return 0;
     }
+    double TORA_shaper_3ord(double t){
+      if (t > 0) return gain_TORA * TMath::Power(t/tau_TORA, 3)*TMath::Exp(3*(1-t/tau_TORA));
+      return 0;
+    }
     vector<TH1F*> _histo_hit_Qt_APV;
     //Tiger
     double T_branch(double t) {
