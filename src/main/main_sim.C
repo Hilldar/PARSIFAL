@@ -82,6 +82,7 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_TauResist(stod(var[5]));
     rwell->Set_Sigma0Resist(stod(var[6]));
     rwell->Set_MeanDetectorGain(stod(var[7]));
+    rwell->Set_TORA_tau(stod(var[19]));
     rwell->Set_Noise_fC(stod(var[8]));
     rwell->Set_Threshold_fC(stod(var[9]));
     rwell->Set_IonTailLength(stod(var[10]));
@@ -93,7 +94,6 @@ void Run_i(string folder_i, int angle_i){
     rwell->Set_TORA_thr_rise(stod(var[16]));
     rwell->Set_TORA_thr_trail(stod(var[17]));
     rwell->Set_gain_TORA(stod(var[18]));
-    rwell->Set_TORA_tau(stod(var[19]));
     rwell->Set_FFT_fmin(stod(var[20]));
     rwell->Set_FFT_fmax(stod(var[21]));
     rwell->Update_param_TORA();
