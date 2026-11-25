@@ -19,11 +19,10 @@ INC  = $(addprefix -I,$(SRC))
 vpath %.C $(SRC)
 
 CC      = g++
-CCFLAGS = -c  -Wno-deprecated -g -fopenmp #-std=c++11 -Wall 
+CCFLAGS = -c -O2 -g -Wall -Wno-deprecated -fopenmp
 
 LD      = g++
-#LDFLAGS = -lGui -lTreePlayer -Wall -std=c++11 -fopenmp
-LDFLAGS = -lGui -lTreePlayer -Wall#-w  -fopenmp # -Wall  -w toglie i warning
+LDFLAGS = -lGui -lTreePlayer -Wall -fopenmp
 # YOU SHOULD ACTIVE -Wall  every time !!!!
 
 ROOTINCS = $(shell root-config --cflags) # will be used as it is

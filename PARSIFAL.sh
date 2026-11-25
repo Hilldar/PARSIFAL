@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Authors:
 # Riccardo Farinelli 	<rfarinelli@fe.infn.it>
@@ -7,7 +8,6 @@
 # All rights reserved
 # For the licensing terms see $PARSIFAL/LICENSE
 #
-#!/bin/sh
 
 #################
 # PARSIFAL:INIT #
@@ -67,8 +67,9 @@ while getopts "MmehSAO" OPTION; do
 	    ./bin/Test
 	    ;;
 	S)
-	    rm -r pdf/backup/*
-	    mv pdf/* pdf/backup/.
+	    mkdir -p pdf/backup
+	    rm -rf pdf/backup/*
+	    find pdf -maxdepth 1 -type f -exec mv -t pdf/backup {} +
 	    if [ -z $3 ]
 	    then 
 		./bin/Simulate $2 0
@@ -92,7 +93,8 @@ while getopts "MmehSAO" OPTION; do
                 fi
             fi
 	    echo
-	    sed -n 1p run_list.txt; for i in {2..5}; do line=$(sed -n ${i}p run_list.txt); run=$(echo $line | sed 's/ .*//'); if [[ $2 = $run ]]; then sed -n ${i}p run_list.txt;fi; done
+	    head -n 1 run_list.txt
+	    awk -v r="$2" '$1 == r { print; exit }' run_list.txt
 	    echo
             echo -e "Angle \t Qind MPV \t Qread \t \t RatioQ \t Size \t \t CCres \t \t TPCres \t T0res \t \t Eff"
             cat data/$2/summary.txt

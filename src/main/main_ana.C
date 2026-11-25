@@ -14,11 +14,11 @@ const int NSIGMA_SIGNAL = 5;
 
 bool Check_File(TString name, TTree *tree, TFile *file);
 
-void Run_i(string ifolder, int iangle){
+void Run_i(string ifolder, int iangle, bool append = false){
 
   int folder = atoi(ifolder.c_str());
   ofstream outfile;
-  outfile.open(Form("data/%i/summary.txt",folder));
+  outfile.open(Form("data/%i/summary.txt",folder), append ? ios::app : ios::trunc);
   double aangle = iangle*TMath::DegToRad();
   TString name_ang = Form("data/%i/run_angle%i.root",folder,(int)iangle);
   TFile *infile = new TFile(name_ang);
@@ -73,26 +73,28 @@ void Run_i(string ifolder, int iangle){
 }
 
 
-int main(int argc, const char* argv[]){                                                                                                                                                                                                                                            
+int main(int argc, const char* argv[]){
   if(argc<2) {
-    cout<<"RUN the analysis with the configuration ID"<<endl;
-    return 0;
+    cerr<<"RUN the analysis with the configuration ID"<<endl;
+    return 1;
   }
   if(argc<3){
     string folder = argv[1];
     const int n_angle = 7;
     int angles[n_angle]={0,5,7,10,15,20,30};
+    // Truncate summary file once before running all angles sequentially to avoid write races
+    ofstream(Form("data/%i/summary.txt", atoi(folder.c_str())), ios::trunc).close();
     for(int iangle=0;iangle<n_angle;iangle++){
-      gSystem->Exec(Form("echo RUN %s angle: %i",folder.c_str(),angles[iangle]));
-      gSystem->Exec(Form("./bin/Analysis %s %i &",folder.c_str(),angles[iangle]));
+      cout<<"RUN "<<folder<<" angle: "<<angles[iangle]<<endl;
+      Run_i(folder, angles[iangle], true);
     }
   }
   else {
     string folder = argv[1];
-    int angle =atoi(argv[2]);
-    Run_i(folder,angle);
+    int angle = atoi(argv[2]);
+    Run_i(folder, angle, false);
   }
-  return 1;
+  return 0;
 };
 
 

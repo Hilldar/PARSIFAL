@@ -22,3 +22,7 @@ src/Plot/*.pdf
 src/Plot
 pdf_bck
 HTCondorScripts
+LogAi/
+AGENTS.md
+.agents/
+log/
