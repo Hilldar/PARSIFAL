@@ -1,0 +1,53 @@
+{
+  "APV": {
+    "run_id": 36,
+    "angle": 0,
+    "seed": 12345,
+    "nevents": 10,
+    "metrics": {
+      "angle": 0,
+      "QindMPV": 56.2559,
+      "Qread": 85.7446,
+      "RatioQ": 0.9655,
+      "Size": 5.2,
+      "CCres": 82.0,
+      "TPCres": 1640.0,
+      "T0res": 0.2,
+      "Eff": 1.0
+    }
+  },
+  "TIGER": {
+    "run_id": 21,
+    "angle": 0,
+    "seed": 12345,
+    "nevents": 10,
+    "metrics": {
+      "angle": 0,
+      "QindMPV": 57.7936,
+      "Qread": 68.2324,
+      "RatioQ": 0.8005,
+      "Size": 2.9,
+      "CCres": 167.0,
+      "TPCres": 4797.0,
+      "T0res": 0.0,
+      "Eff": 1.0
+    }
+  },
+  "TORA": {
+    "run_id": 56,
+    "angle": 0,
+    "seed": 12345,
+    "nevents": 10,
+    "metrics": {
+      "angle": 0,
+      "QindMPV": 56.2559,
+      "Qread": 84.6342,
+      "RatioQ": 0.9593,
+      "Size": 5.4,
+      "CCres": 120.0,
+      "TPCres": 6718.0,
+      "T0res": 0.2,
+      "Eff": 1.0
+    }
+  }
+}
