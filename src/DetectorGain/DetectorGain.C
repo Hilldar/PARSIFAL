@@ -1,14 +1,13 @@
 #include "DetectorGain/DetectorGain.h"
 namespace PARSIFAL2{
   DetectorGain::DetectorGain(int setup,bool MagField):
-    Setup(setup),
-    MagneticField(MagField),
     PrintInfo(true),
-    PrintNTuple(true)
+    PrintNTuple(true),
+    Setup(setup),
+    MagneticField(MagField)
   {
     tuning_factor_gain[0] = {1};
-    r = new TRandom3();
-    r->SetSeed(SEED);
+    r = new TRandom3(SEED ? SEED + 202 : 0);
     mean_detector_gain = 8000;
     //triple-GEM
     if(Get_Setup()==0){
@@ -60,7 +59,7 @@ namespace PARSIFAL2{
       return post_gain;
     }
     int tot_ele_gained = 0;
-    for(int iele=0;iele<post_gain.size();iele++){
+    for(size_t iele=0;iele<post_gain.size();iele++){
       int tot_gain = Get_Gain();
       post_gain.at(iele)->Set_GainedElectrons(tot_gain);
       tot_ele_gained += tot_gain;

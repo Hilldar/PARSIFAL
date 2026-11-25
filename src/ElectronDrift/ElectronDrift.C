@@ -2,17 +2,15 @@
 using namespace std;
 namespace PARSIFAL2{
   ElectronDrift::ElectronDrift(int setup, bool MagField, Geometry* geo):
+    PrintInfo(true),
+    PrintNTuple(true),
     Setup(setup),
     MagneticField(MagField),
-    geometry(geo),
-    PrintInfo(true),
-    PrintNTuple(true)
+    geometry(geo)
   {
     tuning_factor_diff = 1.0;
     tuning_factor_time = 1.0;
-    r = new TRandom3();
-
-    r->SetSeed(SEED);
+    r = new TRandom3(SEED ? SEED + 303 : 0);
     if(Get_Setup()==0){
       // no mag field -----------
       // >>> spatial shift
@@ -75,20 +73,14 @@ namespace PARSIFAL2{
       SpatialDiffusionTrans = 0;  // OK // sigma transfer 
       SpatialDiffusionInduc = 0;  // OK // sigma induction
       // >>> temporal shift
-      double par0 = -6.31906; //old setting
-      double par1 = 464.536;  //old setting
-      TemporalShiftDrift[0] = 120;  // OK // shift drift
-      TemporalShiftDrift[1] = 75; // OK // shift drift
-      TemporalShiftTrans = 0; // OK // shift transfer
-      TemporalShiftInduc = 0; // OK // sigma induction
-      double rap0 = 2.57168;
-      double rap1 = 19.0958;
-      double rap2 = -44.7537;
-      double rap3 = 38.6046;
-      TemporalDiffusionDrift[0] = 2.57168;  // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[1] = 19.0958; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[2] = -44.7537; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
-      TemporalDiffusionDrift[3] = 38.6046; // OK // sigma drift VANNO SOMMATI IN QUADRATURA
+      TemporalShiftDrift[0] = 120;  // shift drift
+      TemporalShiftDrift[1] = 75;   // shift drift
+      TemporalShiftTrans = 0;       // shift transfer
+      TemporalShiftInduc = 0;       // shift induction
+      TemporalDiffusionDrift[0] = 2.57168;  // sigma drift (summed in quadrature)
+      TemporalDiffusionDrift[1] = 19.0958;
+      TemporalDiffusionDrift[2] = -44.7537;
+      TemporalDiffusionDrift[3] = 38.6046;
       TemporalDiffusionTrans = 0; // OK // sigma transfer                                                                                                                                           
       TemporalDiffusionInduc = 0; // OK // sigma induction                                                                                                                                          
       // mag field -------------- UNSET
@@ -135,7 +127,7 @@ namespace PARSIFAL2{
   vector<Secondary*> ElectronDrift::Drift(vector<Secondary*> pre_drift){
     vector<Secondary*> post_drift;
     if(pre_drift.empty()) return post_drift;
-    for(int isec=0;isec<pre_drift.size();isec++){
+    for(size_t isec=0;isec<pre_drift.size();isec++){
       for(int iele=0;iele<pre_drift.at(isec)->Get_GainedElectrons();iele++){
 	int ID = pre_drift.at(isec)->Get_PrimaryID();
 	Position pos_initi = pre_drift.at(isec)->Get_PositionInitial();

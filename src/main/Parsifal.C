@@ -3,7 +3,6 @@
 using namespace PARSIFAL2;
 
 bool print_plot_all = 0;
-bool print_plot_above_thr = 0;
 bool print_plot_middle = 0; // also print waveform on file
 bool print_plot_charge_above = 0;
 bool plot_histo_Qt_APV = 0;
@@ -85,7 +84,7 @@ void PARSIFAL::Run(){
     std::cerr << "Errore nell'apertura del file!" << std::endl;
     return;
   }
-  r->SetSeed(SEED); // CHECK
+  r->SetSeed(SEED ? SEED + 606 : 0);
   for(event=0;event<nShots;event++){
   //for(event=0;event<1;event++){
     cout<<"Shot: "<<event<<endl;
@@ -133,15 +132,15 @@ void PARSIFAL::Run(){
 
     // Print PDF with charge/current/electronics histograms
     if(print_plot_all){ // Print all the channels
-      for(int i=0;i<channels.size();i++) {
+      for(size_t i=0;i<channels.size();i++) {
         cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
 	      channels.at(i)->Print_Time(event);
       }
       Plot_PDF_Channels();
     }
-    if(print_plot_middle){ //print the channel in the middle
-      for(int i=0;i<channels.size();i++) {
-        if(i!=(int)(geo->Get_NumberOfStrip1()/2.)) continue;
+    if(print_plot_middle){ // Print the channel in the middle
+      for(size_t i=0;i<channels.size();i++) {
+        if(static_cast<int>(i)!=(int)(geo->Get_NumberOfStrip1()/2.)) continue;
         cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
         channels.at(i)->Print_Time(event);
         for(int itime=0;itime<channels.at(i)->Get_Histo_cur()->GetNbinsX()-1;itime++){
@@ -151,15 +150,15 @@ void PARSIFAL::Run(){
         file_txt<<endl;
       }
     }
-    if(print_plot_charge_above){ //Print channels with charge above 0
-      for(int i=0;i<channels.size();i++) {
+    if(print_plot_charge_above){ // Print channels with charge above 0
+      for(size_t i=0;i<channels.size();i++) {
         if(channels.at(i)->Get_Charge()<=0) continue;
 	      cout<<i<<" \t "<<channels.at(i)->Get_N_electrons()<<" #ele \t \t "<<(float)(channels.at(i)->Get_N_electrons()*1.6e-4)<<" fC \t \t "<<(float)(channels.at(i)->Get_Charge())<<" fC"<<endl;
         channels.at(i)->Print_Time(event);
       }
     }
-    if(print_plot_above_thr){ // Print the channels of hits above thr
-      for(int i=0;i<hit.size();i++) if(hit.at(i)->Get_Charge()>0) channels.at(hit.at(i)->Get_ChannelID())->Print_Time(event);
+    if(Print_Plot_Above_Thr){ // Print the channels of hits above thr
+      for(size_t i=0;i<hit.size();i++) if(hit.at(i)->Get_Charge()>0) channels.at(hit.at(i)->Get_ChannelID())->Print_Time(event);
       Plot_PDF_Channels();
     }
     // Print PDF with channel time/charge distribution
@@ -189,73 +188,74 @@ void PARSIFAL::Terminate(){
 }
 
 void PARSIFAL::Plot_PDF_Channels(){
-  TCanvas *c = new TCanvas("ccc","ccc",1600,1600);
-  c->Divide(3,3);
-  c->cd(1);
-  // Plot all the channels ID vs Q
-  TGraph *g_channel_q = new TGraph(channel_ID.size(),&(channel_ID[0]),&(channel_charge[0]));
-  g_channel_q->Draw("AP*");
-  g_channel_q->GetXaxis()->SetTitle("Channel ID");
-  g_channel_q->GetYaxis()->SetTitle("Channel Charge [fC]");
-  c->cd(2);
-  // Plot all the channels ID vs T
-  TGraph *g_channel_t = new TGraph(channel_ID.size(),&(channel_ID[0]),&(channel_time[0]));
-  g_channel_t->Draw("AP*");
-  g_channel_t->GetXaxis()->SetTitle("Channel ID");
-  g_channel_t->GetYaxis()->SetTitle("Channel Time [fC]");
-  //empty
-  c->cd(3);
-  // Plot the channelds ID vs Q if above threshold
+  TCanvas c("ccc","ccc",1600,1600);
+  c.Divide(3,3);
+  c.cd(1);
+  // Plot all channels ID vs Q
+  TGraph g_channel_q(channel_ID.size(), channel_ID.data(), channel_charge.data());
+  g_channel_q.Draw("AP*");
+  g_channel_q.GetXaxis()->SetTitle("Channel ID");
+  g_channel_q.GetYaxis()->SetTitle("Channel Charge [fC]");
+  c.cd(2);
+  // Plot all channels ID vs T
+  TGraph g_channel_t(channel_ID.size(), channel_ID.data(), channel_time.data());
+  g_channel_t.Draw("AP*");
+  g_channel_t.GetXaxis()->SetTitle("Channel ID");
+  g_channel_t.GetYaxis()->SetTitle("Channel Time [ns]");
+  c.cd(3);
+  // Collect channels above threshold
   vector<double> channel_ID_above_thr, channel_time_above_thr, channel_charge_above_thr;
-  for(int iCh=0;iCh<channel_ID.size(); iCh++){
+  for(size_t iCh=0;iCh<channel_ID.size(); iCh++){
     if(channel_above_thr.at(iCh)){
       channel_ID_above_thr.push_back(channel_ID.at(iCh));
       channel_time_above_thr.push_back(channel_time.at(iCh));
       channel_charge_above_thr.push_back(channel_charge.at(iCh));
     }
   }
-  c->cd(4);
-  TGraph *g_channel_q_above_thr = new TGraph(channel_ID_above_thr.size(),&(channel_ID_above_thr[0]),&(channel_charge_above_thr[0]));
-  g_channel_q_above_thr->Draw("AP*");
-  g_channel_q_above_thr->GetXaxis()->SetTitle("Channel above thr ID");
-  g_channel_q_above_thr->GetYaxis()->SetTitle("Channel above thr Charge [fC]");
-  // Plot the channelds ID vs T if above threshold
-  c->cd(5);
-  TGraph *g_channel_t_above_thr = new TGraph(channel_ID_above_thr.size(),&(channel_ID_above_thr[0]),&(channel_time_above_thr[0]));
-  g_channel_t_above_thr->Draw("AP*");
-  g_channel_t_above_thr->GetXaxis()->SetTitle("Channel above thr ID");
-  g_channel_t_above_thr->GetYaxis()->SetTitle("Channel above thr Time [ns]");
-  // Plot the total induced current collected on the readout
-  c->cd(7);
-  TH1D *hh_time_raw = new TH1D("tot_raw","Total current raw",n_ns, 0,  n_ns);  //total raw signal induced by electrons
-  for(int ich=0;ich<channels.size();ich++){
-    for(int ins=0;ins<n_ns;ins++){
-      hh_time_raw->AddBinContent(ins,channels.at(ich)->Get_Histo_raw()->GetBinContent(ins));
+  c.cd(4);
+  TGraph g_channel_q_above_thr(channel_ID_above_thr.size(), channel_ID_above_thr.data(), channel_charge_above_thr.data());
+  if(!channel_ID_above_thr.empty()){
+    g_channel_q_above_thr.Draw("AP*");
+    g_channel_q_above_thr.GetXaxis()->SetTitle("Channel above thr ID");
+    g_channel_q_above_thr.GetYaxis()->SetTitle("Channel above thr Charge [fC]");
+  }
+  c.cd(5);
+  TGraph g_channel_t_above_thr(channel_ID_above_thr.size(), channel_ID_above_thr.data(), channel_time_above_thr.data());
+  if(!channel_ID_above_thr.empty()){
+    g_channel_t_above_thr.Draw("AP*");
+    g_channel_t_above_thr.GetXaxis()->SetTitle("Channel above thr ID");
+    g_channel_t_above_thr.GetYaxis()->SetTitle("Channel above thr Time [ns]");
+  }
+  // Detached stack histograms for total induced/integrated/resistive charge
+  c.cd(7);
+  TH1D hh_time_raw("tot_raw","Total current raw",n_ns, 0, n_ns);
+  hh_time_raw.SetDirectory(nullptr);
+  for(size_t ich=0;ich<channels.size();ich++){
+    for(int ins=1;ins<=n_ns;ins++){
+      hh_time_raw.AddBinContent(ins,channels.at(ich)->Get_Histo_raw()->GetBinContent(ins));
     }
   }
-  hh_time_raw->Draw();
-  // Plot the total charge integrated from the induced current
-  c->cd(8);
-  TH1D *hh_time_tot = new TH1D("tot_tot","Total Charge",n_ns, 0,  n_ns); //total charge integrated
-  for(int ich=0;ich<channels.size();ich++){
-    for(int ins=0;ins<n_ns;ins++){
-      hh_time_tot->AddBinContent(ins,channels.at(ich)->Get_Histo_tot()->GetBinContent(ins));
+  hh_time_raw.Draw();
+  c.cd(8);
+  TH1D hh_time_tot("tot_tot","Total Charge",n_ns, 0, n_ns);
+  hh_time_tot.SetDirectory(nullptr);
+  for(size_t ich=0;ich<channels.size();ich++){
+    for(int ins=1;ins<=n_ns;ins++){
+      hh_time_tot.AddBinContent(ins,channels.at(ich)->Get_Histo_tot()->GetBinContent(ins));
     }
   }
-  hh_time_tot->Draw();
-  // Plot the total charge integrated after the charge dispersion effect (if should be equal to hh_time_tot)
-  c->cd(9);
-  TH1D *hh_time_res = new TH1D("tot_res","Total Resistive Charge",n_ns, 0,  n_ns); //total charge integrated after resistive
-  for(int ich=0;ich<channels.size();ich++){
-    for(int ins=0;ins<n_ns;ins++){
-      hh_time_res->AddBinContent(ins,channels.at(ich)->Get_Histo_res()->GetBinContent(ins));
+  hh_time_tot.Draw();
+  c.cd(9);
+  TH1D hh_time_res("tot_res","Total Resistive Charge",n_ns, 0, n_ns);
+  hh_time_res.SetDirectory(nullptr);
+  for(size_t ich=0;ich<channels.size();ich++){
+    for(int ins=1;ins<=n_ns;ins++){
+      hh_time_res.AddBinContent(ins,channels.at(ich)->Get_Histo_res()->GetBinContent(ins));
     }
   }
-  hh_time_res->Draw();
-  //print
-  c->SaveAs(Form("pdf/Event_%i_Channels.pdf",event));
-  c->SaveAs(Form("pdf/Event_%i_Channels.png",event));
-  delete c;
+  hh_time_res.Draw();
+  c.SaveAs(Form("pdf/Event_%i_Channels.pdf",event));
+  c.SaveAs(Form("pdf/Event_%i_Channels.png",event));
 };
 
 void PARSIFAL::Clean(){
@@ -266,7 +266,7 @@ void PARSIFAL::Clean(){
   secondary.clear();
   electrons.clear();
   electrons_resistive.clear();
-  for(int i=0;i<channels.size();i++) channels.at(i)->Reset(); // CHECK not needed if I use the FreeMemory
+  for(size_t i=0;i<channels.size();i++) channels.at(i)->Reset();
   channels.clear();
   hit.clear();
   cluster1d.clear();
@@ -498,7 +498,7 @@ void PARSIFAL::Write_oFile(){
       secondary_gain.push_back(0);
     }
     else{
-      for(int i=0;i<secondary.size();i++){
+      for(size_t i=0;i<secondary.size();i++){
         secondary_gain.push_back(secondary.at(i)->Get_GainedElectrons());
       }
     }
@@ -578,12 +578,11 @@ void PARSIFAL::Write_oFile(){
       channel_n_electrons.push_back(0);
     }
     else{
-      for(int i=0;i<channels.size();i++){
+      for(size_t i=0;i<channels.size();i++){
         channel_ID.push_back(channels.at(i)->Get_ChannelID());
         channel_type.push_back(channels.at(i)->Get_Type());
         channel_charge.push_back(channels.at(i)->Get_Charge());
         channel_time.push_back(channels.at(i)->Get_Time());
-        //channel_dtime.push_back(channels.at(i)->Get_dTime());
         channel_above_thr.push_back(channels.at(i)->Get_AboveThr());
         channel_above_thr_E.push_back(channels.at(i)->Get_AboveThr_E());
         channel_above_thr_T.push_back(channels.at(i)->Get_AboveThr_T());
@@ -597,21 +596,7 @@ void PARSIFAL::Write_oFile(){
         channel_positionY.push_back(channels.at(i)->Get_Position().Get_Y());
         channel_positionZ.push_back(channels.at(i)->Get_Position().Get_Z());
         channel_positionPhi.push_back(channels.at(i)->Get_Position().Get_Phi());
-        channel_n_electrons.push_back(channels.at(i)->Get_N_electrons());			     
-        if(0){
-          file->cd();
-          TCanvas *cc1 = new TCanvas("cc1","cc1",800,600);
-          cc1->cd();
-          channels.at(i)->Get_Histo_raw()->Write();
-          cc1->SaveAs((TString)Form("delete/raw_%i_%i.root",event,i));
-          channels.at(i)->Get_Histo_apv()->Write();
-          cc1->SaveAs((TString)Form("delete/APV_%i_%i.root",event,i));
-          channels.at(i)->Get_Histo_int_apv()->Write();
-          cc1->SaveAs((TString)Form("delete/int_%i_%i.root",event,i));
-          channels.at(i)->Get_Histo_cap()->Write();
-          cc1->SaveAs((TString)Form("delete/cap_%i_%i.root",event,i));
-          delete cc1;
-        }
+        channel_n_electrons.push_back(channels.at(i)->Get_N_electrons());
       }
     }
   }
@@ -628,7 +613,7 @@ void PARSIFAL::Write_oFile(){
       hit_positionY.push_back(-999);
     }
     else{
-      for(int i=0;i<hit.size();i++){
+      for(size_t i=0;i<hit.size();i++){
         hit_ID.push_back(hit.at(i)->Get_HitID());
         hit_channelID.push_back(hit.at(i)->Get_ChannelID());
         hit_clusterID.push_back(hit.at(i)->Get_ClusterID());
@@ -657,7 +642,7 @@ void PARSIFAL::Write_oFile(){
       cluster1d_faster.push_back(false);
     }
     else{
-      for(int i=0;i<cluster1d.size();i++){
+      for(size_t i=0;i<cluster1d.size();i++){
         cluster1d_ID.push_back(cluster1d.at(i)->Get_ClusterID());
         cluster1d_type.push_back(cluster1d.at(i)->Get_Type());
         cluster1d_charge.push_back(cluster1d.at(i)->Get_Charge());

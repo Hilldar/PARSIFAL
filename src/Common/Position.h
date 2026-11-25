@@ -23,13 +23,10 @@ namespace PARSIFAL2{
       Set_R(sqrt(pow(x,2)+pow(z,2)));
       Set_Phi(x,z);
     };
-  Position(double r, double phi, double t):R(r),Phi(phi),T(t){
-      Set_Phi(phi);
-      Set_R(r);
+  Position(double r, double phi, double t):T(t),R(r),Phi(phi){
       Set_X(Get_R()*cos(Get_Phi()));
       Set_Y(0);
       Set_Z(Get_R()*sin(Get_Phi()));
-      Set_T(t);
     };
     Position(Position* position){
       Set_X  (position->Get_X()  );
@@ -70,18 +67,18 @@ namespace PARSIFAL2{
     double X,Y,Z,T,R,Phi;
     //Function
     void   Set_Phi(double x, double z)                {
-                                                       double pi = TMath::Pi(); 
-						       double r  = sqrt(pow(x,2)+pow(z,2));
-						       //cosi manca l'offset della dead-area
+                                                       double pi = TMath::Pi();
+                                                       double r  = sqrt(pow(x,2)+pow(z,2));
+                                                       Phi = 0;
                                                        if     (z==0 && x== r)  Phi=0;
-						       else if(x==0 && z== r)  Phi=pi/2.;
-						       else if(z==0 && x==-r)  Phi=pi;
-						       else if(x==0 && z==-r)  Phi=3*pi/2.;
-						       else if(x==0 && z== 0)  Phi=0;
-						       else if(x>0  && z>0  )  Phi=pi/2.-asin(x/r);
-						       else if(x<0  && z>0  )  Phi=(asin(abs(x/r))+pi/2.);
-						       else if(x<0  && z<0  )  Phi=(1.5*pi-asin(abs(x/r)));
-						       else if(x>0  && z<0  )  Phi=(asin(abs(x/r))+3*pi/2.);
+                                                       else if(x==0 && z== r)  Phi=pi/2.;
+                                                       else if(z==0 && x==-r)  Phi=pi;
+                                                       else if(x==0 && z==-r)  Phi=3*pi/2.;
+                                                       else if(x==0 && z== 0)  Phi=0;
+                                                       else if(x>0  && z>0  )  Phi=pi/2.-asin(x/r);
+                                                       else if(x<0  && z>0  )  Phi=(asin(abs(x/r))+pi/2.);
+                                                       else if(x<0  && z<0  )  Phi=(1.5*pi-asin(abs(x/r)));
+                                                       else if(x>0  && z<0  )  Phi=(asin(abs(x/r))+3*pi/2.);
                                                       };
   }; 
 }

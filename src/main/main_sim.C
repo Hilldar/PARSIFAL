@@ -1,4 +1,5 @@
 #include "main/Parsifal.h"
+#include "TRandom.h"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -6,6 +7,7 @@
 #include <sstream>
 
 int nshot = 1;
+static int g_override_nevents = -1;
 
 using namespace PARSIFAL2;
 
@@ -114,7 +116,7 @@ static void Write_InfoSim(const string& info_path,
        << "TORA Gain                  : " << var[18] << " mV/fC\n"
        << "TORA Shaping Time (tau)    : " << var[19] << " ns\n\n"
 
-       << "[Compile-Time Flags (Common.h)]\n"
+       << "[Runtime Simulation Flags (Common.h / CLI)]\n"
        << "Fast Simulation            : " << on_off(fast_simulation) << "\n"
        << "Magnetic Field (Bfield)    : " << on_off(Bfield) << "\n"
        << "Primary Ionization         : " << on_off(!NO_PrimaryIonization) << "\n"
@@ -129,7 +131,9 @@ static void Write_InfoSim(const string& info_path,
        << "FFT Filter                 : " << on_off(!NO_FFT) << "\n"
        << "Capacitive Induction       : " << on_off(!NO_Capacitive) << "\n"
        << "uTPC Correction            : " << on_off(!NO_uTPC_Correction) << "\n"
-       << "Seed                       : " << setprecision(0) << SEED << "\n"
+       << "TORA Shaper Order          : " << TORA_shaper_order << "\n"
+       << "Plot Hits Above Thr        : " << on_off(Print_Plot_Above_Thr) << "\n"
+       << "Seed                       : " << SEED << "\n"
        << "Time Window (n_ns)         : " << n_ns << " ns (+ " << n_ns_buffer << " ns buffer)\n"
        << "================================================================================\n";
 
@@ -138,6 +142,9 @@ static void Write_InfoSim(const string& info_path,
 }
 
 void Run_i(string folder_i, int angle_i){
+  // Seed global ROOT RNG so TF1::GetRandom() is reproducible when SEED > 0
+  if (gRandom) gRandom->SetSeed(SEED);
+
   const auto wall_start   = chrono::system_clock::now();
   const auto steady_start = chrono::steady_clock::now();
   const string start_datetime = FormatDateTime(wall_start);
@@ -186,6 +193,10 @@ void Run_i(string folder_i, int angle_i){
   if(var[0]=="?") {
     cout<<"ERROR: Check the file run_list.txt"<<endl;
     return;
+  }
+  if(g_override_nevents > 0) {
+    var[1] = to_string(g_override_nevents);
+    nshot = g_override_nevents;
   }
   //if(folder_i=="1" || folder_i=="2"){
   if(false){
@@ -260,13 +271,26 @@ void Run_i(string folder_i, int angle_i){
   return;
 }
 
+static void PrintUsage(const char* prog) {
+  cerr << "Usage: " << prog << " <runID> [angle_deg] [options]\n"
+       << "Optional runtime overrides:\n"
+       << "  --seed <U>          Random seed (0 = random, >0 = deterministic)\n"
+       << "  --nevents <N>       Override number of events from run_list.txt\n"
+       << "  --bfield <0|1>      Enable/disable magnetic field\n"
+       << "  --no-noise <0|1>    Disable/enable noise\n"
+       << "  --no-sat <0|1>      Disable/enable saturation\n"
+       << "  --no-fft <0|1>      Disable/enable FFT filter\n"
+       << "  --plot-hits <0|1>   Save PDF/PNG waveforms for hits above threshold\n"
+       << "  --tora-shaper <1|3> TORA shaper order (1 or 3)\n";
+}
+
 int main(int argc, char* argv[]){
   if(argc<2) {
-    cerr<<"RUN the analysis with the configuration ID"<<endl;
+    PrintUsage(argv[0]);
     return 1;
   }
+  string folder = argv[1];
   if(argc<3){
-    string folder = argv[1];
     const int n_angle = 7;
     int angles[n_angle]={0,5,7,10,15,20,30};
     for(int iangle=0;iangle<n_angle;iangle++){
@@ -275,8 +299,33 @@ int main(int argc, char* argv[]){
     }
   }
   else {
-    string folder = argv[1];
-    int angle =atoi(argv[2]);
+    int angle = atoi(argv[2]);
+    // Parse optional runtime CLI flags
+    for(int i = 3; i < argc; i++){
+      string arg = argv[i];
+      auto need_val = [&](const string& flag) {
+        if(i + 1 >= argc){
+          cerr << "ERROR: missing value for " << flag << endl;
+          PrintUsage(argv[0]);
+          return false;
+        }
+        return true;
+      };
+      if(arg == "--seed")        { if(!need_val(arg)) return 1; SEED = static_cast<UInt_t>(stoul(argv[++i])); }
+      else if(arg == "--nevents"){ if(!need_val(arg)) return 1; g_override_nevents = stoi(argv[++i]); }
+      else if(arg == "--bfield") { if(!need_val(arg)) return 1; Bfield = (stoi(argv[++i]) != 0); }
+      else if(arg == "--no-noise"){ if(!need_val(arg)) return 1; NO_Noise = (stoi(argv[++i]) != 0); }
+      else if(arg == "--no-sat") { if(!need_val(arg)) return 1; NO_Saturation = (stoi(argv[++i]) != 0); }
+      else if(arg == "--no-fft") { if(!need_val(arg)) return 1; NO_FFT = (stoi(argv[++i]) != 0); }
+      else if(arg == "--plot-hits"){ if(!need_val(arg)) return 1; Print_Plot_Above_Thr = (stoi(argv[++i]) != 0); }
+      else if(arg == "--tora-shaper"){ if(!need_val(arg)) return 1; TORA_shaper_order = stoi(argv[++i]); }
+      else if(arg == "-h" || arg == "--help"){ PrintUsage(argv[0]); return 0; }
+      else {
+        cerr << "ERROR: unknown option '" << arg << "'" << endl;
+        PrintUsage(argv[0]);
+        return 1;
+      }
+    }
     Run_i(folder,angle);
   }
   return 0;

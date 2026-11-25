@@ -29,15 +29,14 @@ namespace PARSIFAL2{
   vector<Hit*> Reconstruction::Digitize(vector<ElectronicChannel*> chan){
     vector<Hit*> hits;
     if(chan.empty() || NO_Readout || NO_Hit)return hits;
-    for(int i=0;i<chan.size();i++){
+    for(size_t i=0;i<chan.size();i++){
       if(chan.at(i)->Get_AboveThr()){
-	//if(chan.at(i)->Get_Charge()<=0) cout<<"chan: "<<i<<" above: "<<chan.at(i)->Get_AboveThr()<<" charge: "<<chan.at(i)->Get_Charge()<<" time: "<<chan.at(i)->Get_Time()<<endl;
 	Hit* hit = new Hit(chan.at(i));
 	hits.push_back(hit);
       }
     }
-    //Finalize the hits
-    for(int i=0;i<hits.size();i++) hits.at(i)->Set_HitID(i);
+    // Finalize the hits
+    for(size_t i=0;i<hits.size();i++) hits.at(i)->Set_HitID(static_cast<int>(i));
     return hits;
   };
   
@@ -45,7 +44,7 @@ namespace PARSIFAL2{
     vector<Cluster1D*> cluster;
     if(hit.empty() || NO_Readout || NO_Cluster || NO_Hit) return cluster;
     Set_Hit_Collection(hit);
-    for(int i=0;i<hit.size();i++){
+    for(size_t i=0;i<hit.size();i++){
       if(i==0) {
 	Cluster1D *clus = new Cluster1D(hit.at(0));
 	cluster.push_back(clus);
@@ -54,44 +53,44 @@ namespace PARSIFAL2{
 	      Get_Hit_type(i) == Get_Hit_type(i-1) &&
 	      abs(Get_Hit_channel(i) - Get_Hit_channel(i-1)) <= (1+dead_strip)
 	      ){
-	cluster.at(cluster.size()-1)->Set_HitID(i);
+	cluster.at(cluster.size()-1)->Set_HitID(static_cast<int>(i));
       }
       else{
 	Cluster1D *clus = new Cluster1D(hit.at(i));
 	cluster.push_back(clus);
       }
     }
-    //Finalize the clusters
-    for(int icl=0;icl<cluster.size();icl++){
+    // Finalize the clusters
+    for(size_t icl=0;icl<cluster.size();icl++){
       double charge=0;
       double cc=0;
       double time0=9999;
       double timeF=-9999;
-      cluster.at(icl)->Set_ClusterID(icl);
+      cluster.at(icl)->Set_ClusterID(static_cast<int>(icl));
       cluster.at(icl)->Set_Size();
       for(int ihit=0;ihit<cluster.at(icl)->Get_Size();ihit++){
 	int hit_ID = cluster.at(icl)->Get_HitID(ihit);
-	//Charge
+	// Charge
 	double hit_charge = Get_Hit_charge(hit_ID);
 	charge+=hit_charge;
-	//Time0
+	// Time0
 	if(Get_Hit_T(hit_ID)<time0){
 	  time0=Get_Hit_T(hit_ID);
 	  cluster.at(icl)->Set_Time0(time0);
 	}
-	//TimeF
+	// TimeF
 	if(Get_Hit_T(hit_ID)>timeF){
 	  timeF=Get_Hit_T(hit_ID);
 	  cluster.at(icl)->Set_TimeF(timeF);
 	}
-	//Charge Centroid
+	// Charge Centroid
 	if(cluster.at(icl)->Get_Type()==Xview) cc += hit_charge * Get_Hit_X(hit_ID);
 	if(cluster.at(icl)->Get_Type()==Yview) cc += hit_charge * Get_Hit_Y(hit_ID);
-	//Link cluster and hit
-	hit.at(cluster.at(icl)->Get_HitID(ihit))->Set_ClusterID(icl);
+	// Link cluster and hit
+	hit.at(cluster.at(icl)->Get_HitID(ihit))->Set_ClusterID(static_cast<int>(icl));
       }
       cluster.at(icl)->Set_Charge(charge);
-      cluster.at(icl)->Set_Position_CC(cc/charge);
+      cluster.at(icl)->Set_Position_CC(charge != 0.0 ? cc / charge : -9999.0);
       cluster.at(icl)->Set_Position_TPC(Get_TPC(cluster.at(icl)));
     }
     // Find cluster w/ highQ | faster T
@@ -103,23 +102,23 @@ namespace PARSIFAL2{
       // High Q
       if(cluster.at(icl)->Get_Charge() > high_Q){
 	high_Q = cluster.at(icl)->Get_Charge();
-	ID_high_Q = icl;
+	ID_high_Q = static_cast<int>(icl);
       }
       // Fast T: select minimum valid start time
       if(cluster.at(icl)->Get_Time0() >= 0 && cluster.at(icl)->Get_Time0() < fast_T){
         fast_T = cluster.at(icl)->Get_Time0();
-        ID_fast_T = icl;
+        ID_fast_T = static_cast<int>(icl);
       }
 
     }
     
-    //Set high Q flag | faster T flag
-    for(int icl=0;icl<cluster.size();icl++){
-      //High Q
-      if(icl==ID_high_Q) cluster.at(icl)->Set_High_Q(true);
+    // Set high Q flag | faster T flag
+    for(size_t icl=0;icl<cluster.size();icl++){
+      // High Q
+      if(static_cast<int>(icl)==ID_high_Q) cluster.at(icl)->Set_High_Q(true);
       else cluster.at(icl)->Set_High_Q(false);
-      //Fast T
-      if(icl==ID_fast_T) cluster.at(icl)->Set_Faster(true);
+      // Fast T
+      if(static_cast<int>(icl)==ID_fast_T) cluster.at(icl)->Set_Faster(true);
       else cluster.at(icl)->Set_Faster(false);
     }
     return cluster;
@@ -135,80 +134,74 @@ namespace PARSIFAL2{
       int hit_ID = cl1D->Get_HitID(iHit);
       double drift_velocity = Get_Drift_Velocity();
       double drift_path = (Get_Hit_T(hit_ID)-Get_T0_TPC()/*-Track_T0()*/) * drift_velocity;
-      //Fill the vector with the hit info
+      // Fill the vector with the hit info
       if(drift_path > -extra_gap_range && drift_path < extra_gap_range + gap){
 	position_tpc.push_back(Get_Hit_position1D(hit_ID));
 	drift_tpc.push_back(drift_path);
 	if(print_TPC) cout<<"iHit: "<<iHit<<" \t hit_ID: "<<hit_ID<<" \t X: "<<Get_Hit_position1D(hit_ID)<<" \t Z: "<<drift_path<<" \t T: "<<Get_Hit_T(hit_ID)<<endl;
 	dpos_tpc.push_back(sqrt(pow(Get_Pitch(hit_ID)/sqrt(12.),2) + pow(Get_Pitch(hit_ID)/sqrt(12.) * cl1D->Get_Charge()/cl1D->Get_Size() / Get_Hit_charge(hit_ID) ,2)));
 	ddrift_tpc.push_back(Get_Hit_dT(hit_ID) * drift_velocity);
-	//ddrift_tpc.push_back(5 * drift_velocity);
 	q_tpc.push_back(Get_Hit_charge(hit_ID));
       }
     }
-    //Corrections
+    // Corrections
     Correction_Iso(cl1D->Get_Size(),&position_tpc,&drift_tpc,&q_tpc);
-    //µTPC fit
-    if(position_tpc.size()>TPC_min_hit){
-      if(print_TPC) for(int i=0;i<position_tpc.size();i++) cout<<"hit: "<<i<<" X: "<<position_tpc.at(i)<<" Z: "<<drift_tpc.at(i)<<endl;
-      TCanvas *c_tpc = new TCanvas("c_tpc","c_tpc",800,600);
-      TGraphErrors *g = new TGraphErrors(position_tpc.size(),&position_tpc[0],&drift_tpc[0],&dpos_tpc[0],&ddrift_tpc[0]);
-      TF1 *f = new TF1("f","pol1");
-      g->Fit("f","QWM");
-      if(print_TPC) g->Draw("AP");
-      g->Fit("f","QM");
-      double q=f->GetParameter(0);
-      double m=f->GetParameter(1);
-      double tpc = (0.5*gap - q)/m;
-      //Draw the plot
+    // uTPC linear fit
+    if(static_cast<int>(position_tpc.size()) > TPC_min_hit){
+      if(print_TPC) for(size_t i=0;i<position_tpc.size();i++) cout<<"hit: "<<i<<" X: "<<position_tpc.at(i)<<" Z: "<<drift_tpc.at(i)<<endl;
+      TGraphErrors g(position_tpc.size(), &position_tpc[0], &drift_tpc[0], &dpos_tpc[0], &ddrift_tpc[0]);
+      TF1 f("f", "pol1");
+      // Fit once with N0 (no canvas creation/drawing) unless diagnostic plotting is enabled
+      g.Fit(&f, print_TPC ? "QM" : "QMN0");
+      double q = f.GetParameter(0);
+      double m = f.GetParameter(1);
+      if(std::fabs(m) < 1e-12) return -9999;
+      double tpc = (0.5 * gap - q) / m;
+      // Draw diagnostic plot only when requested
       if(print_TPC) {
+	TCanvas c_tpc("c_tpc","c_tpc",800,600);
+	g.Draw("AP");
 	vector<double> x_mc, z_mc;
 	double mc_left = ionio->Get_PositionInitial().Get_X();
 	double mc_right= ionio->Get_PositionFinal().Get_X();
-	for(int i=0;i<primi.size();i++){
+	for(size_t i=0;i<primi.size();i++){
 	  if(primi.at(i)->Get_Position().Get_Z()>0.001 && primi.at(i)->Get_Position().Get_X()>mc_left && primi.at(i)->Get_Position().Get_X()<mc_right){
 	    x_mc.push_back(primi.at(i)->Get_Position().Get_X());
 	    z_mc.push_back(primi.at(i)->Get_Position().Get_Z());
-	    //cout<<"iPrimy: "<<i<<" \t X: "<<primi.at(i)->Get_Position().Get_X()<<" \t Z: "<<primi.at(i)->Get_Position().Get_Z()<<endl;
 	  }
 	}
-	c_tpc->Update();
-	TGraph *g_mc = new TGraph(z_mc.size(),&x_mc[0],&z_mc[0]);
-	g_mc->SetMarkerStyle(24);
-	g_mc->SetMarkerColor(kBlue);
-	g->GetYaxis()->SetRangeUser(0,5);
-	g->SetMarkerStyle(20);
-	g->SetMarkerColor(kRed);
-	TLine *l_recY = new TLine(c_tpc->GetUxmin(),2.5,tpc,2.5);
-	l_recY->SetLineColor(kRed);
-	l_recY->Draw("");
-	TLine *l_recX = new TLine(tpc,0,tpc,2.5);
-	l_recX->SetLineColor(kRed);
-	l_recX->Draw("");
+	c_tpc.Update();
+	TGraph g_mc(z_mc.size(),&x_mc[0],&z_mc[0]);
+	g_mc.SetMarkerStyle(24);
+	g_mc.SetMarkerColor(kBlue);
+	g.GetYaxis()->SetRangeUser(0,5);
+	g.SetMarkerStyle(20);
+	g.SetMarkerColor(kRed);
+	TLine l_recY(c_tpc.GetUxmin(),2.5,tpc,2.5);
+	l_recY.SetLineColor(kRed);
+	l_recY.Draw("");
+	TLine l_recX(tpc,0,tpc,2.5);
+	l_recX.SetLineColor(kRed);
+	l_recX.Draw("");
 	double mc_half_gap = 0.5*(ionio->Get_PositionFinal().Get_X()+ionio->Get_PositionInitial().Get_X());
-	TLine *l_mcX = new TLine(mc_half_gap,0,mc_half_gap,5);
-        l_mcX->SetLineColor(kBlue);
-        l_mcX->Draw();
-	TLine *l_mcX_left = new TLine(mc_left,0,mc_left,5);
-	l_mcX_left->SetLineColor(kBlue);
-	l_mcX_left->SetLineStyle(10);
-	l_mcX_left->Draw();
-	TLine *l_mcX_right = new TLine(mc_right,0,mc_right,5);
-	l_mcX_right->SetLineColor(kBlue);
-	l_mcX_right->SetLineStyle(10);
-        l_mcX_right->Draw();
-	g_mc->Draw("same *");
+	TLine l_mcX(mc_half_gap,0,mc_half_gap,5);
+        l_mcX.SetLineColor(kBlue);
+        l_mcX.Draw();
+	TLine l_mcX_left(mc_left,0,mc_left,5);
+	l_mcX_left.SetLineColor(kBlue);
+	l_mcX_left.SetLineStyle(10);
+	l_mcX_left.Draw();
+	TLine l_mcX_right(mc_right,0,mc_right,5);
+	l_mcX_right.SetLineColor(kBlue);
+	l_mcX_right.SetLineStyle(10);
+        l_mcX_right.Draw();
+	g_mc.Draw("same *");
 	gSystem->Exec("mkdir -p tpcplot");
-	if(cl1D->Get_Type()==1) c_tpc->SaveAs(Form("tpcplot/tpc_event_%f.png",tpc));
-	delete g_mc;
+	if(cl1D->Get_Type()==1) c_tpc.SaveAs(Form("tpcplot/tpc_event_%f.png",tpc));
       }
-      //Terminate
-      delete c_tpc;
-      delete g;
-      delete f;  
       Set_is_TPC(cl1D,true);
-	return tpc;									  
-    }    
+      return tpc;
+    }
     return -9999;
   };
 

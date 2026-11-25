@@ -9,15 +9,15 @@ namespace PARSIFAL2{
     //Constructor
     Hit():PrintNTuple(PrintNTuple_Hit){};
     Hit(ElectronicChannel *ch):
+    PrintNTuple(PrintNTuple_Hit),
+    position(ch->Get_Position()),
     hitID(-1),
     channelID(ch->Get_ChannelID()),
     clusterID(-1),
     type(ch->Get_Type()),
-    position(ch->Get_Position()),
     charge(ch->Get_Charge()),
     time(ch->Get_Time()),
-    dtime(ch->Get_dTime()),
-    PrintNTuple(PrintNTuple_Hit)
+    dtime(ch->Get_dTime())
     {};
     //Destructor
     ~Hit() {

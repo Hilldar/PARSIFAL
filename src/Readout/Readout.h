@@ -27,21 +27,21 @@ namespace PARSIFAL2{
     ElectronicChannel*         Get_Channel       (int ich) {return channel.at(ich);};
     vector<ElectronicChannel*> Get_Channels      () {return channel;}
     int                        Get_N_Channels    () {return channel.size();};
-    void                       Clean             () {for(int i=0;i<channel.size();i++) channel.at(i)->ResetNelectrons();};
+    void                       Clean             () {for(size_t i=0;i<channel.size();i++) channel.at(i)->ResetNelectrons();};
     void                       Set_Noise_fC      (double io);
     void                       Set_Threshold_fC  (double io){threshold_fC=io;};
     void                       Set_IonTailLength (double io){IT_Lenght=io; IT_amplitude=1./IT_Lenght;};
     void                       Set_FastSlowRatio (double io){IT_ratio_fast_slow=io;};
     void                       Set_APV_ped       (double io){mmdaq_ped=io;};
     void                       Set_APV_thr       (double io){mmdaq_thr_factor=io;};
-    void                       Set_TIGER_thr_E   (double io){thrE_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_E(thrE_TIGER);};
-    void      	      	       Set_TIGER_thr_T   (double io){thrT_TIGER=io*gain_TIGER; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TIGER);};
+    void                       Set_TIGER_thr_E   (double io){thrE_TIGER=io*gain_TIGER; for(size_t i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_E(thrE_TIGER);};
+    void                       Set_TIGER_thr_T   (double io){thrT_TIGER=io*gain_TIGER; for(size_t i=0;i<channel.size();i++) channel.at(i)->Set_V_thr_T(thrT_TIGER);};
     void                       Set_gain_TORA     (double io){gain_TORA=io;};
     void                       Set_TORA_tau      (double io){tau_TORA=io;};
-    void      	      	       Set_TORA_thr_rise_mV (double io){thrRise_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thrRise(thrRise_TORA);};
-    void      	      	       Set_TORA_thr_rise    (double io){thrRise_TORA=io;};
-    void      	      	       Set_TORA_thr_trail_mV (double io){thrTrail_TORA=io*gain_TORA; for(int i=0;i<channel.size();i++) channel.at(i)->Set_V_thrTrail(thrTrail_TORA);};
-    void      	      	       Set_TORA_thr_trail    (double io){thrTrail_TORA=io;};
+    void                       Set_TORA_thr_rise_mV (double io){thrRise_TORA=io*gain_TORA; for(size_t i=0;i<channel.size();i++) channel.at(i)->Set_V_thrRise(thrRise_TORA);};
+    void                       Set_TORA_thr_rise    (double io){thrRise_TORA=io;};
+    void                       Set_TORA_thr_trail_mV (double io){thrTrail_TORA=io*gain_TORA; for(size_t i=0;i<channel.size();i++) channel.at(i)->Set_V_thrTrail(thrTrail_TORA);};
+    void                       Set_TORA_thr_trail    (double io){thrTrail_TORA=io;};
     void                       Set_APV_Plot_Hit  (vector<TH1F*> io){_histo_hit_Qt_APV=io;};
     void                       Update_param_TORA ();
     void                       Set_FFT_fmin      (double io){FFT_fmin=io;};
@@ -135,16 +135,14 @@ namespace PARSIFAL2{
     TF1* cap_charge_1;
     TF1* cap_charge_2;
     TRandom3 *r_cap;
-    //Function capacitive
+    // Capacitive effect functions
     bool Capacitive_Induction_1(double q);
     bool Capacitive_Induction_2(double q);
     double Get_T_induced_1(double q, double t);
     double Get_T_induced_2(double q, double t);
     double Get_Q_induced_1(double q);
     double Get_Q_induced_2(double q);
-    //Integrator
-    TF1 *f[n_ns];
-    //APV
+    // APV
     double time, dtime;
     void Set_Time(double io){time=io;};
     double Get_Time(){return time;};

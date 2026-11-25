@@ -4,14 +4,13 @@
 using namespace std;
 namespace PARSIFAL2{
   Resistive::Resistive(int setup,Geometry* geo, Readout* read):
+    PrintInfo(true),
+    PrintNTuple(true),
     Setup(setup),
     geometry(geo),
-    readout(read),
-    PrintInfo(true),
-    PrintNTuple(true)
+    readout(read)
   {
-    r = new TRandom3();
-    r->SetSeed(SEED);
+    r = new TRandom3(SEED ? SEED + 505 : 0);
     skip_resistive = NO_Resistive;
 
     sigma_res_diff=0.35;//si usa solo nel resistivo "smearing" e non quello reale
@@ -75,11 +74,11 @@ namespace PARSIFAL2{
       std::vector<double> kernel_x = build_kernel(pitch_x);
       std::vector<double> kernel_y = build_kernel(pitch_y);
 
-      // Parallelize over destination channel jch so each thread writes only to its own histogram
+      // Parallelize over destination channel jch so each thread writes only to its own waveform
       #pragma omp parallel for schedule(dynamic)
       for(int jch = 0; jch < n_ch; jch++){
-        TH1D* h_res_j = readout->Get_Channel(jch)->Get_Histo_res();
-        double* res_arr = h_res_j->GetArray();
+        Waveform* h_res_j = readout->Get_Channel(jch)->Get_Histo_res();
+        double* __restrict__ res_arr = h_res_j->GetArray();
         int type_j = readout->Get_Channel(jch)->Get_Type();
         const double* kernel_tbl = (type_j == Yview && !kernel_y.empty()) ? kernel_y.data() : kernel_x.data();
         const double expected_pitch = (type_j == Yview) ? pitch_y : pitch_x;
@@ -88,13 +87,13 @@ namespace PARSIFAL2{
         // Loop over neighboring source channels symmetrically
         for(int ich = ich_min; ich <= ich_max; ich++){
           if(readout->Get_Channel(ich)->Get_Type() != type_j) continue;
-          TH1D* h_raw_i = readout->Get_Channel(ich)->Get_Histo_raw();
+          Waveform* h_raw_i = readout->Get_Channel(ich)->Get_Histo_raw();
           if(h_raw_i->GetMaximum() == 0) continue;
-          const double* raw_arr = h_raw_i->GetArray();
+          const double* __restrict__ raw_arr = h_raw_i->GetArray();
           const int abs_step = std::abs(jch - ich);
           const double pitch = readout->Get_Channel(ich)->Get_Pitch();
           if(pitch == expected_pitch && pitch > 0.0){
-            const double* k_row = &kernel_tbl[abs_step * max_dt];
+            const double* __restrict__ k_row = &kernel_tbl[abs_step * max_dt];
             for(int it = 1; it <= n_ns; it++) {
               const double raw_charge = raw_arr[it];
               if(raw_charge == 0.0) continue;
@@ -113,13 +112,13 @@ namespace PARSIFAL2{
           }
         }
       }
-      // Fill resistive current histogram
+      // Fill resistive current waveform
       #pragma omp parallel for
       for(int ich = 0; ich < n_ch; ich++){
-        TH1D* h_res = readout->Get_Channel(ich)->Get_Histo_res();
+        Waveform* h_res = readout->Get_Channel(ich)->Get_Histo_res();
         if(h_res->GetMaximum() == 0) continue;
-        const double* res_arr = h_res->GetArray();
-        double* cur_buf_arr = readout->Get_Channel(ich)->Get_Histo_cur_buffer()->GetArray();
+        const double* __restrict__ res_arr = h_res->GetArray();
+        double* __restrict__ cur_buf_arr = readout->Get_Channel(ich)->Get_Histo_cur_buffer()->GetArray();
         for(int it = 1; it <= n_ns; it++) {
           cur_buf_arr[it + n_ns_buffer] += res_arr[it] - res_arr[it - 1];
         }
@@ -131,7 +130,7 @@ namespace PARSIFAL2{
   vector<Secondary*> Resistive::Diffusion(vector<Secondary*> pre_resistive){
     vector<Secondary*> post_resistive;
     if(pre_resistive.empty()) return post_resistive;
-    for(int isec=0;isec<pre_resistive.size();isec++){
+    for(size_t isec=0;isec<pre_resistive.size();isec++){
       for(int iele=0;iele<pre_resistive.at(isec)->Get_GainedElectrons();iele++){
         int ID = pre_resistive.at(isec)->Get_PrimaryID();
         Position pos_initi = pre_resistive.at(isec)->Get_PositionFinal();

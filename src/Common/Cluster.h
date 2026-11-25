@@ -8,8 +8,8 @@ namespace PARSIFAL2{
     //Constructor
     Cluster1D():PrintNTuple(PrintNTuple_Cluster1d){};
     Cluster1D(Hit *hit):
-    type(hit->Get_Type()),
     PrintNTuple(PrintNTuple_Cluster1d),
+    type(hit->Get_Type()),
     is_TPC(false),
     is_High_Q(false),
     is_Faster(false)

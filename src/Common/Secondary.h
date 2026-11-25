@@ -9,14 +9,20 @@ namespace PARSIFAL2{
   class Secondary{
   public:
     //Constructor
-  Secondary():position_initial(NULL), position_final(NULL), PrintNTuple(PrintNTuple_Secondary){};
+  Secondary():
+      PrintNTuple(PrintNTuple_Secondary),
+      position_initial(),
+      position_final(),
+      primary_ID(-1),
+      gained_electrons(1),
+      electronic_channel(-1){};
   Secondary(int ID, Position pos_init, Position pos_final):
-    primary_ID(ID), 
+      PrintNTuple(PrintNTuple_Secondary),
       position_initial(pos_init),
       position_final(pos_final),
+      primary_ID(ID),
       gained_electrons(1),
-      electronic_channel(-1),
-      PrintNTuple(PrintNTuple_Secondary){};
+      electronic_channel(-1){};
     //Destructor
     ~Secondary() {    };
     //Function

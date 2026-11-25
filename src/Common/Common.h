@@ -14,40 +14,38 @@ using namespace std;
 // XYZ are refered to the detector frame where the anode is on the XY plane and the electrinc drift field is along the Z direction
 namespace PARSIFAL2{
 
-  //Simulation
-  const bool Bfield                  = false;
-  const bool NO_PrimaryIonization    = false;
-  const bool NO_SecondaryIonization  = false;
-  const bool NO_Gain                 = false;
-  const bool NO_Drift                = false;
-  const bool NO_Resistive            = false; 
-  const bool NO_Readout              = false;
-  const bool NO_Saturation           = false;
-  const bool NO_Noise                = false;
-  const bool NO_FFT                  = false;
-  const bool NO_Capacitive           = true;
-  const bool NO_Hit                  = false;
-  const bool NO_Cluster              = false;
-  const bool NO_uTPC_Correction      = true;
-  const bool NO_Ion_Tail             = false;
-  //Ion tail
-  //const float IT_Lenght              = 150;    //100;  //50;  //250;  //170;
-  //const	float IT_amplitude           = 0.00667;//0.01; //0.02;//0.004;//0.006;// = 1/IT_Lenght
-  //const float IT_ratio_fast_slow     = 0.85; // 15% of the signal is electron and 85% is ions
-  //Special signals
-  const bool  Single_Electron        = false;
-  const bool  Fix_Ionization         = false;
-  const int   FIX_IONIZATION         = 100;
-  const bool  Square_Wave            = false;
-  const float SW_Lenght              =  100;
-  const float SW_Amplitude           =  0.1;
-  //Gain
-  const bool Fix_Gain                = false;
-  const int  FIX_GAIN                = 1230; //0;//6250;
-  //General
-  const double SEED = 0;
-  const bool   Write_Output_File = true; // anche se falso, ci sono cmq problemi di memoria
-  const bool   fast_simulation = true; // se falso va inserito limite sul numero di eventi o sull'utilizzo della memoria
+  // Runtime-configurable simulation switches (can be overridden via CLI flags in main_sim.C)
+  inline bool   Bfield                  = false;
+  inline bool   NO_PrimaryIonization    = false;
+  inline bool   NO_SecondaryIonization  = false;
+  inline bool   NO_Gain                 = false;
+  inline bool   NO_Drift                = false;
+  inline bool   NO_Resistive            = false;
+  inline bool   NO_Readout              = false;
+  inline bool   NO_Saturation           = false;
+  inline bool   NO_Noise                = false;
+  inline bool   NO_FFT                  = false;
+  inline bool   NO_Capacitive           = true;
+  inline bool   NO_Hit                  = false;
+  inline bool   NO_Cluster              = false;
+  inline bool   NO_uTPC_Correction      = true;
+  inline bool   NO_Ion_Tail             = false;
+  inline int    TORA_shaper_order       = 1;     // 1 = 1st-order shaper, 3 = 3rd-order shaper
+  inline bool   Print_Plot_Above_Thr    = false; // Save waveform PDF/PNG for hits above threshold
+  // Special signals
+  inline bool   Single_Electron         = false;
+  inline bool   Fix_Ionization          = false;
+  const  int    FIX_IONIZATION          = 100;
+  inline bool   Square_Wave             = false;
+  const  float  SW_Lenght               = 100;
+  const  float  SW_Amplitude            = 0.1;
+  // Gain
+  inline bool   Fix_Gain                = false;
+  const  int    FIX_GAIN                = 1230;
+  // General
+  inline UInt_t SEED                    = 0;     // 0 = random seed; >0 = deterministic reproducible run
+  inline bool   Write_Output_File       = true;
+  inline bool   fast_simulation         = true;
   //Readout
   #define n_ns 1500//1000//675
   #define n_ns_buffer 500

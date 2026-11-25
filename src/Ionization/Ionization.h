@@ -42,6 +42,7 @@ namespace PARSIFAL2{
     Position  pos_final;
     int       TotalNumberOfPrimary;
     int       TotalNumberOfSecondary;
+    TRandom3  r_ion;
 
     //Function
     Position  Measure_PositionFinal();

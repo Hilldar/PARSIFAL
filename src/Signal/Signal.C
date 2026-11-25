@@ -18,16 +18,14 @@ namespace PARSIFAL2{
   };
 
   vector<ElectronicChannel*> Signal::Generate_Signal(vector<Primary*> primary){ 
-    int tot_ele = 0;
     int tot_gained = 0;
     int gain_speedup = 100;//1000; //3:1000 (top)  . 4:100 (nice). 5:10000 (approximate) . 6:100000 (no)
     if(NO_Gain) gain_speedup = 1;
     if(Fix_Gain) gain_speedup = FIX_GAIN;
     if(primary.empty()) return reado->Read();
     //#pragma omp parallel for
-    for(int iprimi=0;iprimi<primary.size();iprimi++){ //loop on the primary electron clusters 
-      tot_ele = primary.at(iprimi)->Get_NumberOfSecondary();
-      for(int iele=0; iele<primary.at(iprimi)->Get_NumberOfSecondary();iele++){ //lopp on the electrons inside the primary clusters
+    for(size_t iprimi=0;iprimi<primary.size();iprimi++){ //loop on the primary electron clusters 
+      for(int iele=0; iele<primary.at(iprimi)->Get_NumberOfSecondary();iele++){ //loop on the electrons inside the primary clusters
 	int gain_this = gain->Get_Gain();
 	// Skip electrons lost to collection efficiency
 	if(gain_this <= 0) continue;

@@ -7,8 +7,8 @@ namespace PARSIFAL2{
   class Primary{
   public:
     //Constructor
-    Primary():PrintNTuple(PrintNTuple_Primary){};
-    Primary(Position pos, int numberofsecondary):position(pos),NumberOfSecondary(numberofsecondary),PrintNTuple(PrintNTuple_Primary){};
+    Primary():PrintNTuple(PrintNTuple_Primary),NumberOfSecondary(0){};
+    Primary(Position pos, int numberofsecondary):PrintNTuple(PrintNTuple_Primary),position(pos),NumberOfSecondary(numberofsecondary){};
     //Destructor
     ~Primary() {};
     //Function

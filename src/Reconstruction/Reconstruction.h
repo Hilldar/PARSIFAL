@@ -28,7 +28,7 @@ namespace PARSIFAL2{
     Ionization *ionio;
     void Get_Ionization(Ionization *ionio_IN){ionio=ionio_IN;};
     vector<Primary*> primi;
-    void Get_Primary(vector<Primary*> primi_IN){for(int i=0;i<primi_IN.size();i++)primi.push_back(primi_IN.at(i));};
+    void Get_Primary(vector<Primary*> primi_IN){primi.clear(); primi.assign(primi_IN.begin(), primi_IN.end());};
   private:
     //Variable
     bool      PrintInfo;

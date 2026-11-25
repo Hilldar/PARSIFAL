@@ -3,10 +3,10 @@ using namespace std;
 namespace PARSIFAL2{
 
   Geometry::Geometry(int type, int numberofview, double pitch1, double pitch2, int nstrip1, int nstrip2, double driftgap, double drifttotal, int charge_sharing):
-    Type(type),
-    NumberOfView(numberofview),
     PrintInfo(true),
     PrintNTuple(PrintNTuple_Geo),
+    Type(type),
+    NumberOfView(numberofview),
     Pitch1(0),
     Pitch2(0),
     nStrip1(0),

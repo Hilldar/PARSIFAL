@@ -6,7 +6,10 @@ namespace PARSIFAL2{
   PrintInfo(false),
   PrintNTuple(PrintNTuple_Ionio),
   particle(party),
-  geometry(geo)
+  geometry(geo),
+  TotalNumberOfPrimary(0),
+  TotalNumberOfSecondary(0),
+  r_ion(SEED ? SEED + 101 : 0)
   {
     if(particle->Get_ParticleID()<=0){
       cout<<"<>-<>  <>-<>  <>-<>  <>-<>  <>-<>"<<endl;
@@ -59,11 +62,8 @@ namespace PARSIFAL2{
   }
   
   vector<Primary*> Ionization::PrimaryIonization(){
-    int iion=0;
     vector<Primary*> primi;
     int totalnumberofsecondary=0;
-    TRandom3 *r = new TRandom3();
-    r->SetSeed(SEED);
     double x0 = Get_PositionInitial().Get_X();
     double y0 = Get_PositionInitial().Get_Y();
     double z0 = Get_PositionInitial().Get_Z();
@@ -71,10 +71,8 @@ namespace PARSIFAL2{
     double y1 = Get_PositionFinal().Get_Y();
     double z1 = Get_PositionFinal().Get_Z();
     double time = Get_PositionInitial().Get_T();
-    double dpag = Get_Geometry()->Get_DriftGap();
     double track_length_limit = TMath::Sqrt(pow((x1 - x0),2) + pow((y1 - y0),2) + pow((z1 - z0),2));
-    // e' il numero di cluster/mm (NON in 0.5 cm!!)
-    double n_ion_mm = Get_Particle()->Get_MeanPrimary(); // CHECK the value -> checked
+    double n_ion_mm = Get_Particle()->Get_MeanPrimary();
     double track_length = 0;
     if(Single_Electron){
       //Position pos(r->Gaus(0,geometry->Get_Pitch1()),r->Gaus(0,geometry->Get_Pitch2()),0,n_ns/5.);
@@ -117,13 +115,12 @@ namespace PARSIFAL2{
       }
     }
     else while(1 && !NO_PrimaryIonization) {
-	//Generate primary electorns
-	double u = r->Uniform(0, 1);
-	// step along the trajectory, that for now is a straight line [x0, z0] -> [x1, z1]
+	// Generate primary electrons
+	double u = r_ion.Uniform(0, 1);
+	// Step along the straight-line trajectory [x0, z0] -> [x1, z1]
 	double dl_extracted = -(1./n_ion_mm) * TMath::Log(1 - u);
 	track_length += dl_extracted;
 	if(track_length > track_length_limit) break;
-	iion++;
 	double t = (track_length_limit - track_length)/track_length_limit;
 	double tmp_z = z0 * t + z1 * (1 - t);
 	double x = x0 * t + x1 * (1 - t);
@@ -131,7 +128,7 @@ namespace PARSIFAL2{
 	if(tmp_z<=z0||tmp_z>=z1){if(Get_PrintInfo())cout<<"Compute z outside gas gap"<<endl;break;}
 	// Generate secondary electrons
 	int n_elec=0;
-	double prob = r->Rndm();
+	double prob = r_ion.Rndm();
 	for(int j=0;j<200;j++){
 	  n_elec=j+1;
 	  if(prob<Get_Particle()->Get_ProbabilitySecondary(j)) break;
@@ -163,20 +160,17 @@ namespace PARSIFAL2{
       cout<<"----------------------"<<endl;      
     }
     
-    delete r;
     return primi;
   };
 
   vector<Secondary*> Ionization::SecondaryIonization(vector<Primary*> primary){
-    int isec=0;
     vector<Secondary*> secondary;
     if(primary.empty()) return secondary;
-    for(int iprimi=0;iprimi<primary.size();iprimi++){
+    for(size_t iprimi=0;iprimi<primary.size();iprimi++){
       for(int iele=0; iele<primary.at(iprimi)->Get_NumberOfSecondary();iele++){
         Position pos = primary.at(iprimi)->Get_Position();
-        Secondary *second = new Secondary(iprimi, pos, pos);
+        Secondary *second = new Secondary(static_cast<int>(iprimi), pos, pos);
         secondary.push_back(second);
-	      isec++;
       }
     }
     return secondary;
