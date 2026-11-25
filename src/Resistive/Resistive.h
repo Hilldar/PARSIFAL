@@ -14,8 +14,8 @@ namespace PARSIFAL2{
   public:
     //Constructur                                                                                                                                                                                      
     Resistive(int setup, Geometry* geo, Readout* read);
-    //Destructor                                                                                                                                                                                       
-    ~Resistive() {};
+    // Destructor
+    ~Resistive() { delete r; };
     //Function                                                                                                                                                                                         
     bool               Get_PrintInfo     () {return PrintInfo;};
     bool               Get_PrintNTuple   () {return PrintNTuple;};
@@ -65,11 +65,24 @@ namespace PARSIFAL2{
       }
       return 0;
     }	
+    //STD
     double left (double pitch, int strip_step, double t0, double t){ return (-pitch/2. + strip_step*pitch)/(sqrt(2.)*sigma_res(t,t0));}
     double right(double pitch, int strip_step, double t0, double t){ return ( pitch/2. + strip_step*pitch)/(sqrt(2.)*sigma_res(t,t0));}
-    double Q_t  (double pitch, int strip_step, double t0, double t, double q){if(t>=t0) return (q/2.*(TMath::Erf(right(pitch,strip_step,t0,t))-TMath::Erf(left(pitch,strip_step,t0,t)))); else return 0;}
-
+    double Q_t  (double pitch, int strip_step, double t0, double t, double q){
+      if(t < t0) return 0.;
+      // Avoid division by zero in sigma_res(t0, t0): all charge sits on the central strip at t == t0
+      if(t == t0) return (strip_step == 0) ? q : 0.;
+      return (q/2.*(TMath::Erf(right(pitch,strip_step,t0,t))-TMath::Erf(left(pitch,strip_step,t0,t))));
+    }
     
+
+    /*
+    //DJUNES 20240131
+    double left (double pitch, int strip_step, double t0, double t){ return (-pitch/2. + strip_step*pitch)/(sqrt(2.)*sigma_res(t,t0)) -1 + sqrt(2./3.1415)*sigma_res(t,t0)*TMath::Exp(-strip_step*pitch/(2*pow(sigma_res(t,t0),2)));}
+    double right(double pitch, int strip_step, double t0, double t){ return ( pitch/2. + strip_step*pitch)/(sqrt(2.)*sigma_res(t,t0)) -1 + sqrt(2./3.1415)*sigma_res(t,t0)*TMath::Exp(-strip_step*pitch/(2*pow(sigma_res(t,t0),2)));}
+    double Q_t  (double pitch, int strip_step, double t0, double t, double q){if(t>t0){return (q/2.*(TMath::Erf(right(pitch,strip_step,t0,t))-TMath::Erf(left(pitch,strip_step,t0,t))));}else return 0;}
+    */
+
     
     //Function Set                                                                                                                                                                                     
     void      Set_PrintInfo     (bool io) {PrintInfo=io;};

@@ -3,8 +3,8 @@
 using namespace PARSIFAL2;
 
 bool print_plot_all = 0;
-bool print_plot_above_thr = 1;
-bool print_plot_middle = 0; //also print waveform on file
+bool print_plot_above_thr = 0;
+bool print_plot_middle = 0; // also print waveform on file
 bool print_plot_charge_above = 0;
 bool plot_histo_Qt_APV = 0;
 
@@ -12,15 +12,14 @@ PARSIFAL::PARSIFAL() {
 }
 
 PARSIFAL::~PARSIFAL(){
-  //Clean(); --> it crashes
+  FreeMemory();
   delete geo;
   delete D4;
   delete party;
   delete ionio;
   delete signal;
   delete recon;
-  // ----------------------------
-  //  delete tree; // do not try to delete it is automatically deleted wwith the file!
+  // Do not delete tree: it is owned and deleted by file
   delete file;
 }
 
@@ -98,7 +97,7 @@ void PARSIFAL::Run(){
     if(geo->Get_Type()==2) {
       party->Get_Position()->Set_Z(-sqrt(pow(geo->Get_DriftTotal(),2)-pow(party->Get_Position()->Get_X(),2)));
     }
-    ionio = new Ionization(party,geo);
+    ionio->UpdatePosition(party);
     //  <<  Process  >>
     //Ionization
     primi     = ionio->PrimaryIonization();
@@ -173,15 +172,7 @@ void PARSIFAL::Run(){
     //cout << "TOO MUCH MEMORY USED! " << (double) info.fMemUsed/info.fMemTotal <<  endl;
     //break;
     //}
-    //FreeMemory();
-  }
-  //FreeMemory();
-
-  #pragma omp barrier
-  
-  channels = signal->Get_Channels();
-  for(int i=0;i<channels.size();i++) {
-    channels.at(i)->~ElectronicChannel();
+    FreeMemory();
   }
   delete r;
   return;
@@ -343,12 +334,18 @@ void PARSIFAL::Clean(){
 }
 
 void PARSIFAL::FreeMemory() {
-  if(primi.size()>0)               {for (vector<Primary*>::iterator itr = primi.begin();                 itr != primi.end();               itr++) { delete *itr; }}
-  if(secondary.size()>0)           {for (vector<Secondary*>::iterator itr = secondary.begin();           itr != secondary.end();           itr++) { delete *itr; }}
-  if(electrons.size()>0)           {for (vector<Secondary*>::iterator itr = electrons.begin();           itr != electrons.end();           itr++) { delete *itr; }}
-  if(electrons_resistive.size()>0) {for (vector<Secondary*>::iterator itr = electrons_resistive.begin(); itr != electrons_resistive.end(); itr++) { delete *itr; }}
-  if(hit.size()>0)                 {for (vector<Hit*>::iterator itr = hit.begin();                       itr != hit.end();                 itr++) { delete *itr; }}
-  if(cluster1d.size()>0)           {for (vector<Cluster1D*>::iterator itr = cluster1d.begin();           itr != cluster1d.end();           itr++) { delete *itr; }}
+  for (auto* p : primi)               delete p;
+  primi.clear();
+  for (auto* p : secondary)           delete p;
+  secondary.clear();
+  for (auto* p : electrons)           delete p;
+  electrons.clear();
+  for (auto* p : electrons_resistive) delete p;
+  electrons_resistive.clear();
+  for (auto* p : hit)                 delete p;
+  hit.clear();
+  for (auto* p : cluster1d)           delete p;
+  cluster1d.clear();
 }
 
 void PARSIFAL::Initialize_oFile(){
@@ -365,7 +362,7 @@ void PARSIFAL::Initialize_oFile(){
     tree->Branch("party_angleYZ"  ,&party_angleYZ ,"party_angleYZ/D");
     tree->Branch("party_primary"  ,&party_primary ,"party_primary/D");      
     tree->Branch("party_positionI", party_posI    ,"party_positionI[4]/D"); // Impact point of the ionizing particle
-    tree->Branch("party_prob"     , party_prob    ,"party_prob[100]/D");    // Ionization probability
+    tree->Branch("party_prob"     , party_prob    ,"party_prob[200]/D");    // Ionization probability
   }
   if(PrintNTuple_Ionio){
     tree->Branch("ionio_positionI", ionio_positionI ,"ionio_posI[4]/D");   // Initial position of the primary ionization 
@@ -482,7 +479,7 @@ void PARSIFAL::Write_oFile(){
     party_posI[1]  = party->Get_Position()->Get_Y();
     party_posI[2]  = party->Get_Position()->Get_Z();
     party_posI[3]  = party->Get_Position()->Get_T();
-    for(int i=0;i<100;i++) party_prob[i] = party->Get_ProbabilitySecondary(i);
+    for(int i=0;i<200;i++) party_prob[i] = party->Get_ProbabilitySecondary(i);
   }
   if(PrintNTuple_Ionio){
     ionio_positionI[0] = ionio->Get_PositionInitial().Get_X();
@@ -514,22 +511,19 @@ void PARSIFAL::Write_oFile(){
       primary_positionT.push_back(-999);
       primary_secondary.push_back(0);
       primary_ID.push_back(-1);
-      secondary_gain.push_back(0);
     }
     else{
-      for(int i=0;i<primi.size();i++){
+      for(size_t i=0;i<primi.size();i++){
         primary_positionX.push_back(primi.at(i)->Get_Position().Get_X());
         primary_positionY.push_back(primi.at(i)->Get_Position().Get_Y());
         primary_positionZ.push_back(primi.at(i)->Get_Position().Get_Z());
         primary_positionT.push_back(primi.at(i)->Get_Position().Get_T());
         primary_secondary.push_back(primi.at(i)->Get_NumberOfSecondary());
         primary_ID.push_back(i);
-        if(secondary_gain.empty() || secondary_gain.size()) secondary_gain.push_back(0);
-        else secondary_gain.push_back(secondary.at(i)->Get_GainedElectrons());
       }
     }
   }
-  if(PrintNTuple_Secondary){  // CHECK in realta' gli oggetti electron_* sono prodotti solo da Drift
+  if(PrintNTuple_Secondary){  // Electron branches are filled only in full (non-fast) drift simulation
     if(electrons.empty()){
       electron_positionX_initial.push_back(-999);
       electron_positionY_initial.push_back(-999);
@@ -541,11 +535,11 @@ void PARSIFAL::Write_oFile(){
       electron_positionZ_final.push_back(-999);
       electron_positionPhi_final.push_back(-999);
       electron_positionT_final.push_back(-999);
-      electron_primary_ID.push_back(.1);
+      electron_primary_ID.push_back(-1);
       electron_electronic_channel.push_back(-1);
     }
     else{
-      for(int i=0;i<electrons.size();i++){
+      for(size_t i=0;i<electrons.size();i++){
 	      electron_positionX_initial.push_back( electrons.at(i)->Get_PositionInitial().Get_X());
 	      electron_positionY_initial.push_back( electrons.at(i)->Get_PositionInitial().Get_Y());
 	      electron_positionZ_initial.push_back( electrons.at(i)->Get_PositionInitial().Get_Z());
@@ -558,17 +552,6 @@ void PARSIFAL::Write_oFile(){
 	      electron_positionT_final.push_back(   electrons_resistive.at(i)->Get_PositionFinal().Get_T());
 	      electron_primary_ID.push_back(        electrons_resistive.at(i)->Get_PrimaryID());
 	      electron_electronic_channel.push_back(electrons_resistive.at(i)->Get_ElectronicChannel());
-        //cout<<i<<" "<<electrons.at(i)->Get_ElectronicChannel()<<" "<<endl;
-      }
-    }
-  }
-  if(PrintNTuple_Secondary){
-    if(secondary.empty()){
-      secondary_gain.push_back(0);
-    }
-    else{
-      for(int i=0;i<secondary.size();i++){
-	secondary_gain.push_back(secondary.at(i)->Get_GainedElectrons());      
       }
     }
   }
@@ -578,9 +561,9 @@ void PARSIFAL::Write_oFile(){
       channel_type.push_back(-1);
       channel_charge.push_back(-999);
       channel_time.push_back(-999);
-      channel_above_thr.push_back(-999);
-      channel_above_thr_E.push_back(-999);
-      channel_above_thr_T.push_back(-999);
+      channel_above_thr.push_back(false);
+      channel_above_thr_E.push_back(false);
+      channel_above_thr_T.push_back(false);
       channel_t_rising_raw.push_back(-999);
       channel_t_rising_E.push_back(-999);
       channel_t_rising_T.push_back(-999);
@@ -590,6 +573,7 @@ void PARSIFAL::Write_oFile(){
       //channel_dtime.push_back(-999);
       channel_positionX.push_back(-999);
       channel_positionY.push_back(-999);
+      channel_positionZ.push_back(-999);
       channel_positionPhi.push_back(-999);
       channel_n_electrons.push_back(0);
     }
@@ -639,7 +623,7 @@ void PARSIFAL::Write_oFile(){
       hit_type.push_back(-1);
       hit_charge.push_back(-999);
       hit_time.push_back(-999);
-      // hit_dtime.push_back(-999);
+      hit_dtime.push_back(-999);
       hit_positionX.push_back(-999);
       hit_positionY.push_back(-999);
     }
@@ -669,8 +653,8 @@ void PARSIFAL::Write_oFile(){
       cluster1d_positionCC_Y.push_back(-999);
       cluster1d_positionTPC_X.push_back(-999);
       cluster1d_positionTPC_Y.push_back(-999);
-      cluster1d_high_Q.push_back(-1);
-      cluster1d_faster.push_back(-1);
+      cluster1d_high_Q.push_back(false);
+      cluster1d_faster.push_back(false);
     }
     else{
       for(int i=0;i<cluster1d.size();i++){

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <omp.h>
 #include "Resistive/Resistive.h"
 using namespace std;
@@ -39,47 +40,91 @@ namespace PARSIFAL2{
 
   void Resistive::Resist(){
     const int n_strip_resistive = 7;
+    const int n_ch = readout->Get_N_Channels();
     if(skip_resistive) {
       #pragma omp parallel for
-      for(int ich=0;ich<readout->Get_N_Channels();ich++){
-	for(int it = 1; it < n_ns; it++) {
-	  double raw_charge = readout->Get_Channel(ich)->Get_Histo_raw()->GetBinContent(it);
-	  readout->Get_Channel(ich)->Get_Histo_cur_buffer()->AddBinContent(it+n_ns_buffer, raw_charge);
-	}
+      for(int ich = 0; ich < n_ch; ich++){
+        for(int it = 1; it <= n_ns; it++) {
+          double raw_charge = readout->Get_Channel(ich)->Get_Histo_raw()->GetBinContent(it);
+          readout->Get_Channel(ich)->Get_Histo_cur_buffer()->AddBinContent(it + n_ns_buffer, raw_charge);
+        }
       }
     }
     else{
-      //loop on i-channel
+      // Precompute resistive charge-sharing kernel K(|strip_step|, dt) once per call
+      // Assumes uniform pitch within each view (same pitch per channel type)
+      const int max_dt = n_ns;
+      // Map pitch -> kernel table [0..n_strip_resistive][0..max_dt-1]
+      double pitch_x = 0.0, pitch_y = 0.0;
+      for(int ich = 0; ich < n_ch; ich++){
+        int t = readout->Get_Channel(ich)->Get_Type();
+        if(t == Xview && pitch_x == 0.0) pitch_x = readout->Get_Channel(ich)->Get_Pitch();
+        if(t == Yview && pitch_y == 0.0) pitch_y = readout->Get_Channel(ich)->Get_Pitch();
+      }
+      auto build_kernel = [&](double pitch) {
+        std::vector<double> tbl((n_strip_resistive + 1) * max_dt, 0.0);
+        if(pitch <= 0.0) return tbl;
+        for(int step = 0; step <= n_strip_resistive; step++){
+          double* row = &tbl[step * max_dt];
+          for(int dt = 0; dt < max_dt; dt++){
+            row[dt] = Q_t(pitch, step, 0.0, static_cast<double>(dt), 1.0);
+          }
+        }
+        return tbl;
+      };
+      std::vector<double> kernel_x = build_kernel(pitch_x);
+      std::vector<double> kernel_y = build_kernel(pitch_y);
+
+      // Parallelize over destination channel jch so each thread writes only to its own histogram
+      #pragma omp parallel for schedule(dynamic)
+      for(int jch = 0; jch < n_ch; jch++){
+        TH1D* h_res_j = readout->Get_Channel(jch)->Get_Histo_res();
+        double* res_arr = h_res_j->GetArray();
+        int type_j = readout->Get_Channel(jch)->Get_Type();
+        const double* kernel_tbl = (type_j == Yview && !kernel_y.empty()) ? kernel_y.data() : kernel_x.data();
+        const double expected_pitch = (type_j == Yview) ? pitch_y : pitch_x;
+        int ich_min = std::max(0, jch - n_strip_resistive);
+        int ich_max = std::min(n_ch - 1, jch + n_strip_resistive);
+        // Loop over neighboring source channels symmetrically
+        for(int ich = ich_min; ich <= ich_max; ich++){
+          if(readout->Get_Channel(ich)->Get_Type() != type_j) continue;
+          TH1D* h_raw_i = readout->Get_Channel(ich)->Get_Histo_raw();
+          if(h_raw_i->GetMaximum() == 0) continue;
+          const double* raw_arr = h_raw_i->GetArray();
+          const int abs_step = std::abs(jch - ich);
+          const double pitch = readout->Get_Channel(ich)->Get_Pitch();
+          if(pitch == expected_pitch && pitch > 0.0){
+            const double* k_row = &kernel_tbl[abs_step * max_dt];
+            for(int it = 1; it <= n_ns; it++) {
+              const double raw_charge = raw_arr[it];
+              if(raw_charge == 0.0) continue;
+              for(int jt = it; jt <= n_ns; jt++) {
+                res_arr[jt] += raw_charge * k_row[jt - it];
+              }
+            }
+          } else {
+            for(int it = 1; it <= n_ns; it++) {
+              const double raw_charge = raw_arr[it];
+              if(raw_charge == 0.0) continue;
+              for(int jt = it; jt <= n_ns; jt++) {
+                res_arr[jt] += Q_t(pitch, jch - ich, it, jt, raw_charge);
+              }
+            }
+          }
+        }
+      }
+      // Fill resistive current histogram
       #pragma omp parallel for
-      for(int ich=0;ich<readout->Get_N_Channels();ich++){
-	if(readout->Get_Channel(ich)->Get_Histo_raw()->GetMaximum()==0) continue;
-	//loop on i-time
-	for(int it = 0; it < n_ns; it++) {
-	  double raw_charge = readout->Get_Channel(ich)->Get_Histo_raw()->GetBinContent(it);
-	  if(raw_charge==0) continue;
-	  //loop on j-channel -> only neighbor channels
-	  for(int jch=ich-n_strip_resistive; jch<ich+n_strip_resistive; jch++){
-	    if(jch<0 || jch>readout->Get_N_Channels()) continue;
-	    if(readout->Get_Channel(ich)->Get_Type()!=readout->Get_Channel(jch)->Get_Type()) continue;
-	    double pitch = readout->Get_Channel(ich)->Get_Pitch();
-	    //loop on j-time
-	    for(int jt = 0; jt < n_ns; jt++) {
-	      double res_charge = Q_t(pitch,jch-ich, it, jt, raw_charge);
-	      readout->Get_Channel(jch)->Get_Histo_res()->AddBinContent(jt, res_charge);	    
-	    }//end j-time
-	  }//end j-channel
-	}//end i-time
-      }//end i-channel
-      //Fill resistive current histogram
-      #pragma omp parallel for
-      for(int ich=0;ich<readout->Get_N_Channels();ich++){
-	if(readout->Get_Channel(ich)->Get_Histo_res()->GetMaximum()==0) continue;
-	for(int it = 1; it < n_ns; it++) {
-	  double res_current = readout->Get_Channel(ich)->Get_Histo_res()->GetBinContent(it)-readout->Get_Channel(ich)->Get_Histo_res()->GetBinContent(it-1);
-	  readout->Get_Channel(ich)->Get_Histo_cur_buffer()->AddBinContent(it+n_ns_buffer,res_current);
-	}
-      }//end i-channel
-    }//end loop for resistive
+      for(int ich = 0; ich < n_ch; ich++){
+        TH1D* h_res = readout->Get_Channel(ich)->Get_Histo_res();
+        if(h_res->GetMaximum() == 0) continue;
+        const double* res_arr = h_res->GetArray();
+        double* cur_buf_arr = readout->Get_Channel(ich)->Get_Histo_cur_buffer()->GetArray();
+        for(int it = 1; it <= n_ns; it++) {
+          cur_buf_arr[it + n_ns_buffer] += res_arr[it] - res_arr[it - 1];
+        }
+      }
+    }
     return;
   }
 

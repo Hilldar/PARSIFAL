@@ -181,12 +181,13 @@ namespace PARSIFAL2{
     if(Get_MagneticField()==0){
       shift = SpatialShiftDrift[0]+SpatialShiftDrift[1]*z+SpatialShiftTrans+SpatialShiftInduc;
       sigma = SpatialDiffusionDrift[0]+SpatialDiffusionDrift[1]*z+SpatialDiffusionDrift[2]*pow(z,2)+SpatialDiffusionDrift[3]*pow(z,3);
+      sigma = sqrt(pow(sigma,2)+2*(pow(SpatialDiffusionTrans,2))+pow(SpatialDiffusionInduc,2));
     }
     if(Get_MagneticField()==1){
       shift = SpatialShiftDriftMagField[0]+SpatialShiftDriftMagField[1]*z+SpatialShiftTransMagField+SpatialShiftInducMagField;
       sigma = SpatialDiffusionDriftMagField[0]+SpatialDiffusionDriftMagField[1]*z+SpatialDiffusionDriftMagField[2]*pow(z,2)+SpatialDiffusionDriftMagField[3]*pow(z,3);
+      sigma = sqrt(pow(sigma,2)+2*(pow(SpatialDiffusionTransMagField,2))+pow(SpatialDiffusionInducMagField,2));
     }
-    sigma = sqrt(pow(sigma,2)+2*(pow(SpatialDiffusionTrans,2))+pow(SpatialDiffusionInduc,2));
     dx=10*r->Gaus(shift,Get_SpaceTuningFactor()*sigma);
     float X = x+dx;
     if(X<geometry->Get_Min_X()) X=geometry->Get_Min_X();
@@ -210,20 +211,21 @@ namespace PARSIFAL2{
     return geometry->Get_DriftTotal();
   }
   double ElectronDrift::Get_T(double t, double z){
-    if(Get_Setup()==0) z = 5 - z; //TO FIX 
+    if(Get_Setup()==0) z = geometry->Get_DriftGap() - z;
     //if(Get_Setup()==1) z = 6 - z; //TO FIX
     z/=10;
-    double shift, sigma;
+    double shift=0, sigma=0;
     double dt=0;
     if(Get_MagneticField()==0){
       shift = TemporalShiftDrift[0]+TemporalShiftDrift[1]*z+TemporalShiftTrans+TemporalShiftInduc;
       sigma = TemporalDiffusionDrift[0]+TemporalDiffusionDrift[1]*z+TemporalDiffusionDrift[2]*pow(z,2)+TemporalDiffusionDrift[3]*pow(z,3);
+      sigma = sqrt(pow(sigma,2)+2*(pow(TemporalDiffusionTrans,2))+pow(TemporalDiffusionInduc,2));
     }
     if(Get_MagneticField()==1){
       shift = TemporalShiftDriftMagField[0]+TemporalShiftDriftMagField[1]*z+TemporalShiftTransMagField+TemporalShiftInducMagField;
       sigma = TemporalDiffusionDriftMagField[0]+TemporalDiffusionDriftMagField[1]*z+TemporalDiffusionDriftMagField[2]*pow(z,2)+TemporalDiffusionDriftMagField[3]*pow(z,3);
+      sigma = sqrt(pow(sigma,2)+2*(pow(TemporalDiffusionTransMagField,2))+pow(TemporalDiffusionInducMagField,2));
     }
-    sigma = sqrt(pow(sigma,2)+2*(pow(TemporalDiffusionTrans,2))+pow(TemporalDiffusionInduc,2));
     dt = r->Gaus(shift,Get_TimeTuningFactor()*sigma);
     return (t+dt);
   };

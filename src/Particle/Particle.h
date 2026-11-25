@@ -38,7 +38,7 @@ namespace PARSIFAL2{
     double    AngleYZ;
     Geometry *geometry;
     double    MeanPrimary;
-    double    ProbabilitySecondary[100];
+    double    ProbabilitySecondary[200];
     //Function
     void      Set_PrintInfo            (bool io)                                {PrintInfo=io;};
     void      Set_PrintNTuple          (bool io)                                {PrintNTuple=io;};
@@ -47,7 +47,7 @@ namespace PARSIFAL2{
     void      Set_AngleYZ              (double io)                              {AngleYZ=io;};
     void      Set_Position             (double x, double y, double z, double t) {position= new Position(x,y,z,t);};
     void      Set_MeanPrimary          (double io)                              {MeanPrimary=io;};
-    void      Set_ProbabilitySecondary (double io[100])                         {for(int i=0;i<100;i++)ProbabilitySecondary[i]=io[i];}
+    void      Set_ProbabilitySecondary (const double io[200])                   {for(int i=0;i<200;i++)ProbabilitySecondary[i]=io[i];}
   };
   Particle* Particle1D(int particleID, double X, double T, double angleXZ, Geometry *geo);
   Particle* Particle2D(int particleID, double X, double Y, double T, double angleXZ, double angleYZ, Geometry *geo);

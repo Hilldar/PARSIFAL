@@ -34,7 +34,7 @@ namespace PARSIFAL2{
       cout<<"Drift gap thickness      : "<<Get_DriftGap()<<" mm"<<endl;
       cout<<"Total gaps thickness     : "<<Get_DriftTotal()<<" mm"<<endl;
       cout<<"Charge Sharing           : "<<Get_ChargeSharing()<<endl;
-      cout<<"X range                  : "<<Get_Min_X()<<" "<<Get_Max_Y()<<endl;
+      cout<<"X range                  : "<<Get_Min_X()<<" "<<Get_Max_X()<<endl;
       cout<<"Y range                  : "<<Get_Min_Y()<<" "<<Get_Max_Y()<<endl;
       cout<<"----------------------"<<endl;
     }

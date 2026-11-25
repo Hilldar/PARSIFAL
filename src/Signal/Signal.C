@@ -5,8 +5,8 @@ namespace PARSIFAL2{
   Signal::Signal(int setup, int electronics, bool MagField, Geometry *geo):
     setup(setup)
   {
-    gain    = new DetectorGain(setup, Bfield);
-    drift   = new ElectronDrift(setup, Bfield, geo);
+    gain    = new DetectorGain(setup, MagField);
+    drift   = new ElectronDrift(setup, MagField, geo);
     reado   = new Readout(setup,electronics,geo);
     resisto = new Resistive(setup,geo,reado);
   };
@@ -29,13 +29,19 @@ namespace PARSIFAL2{
       tot_ele = primary.at(iprimi)->Get_NumberOfSecondary();
       for(int iele=0; iele<primary.at(iprimi)->Get_NumberOfSecondary();iele++){ //lopp on the electrons inside the primary clusters
 	int gain_this = gain->Get_Gain();
+	// Skip electrons lost to collection efficiency
+	if(gain_this <= 0) continue;
 
 	// triple-GEM
 	if(setup==0){
-	  gain_this /= gain_speedup;
-	  if(gain_this==0) gain_this=1;
-	  tot_gained += gain_this*gain_speedup;
-	  for(int igain=0; igain<gain_this;igain++){ //loop on the gained electrons via amplification
+	  int n_macro = gain_this / gain_speedup;
+	  int weight = gain_speedup;
+	  if(n_macro == 0) {
+	    n_macro = 1;
+	    weight = gain_this;
+	  }
+	  tot_gained += n_macro * weight;
+	  for(int igain=0; igain<n_macro; igain++){ // loop on the gained electrons via amplification
 	    int view = reado->Define_View();
 	    double z    = primary.at(iprimi)->Get_Position().Get_Z();
 	    double time = primary.at(iprimi)->Get_Position().Get_T();
@@ -45,13 +51,13 @@ namespace PARSIFAL2{
 	      double x = primary.at(iprimi)->Get_Position().Get_X();
 	      x += drift->Get_Drift_X(z);
 	      //x += resisto->Get_Diff_X(x); //old resistive approach
-	      reado->Induce_on_channel(Xview,x,time,gain_speedup);
+	      reado->Induce_on_channel(Xview,x,time,weight);
 	    }
 	    else if(view == Yview) {
 	      double y = primary.at(iprimi)->Get_Position().Get_Y();
 	      y += drift->Get_Drift_Y(z);
 	      //y += resisto->Get_Diff_Y(y); //old resistive approach
-	      reado->Induce_on_channel(Yview,y,time,gain_speedup);
+	      reado->Induce_on_channel(Yview,y,time,weight);
 	    }
 	    else cout<<"Error in Signal::Generate_Signal --> no induction defined for this Readout type \n";
 	  } //end loop on gained electrons after amplification	  

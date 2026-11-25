@@ -31,8 +31,8 @@ namespace PARSIFAL2{
     }
   };
 
-  // CHECK
   void Ionization::UpdatePosition(Particle *party)  {
+    particle = party;
     Set_PositionInitial(particle->Get_Position());
     Set_PositionFinal(Measure_PositionFinal());
     if(Get_PrintInfo()){
@@ -127,22 +127,21 @@ namespace PARSIFAL2{
 	double t = (track_length_limit - track_length)/track_length_limit;
 	double tmp_z = z0 * t + z1 * (1 - t);
 	double x = x0 * t + x1 * (1 - t);
-	double y = y * t + y1 * (1 - t);
+	double y = y0 * t + y1 * (1 - t);
 	if(tmp_z<=z0||tmp_z>=z1){if(Get_PrintInfo())cout<<"Compute z outside gas gap"<<endl;break;}
-	//Generate secondary electrons
+	// Generate secondary electrons
 	int n_elec=0;
 	double prob = r->Rndm();
-	for(int j=0;j<100;j++){
+	for(int j=0;j<200;j++){
 	  n_elec=j+1;
 	  if(prob<Get_Particle()->Get_ProbabilitySecondary(j)) break;
 	}
-	if(n_elec>100){if(Get_PrintInfo())cout<<"increase the size above 100"<<endl;n_elec=100;}
+	if(n_elec>200){if(Get_PrintInfo())cout<<"increase the size above 200"<<endl;n_elec=200;}
 	
 	totalnumberofsecondary+=n_elec;
 	Position pos(x,y,z0+z1-tmp_z,time);
 	Primary *primo = new Primary(pos,n_elec);
 	primi.push_back(primo);
-	primo->~Primary();
 	if(Get_PrintInfo()){
 	  cout<<"---- New primary ionization ----"<<endl;
 	  cout<<"Position X         : "<<primo->Get_Position().Get_X()<<endl;

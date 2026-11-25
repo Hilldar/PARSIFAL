@@ -21,7 +21,7 @@ namespace PARSIFAL2{
 	  vector<Secondary*> Gain                (vector<Secondary*>);
 	  int                Get_Gain            ();
 	  void               Set_TuningFactor    (double io) {tuning_factor_gain[0]=io;};
-	  void               Set_MeanDetectorGain(double io) {mean_detector_gain=io; f_gain_eff->SetParameters(io,0.85,1);};
+	  void               Set_MeanDetectorGain(double io) {mean_detector_gain=io; max_gain=10*mean_detector_gain; if(use_function_gain && f_gain_eff){ f_gain_eff->SetRange(0, max_gain); f_gain_eff->SetParameters(io,0.85,1); }};
 	  int                Get_Total_Electron_Gained()   {return tot_ele_gained;};
 	private:
 	  // Const
@@ -39,11 +39,11 @@ namespace PARSIFAL2{
 	  double collection_efficiency_stage3; //is it needed? 
 	  double extraction_efficiency_stage3; //is it needed? 
 	  TString file_name,nome_g;
-	  TFile *file_gain_eff;
-	  TH1F*  h_gain_eff;
-	  TF1*   f_gain_eff;
-	  TH1I*  h_gain; //is it needed? 
-	  bool   use_function_gain;
+	  TFile *file_gain_eff = nullptr;
+	  TH1F*  h_gain_eff = nullptr;
+	  TF1*   f_gain_eff = nullptr;
+	  TH1I*  h_gain = nullptr; //is it needed? 
+	  bool   use_function_gain = false;
 	  int    tot_ele_gained;
 	  int    max_gain;
 	  double mean_detector_gain;

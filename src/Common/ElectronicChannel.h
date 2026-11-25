@@ -18,18 +18,24 @@ namespace PARSIFAL2{
     h_time_cur      = new TH1D();
     h_time_cur_FFT  = new TH1D();
     h_time_cur_buffer = new TH1D();
+    h_time_cur_buffer_FFT = new TH1D();
     h_time_int_apv  = new TH1D();
     h_time_int_tigT = new TH1D();
     h_time_int_tigE = new TH1D();
     h_time_apv      = new TH1D();
     h_time_int_tora = new TH1D();
+    // Detach internal histograms from ROOT gDirectory so TFile::Close() does not delete them
+    for(TH1D* h : {h_time_raw, h_time_tot, h_time_res, h_time_cap, h_time_cur, h_time_cur_FFT,
+                   h_time_cur_buffer, h_time_cur_buffer_FFT, h_time_int_apv, h_time_int_tigT,
+                   h_time_int_tigE, h_time_apv, h_time_int_tora}) {
+      h->SetDirectory(nullptr);
+    }
   };
   ElectronicChannel(int tipo, int ich, Position pos, double passo):
     type(tipo),channelID(ich),position(pos),pitch(passo),n_electrons(0),PrintNTuple(PrintNTuple_Channel),above_thr(false){
-      //APV
-      TRandom3 *r = new TRandom3();
-      r->SetSeed(ich);
-      Set_Saturation_APV(r->Gaus(saturation_APV,sigma_saturation_APV));
+      // APV
+      TRandom3 r(ich);
+      Set_Saturation_APV(r.Gaus(saturation_APV,sigma_saturation_APV));
       
       //Signal induced by electrons+ions
       h_time_raw       = new TH1D(Form("  raw_%i_%i",tipo,ich),Form("Current       raw_%i_%i",tipo,ich),n_ns, 0,  n_ns);         //raw signal induced by electrons+ions
@@ -49,6 +55,13 @@ namespace PARSIFAL2{
       h_time_int_tora  = new TH1D(Form("tora_T_%i_%i",tipo,ich),Form("Voltage[mV] tora_T_%i_%i",tipo,ich),n_ns, 0,  n_ns);         //tora Tbranch signal
       //Electronics discretized
       h_time_apv       = new TH1D(Form("  apv_%i_%i",tipo,ich),Form("Voltage[ADC]  apv_%i_%i",tipo,ich), timebin_APV, 0, timebin_APV*timestep_APV);//apv signal
+
+      // Detach internal histograms from ROOT gDirectory so ElectronicChannel owns them exclusively
+      for(TH1D* h : {h_time_raw, h_time_tot, h_time_res, h_time_cap, h_time_cur, h_time_cur_FFT,
+                     h_time_cur_buffer, h_time_cur_buffer_FFT, h_time_int_apv, h_time_int_tigT,
+                     h_time_int_tigE, h_time_apv, h_time_int_tora}) {
+        h->SetDirectory(nullptr);
+      }
       
       
       h_time_raw->GetXaxis()->SetTitle("Time [ns]");
@@ -96,34 +109,21 @@ namespace PARSIFAL2{
       V_thr_T = 10;
       V_thr_E = 10;
   };
-    //Destructor
+    // Destructor
     ~ElectronicChannel() {
-      //delete position;
-      h_time_raw->~TH1D();
-      h_time_tot->~TH1D();
-      h_time_res->~TH1D();
-      h_time_cap->~TH1D();
-      h_time_cur->~TH1D();
-      h_time_cur_FFT->~TH1D();
-      h_time_cur_buffer->~TH1D();
-      h_time_cur_buffer_FFT->~TH1D();
-      h_time_int_apv->~TH1D();
-      h_time_int_tigT->~TH1D();
-      h_time_int_tigE->~TH1D();
-      h_time_apv->~TH1D();
-      h_time_int_tora->~TH1D();
-
-      /*
       delete h_time_raw;
-      delete h_time_apv;
-      delete h_time_tiger_T;
-      delete h_time_tiger_E;
-      delete h_time_cap;
-      delete h_time_int;
-      delete h_time_res;
       delete h_time_tot;
+      delete h_time_res;
+      delete h_time_cap;
       delete h_time_cur;
-      */
+      delete h_time_cur_FFT;
+      delete h_time_cur_buffer;
+      delete h_time_cur_buffer_FFT;
+      delete h_time_int_apv;
+      delete h_time_int_tigT;
+      delete h_time_int_tigE;
+      delete h_time_apv;
+      delete h_time_int_tora;
     };
     //Function
     int       Get_Electronics   ()          {return ElectronicsType;};

@@ -36,9 +36,9 @@ namespace PARSIFAL2{
     double    Get_TimeF        ()     	   {return timeF;};
 
 
-    void      Set_Position_CC  (Position* io) {position_CC=io;};
-    void      Set_Position_CC  (double io)    {if(Get_Type()==Xview) position_CC  = new Position(io,0,0,0); if(Get_Type()==Yview) position_CC  = new Position(0,io,0,0);};
-    void      Set_Position_TPC (double io)    {if(Get_Type()==Xview) position_TPC = new Position(io,0,0,0); if(Get_Type()==Yview) position_TPC = new Position(0,io,0,0);};
+    void      Set_Position_CC  (Position* io) {delete position_CC; position_CC=io;};
+    void      Set_Position_CC  (double io)    {delete position_CC; position_CC=nullptr; if(Get_Type()==Xview) position_CC  = new Position(io,0,0,0); if(Get_Type()==Yview) position_CC  = new Position(0,io,0,0);};
+    void      Set_Position_TPC (double io)    {delete position_TPC; position_TPC=nullptr; if(Get_Type()==Xview) position_TPC = new Position(io,0,0,0); if(Get_Type()==Yview) position_TPC = new Position(0,io,0,0);};
     void      Set_HitID        (int io)       {hitID.push_back(io);};
     void      Set_Size         ()             {size=hitID.size();};
     void      Set_Charge       (double io)    {charge=io;};
@@ -52,8 +52,8 @@ namespace PARSIFAL2{
   private:
     //Variable
     bool         PrintNTuple;
-    Position*    position_CC;
-    Position*    position_TPC;
+    Position*    position_CC = nullptr;
+    Position*    position_TPC = nullptr;
     vector<int>  hitID;
     int          clusterID;
     int          type;   //1=X, 2=Y

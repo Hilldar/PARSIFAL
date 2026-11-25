@@ -45,11 +45,13 @@ namespace PARSIFAL2{
     TString GetOutfileName    ()           {return name_outfile;};
     void Set_RunNumber        (int io)     {run_number = io;};
     void Set_OutfileName      (TString io) {
-      name_outfile=(TString)(getenv("PARSIFAL_data"))+=io;
+      const char* data_dir_env = getenv("PARSIFAL_data");
+      name_outfile = (data_dir_env ? TString(data_dir_env) : TString("data")) + io;
     };
     void Set_OutfileName      (TString io_dir, TString io_file) {
       Set_RunNumber(io_dir.Atoi());
-      name_outfile=(TString)(getenv("PARSIFAL_data"))+"/"+io_dir;
+      const char* data_dir_env = getenv("PARSIFAL_data");
+      name_outfile = (data_dir_env ? TString(data_dir_env) : TString("data")) + "/" + io_dir;
       gSystem->Exec("mkdir -p "+name_outfile);
       name_outfile+="/"+io_file;
     };
@@ -196,12 +198,12 @@ namespace PARSIFAL2{
     int nShots = 10;
     double party_angle_xz[1] = {0};
     //Variables
-    Geometry *geo;
-    Position *D4;
-    Particle *party;
-    Ionization *ionio;
-    Reconstruction *recon;
-    Signal *signal;
+    Geometry *geo = nullptr;
+    Position *D4 = nullptr;
+    Particle *party = nullptr;
+    Ionization *ionio = nullptr;
+    Reconstruction *recon = nullptr;
+    Signal *signal = nullptr;
     vector<Primary*> primi;
     vector<Secondary*> secondary;
     vector<Secondary*> electrons;
@@ -209,9 +211,9 @@ namespace PARSIFAL2{
     vector<ElectronicChannel*> channels;
     vector<Hit*> hit;
     vector<Cluster1D*> cluster1d;
-    TFile *file;
-    TTree *tree;	
-    TRint *gRoot;
+    TFile *file = nullptr;
+    TTree *tree = nullptr;
+    TRint *gRoot = nullptr;
     int   run_number;
     int   electronics_type;
     float strip_pitch;
@@ -230,7 +232,7 @@ namespace PARSIFAL2{
     double party_DOCA;
     double party_posI[4];
     double party_primary;
-    double party_prob[100];
+    double party_prob[200];
     //Ionization
     double ionio_positionI[4];
     double ionio_positionF[4];

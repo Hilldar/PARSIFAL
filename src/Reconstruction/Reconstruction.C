@@ -94,21 +94,21 @@ namespace PARSIFAL2{
       cluster.at(icl)->Set_Position_CC(cc/charge);
       cluster.at(icl)->Set_Position_TPC(Get_TPC(cluster.at(icl)));
     }
-    //Find cluster w/ highQ | faster T
-    double high_Q=-999;
-    int ID_high_Q=-1;
-    double fast_T= 999;
-    int ID_fast_T=-1;
-    for(int icl=0;icl<cluster.size();icl++){
-      //High Q
-      if(cluster.at(icl)->Get_Charge()>high_Q){
-	high_Q=cluster.at(icl)->Get_Charge();
-	ID_high_Q=icl;
+    // Find cluster w/ highQ | faster T
+    double high_Q = -999;
+    int ID_high_Q = -1;
+    double fast_T = 1e9;
+    int ID_fast_T = -1;
+    for(size_t icl = 0; icl < cluster.size(); icl++){
+      // High Q
+      if(cluster.at(icl)->Get_Charge() > high_Q){
+	high_Q = cluster.at(icl)->Get_Charge();
+	ID_high_Q = icl;
       }
-      //Fast T
-      if(cluster.at(icl)->Get_Time0()>fast_T){
-        fast_T=cluster.at(icl)->Get_Time0();
-        ID_fast_T=icl;
+      // Fast T: select minimum valid start time
+      if(cluster.at(icl)->Get_Time0() >= 0 && cluster.at(icl)->Get_Time0() < fast_T){
+        fast_T = cluster.at(icl)->Get_Time0();
+        ID_fast_T = icl;
       }
 
     }

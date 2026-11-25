@@ -57,7 +57,7 @@ namespace PARSIFAL2{
     double DriftTotal; // mm
     double ChargeSharing;
     const int  max_default_strip = 128;
-    float min_x, min_y,max_x,max_y;
+    float min_x = 0, min_y = 0, max_x = 0, max_y = 0;
     //Function
 
     void   Set_PrintInfo      (bool io)   {PrintInfo=io;};
