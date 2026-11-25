@@ -2,6 +2,11 @@
 # Ordered from most recent to oldest (YYYY-MM-DD)
 
 [2026-11-25] - RF / AI
+- Added automated deterministic regression test suite (tests/regression_test.sh, tests/check_regression.py, tests/baseline.json) verifying APV, TIGER, and TORA bit-for-bit across OpenMP thread counts.
+- Added runtime CLI overrides to Simulate (--seed, --nevents, --bfield, --no-noise, --no-sat, --no-fft, --plot-hits, --tora-shaper <1|3>) backed by inline switches in src/Common/Common.h, and PARSIFAL_data support in Analysis.
+- Enabled automatic header dependency tracking (-MMD -MP) in Makefile and eliminated remaining -Wall warnings across all modules (except Readout::Get_Charge_TORA, left unchanged).
+- Major performance optimizations: replaced 13 heap TH1D* per ElectronicChannel with lightweight vector-backed Waveform class, skipped APV Fermi-Dirac fits below threshold, replaced sin() loops in Readout::Background() with exact sin/cos recurrence, truncated negligible shaper kernel tails with __restrict__ pointers (~8.5x APV and ~1.6x TIGER speedup at 2 threads).
+- Fixed residual bugs: deterministic per-module RNG seeding when SEED > 0 (persistent TRandom3 in Ionization + gRandom seeding), bounded Landau fit with peak fallback in main_ana (prevents negative Qind MPV), Yview ion tail and t_ele indexing in Readout, removed unused TF1 f[n_ns] array, fixed Get_TPC() canvas/double-fit and primi clearing in Reconstruction, fixed Plot_PDF_Channels() leaks, and removed obsolete source files.
 - Updated and synchronized README, README.md, and ChangeLog across project branches.
 - Refactored src/Plot/HVscan.C to support parametric APV and TIGER comparison modes against experimental data.
 - Updated run_list.txt APV scan (runs 30-39) event counts from 100 to 1000.

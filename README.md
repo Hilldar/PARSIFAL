@@ -35,7 +35,7 @@ For the licensing terms see `$PARSIFAL/LICENSE` (GNU GPLv3).
 | `triplegem` | Legacy triple-GEM simulation code |
 | `main` | µ-RWELL simulation with ion tail, T2K resistive dispersion, white noise, and OpenMP |
 | `Tora` | TORA ASIC integration, FFT filtering, independent rise/trail thresholds, APV/TIGER tuning |
-| `Parsifal-AI` | Critical physics/OpenMP/ROOT bugfixes, kernel optimizations, `info_sim_angle<deg>.txt`, parametric `HVscan.C` |
+| `Parsifal-AI` | Physics/OpenMP/ROOT bugfixes, `Waveform` & kernel optimizations, runtime CLI flags, `-MMD -MP` build, `info_sim_angle<deg>.txt`, parametric `HVscan.C`, deterministic regression tests |
 
 ---
 
@@ -57,9 +57,9 @@ source init_PARSIFAL.sh
 # 3. Load PARSIFAL environment variables and aliases
 source bash_PARSIFAL
 
-# 4. Build Simulate and Analysis
-parsifal -M        # clean build (required whenever .h headers change)
-# parsifal -m      # incremental build
+# 4. Build Simulate and Analysis (Makefile tracks .h dependencies automatically via -MMD -MP)
+parsifal -m        # incremental build
+# parsifal -M      # full clean rebuild
 
 # 5. Show available commands
 parsifal -h
@@ -76,6 +76,12 @@ parsifal -S 0 0    # TORA
 # Run analysis only / open ROOT output
 parsifal -A <runID> [angle]
 parsifal -O <runID> <angle>
+
+# Run simulation with optional runtime CLI overrides (no recompile needed)
+./bin/Simulate 36 0 --nevents 100 --seed 12345 --no-noise 0 --tora-shaper 1
+
+# Run deterministic 3-ASIC regression test suite (APV, TIGER, TORA)
+bash tests/regression_test.sh
 
 # Generate HV scan comparison PDFs against experimental APV/TIGER data
 root -l -b -q 'src/Plot/HVscan.C("APV","data","pdf")'
@@ -103,10 +109,11 @@ Each numeric row in `run_list.txt` specifies a 24-column run configuration:
 | 10 | `IT_Length` | Ion tail length [ns] | 22 | `Electronics` | `0`=APV, `1`=TIGER, `2`=TORA |
 | 11 | `IT_ratio` | Slow (ion) signal fraction | 23 | `Strip_Pitch` | Strip pitch [mm] |
 
-### Compile-Time Switches
+### Runtime CLI Flags & Simulation Switches
 
-- **`src/Common/Common.h`:** stage bypass flags `NO_PrimaryIonization`, `NO_SecondaryIonization`, `NO_Gain`, `NO_Drift`, `NO_Resistive`, `NO_Readout`, `NO_Saturation`, `NO_Noise`, `NO_FFT`, `NO_Capacitive`, `NO_Hit`, `NO_Cluster`, `NO_uTPC_Correction`, `NO_Ion_Tail` (`false` = active, `true` = bypassed), plus `fast_simulation`, `Bfield`, `SEED`, `n_ns`, `n_ns_buffer`.
-- **`src/main/Parsifal.C`:** `print_plot_above_thr` (kept `0` by default for multi-event scans; set to `1` only for single-event waveform PDF/PNG inspection).
+- **Runtime CLI options** (`./bin/Simulate <runID> <angle> [options]`):
+  `--seed <U>`, `--nevents <N>`, `--bfield <0|1>`, `--no-noise <0|1>`, `--no-sat <0|1>`, `--no-fft <0|1>`, `--plot-hits <0|1>`, `--tora-shaper <1|3>`.
+- **Default switches (`src/Common/Common.h`):** stage bypass flags `NO_PrimaryIonization`, `NO_SecondaryIonization`, `NO_Gain`, `NO_Drift`, `NO_Resistive`, `NO_Readout`, `NO_Saturation`, `NO_Noise`, `NO_FFT`, `NO_Capacitive`, `NO_Hit`, `NO_Cluster`, `NO_uTPC_Correction`, `NO_Ion_Tail` (`false` = active, `true` = bypassed), plus `fast_simulation`, `Bfield`, `SEED`, `TORA_shaper_order`, `Print_Plot_Above_Thr` (`false` by default), `n_ns`, `n_ns_buffer`.
 
 ## Output Files (`data/<runID>/`)
 
@@ -118,13 +125,18 @@ Each numeric row in `run_list.txt` specifies a 24-column run configuration:
 
 - Finalize TORA front-end charge/time extraction in `Readout::Get_Charge_TORA`.
 - Extend ionization parameterizations beyond muons in `Ar:iC4H10 (90:10)` and `Ar:CO2:CF4 (45:15:40)`.
-- Move detector setup selection (triple-GEM / µ-RWELL / µRTube) and `Common.h` compile-time flags to runtime configuration.
+- Move detector setup selection (triple-GEM / µ-RWELL / µRTube) to runtime configuration.
 
 ---
 
 ## ChangeLog
 
 ### 2026-11-25
+- Added automated deterministic regression test suite (`tests/regression_test.sh`, `tests/check_regression.py`, `tests/baseline.json`) verifying APV, TIGER, and TORA bit-for-bit across OpenMP thread counts.
+- Added runtime CLI overrides to `Simulate` (`--seed`, `--nevents`, `--bfield`, `--no-noise`, `--no-sat`, `--no-fft`, `--plot-hits`, `--tora-shaper <1|3>`) backed by `inline` switches in `src/Common/Common.h`, and `PARSIFAL_data` support in `Analysis`.
+- Enabled automatic header dependency tracking (`-MMD -MP`) in `Makefile` and eliminated remaining `-Wall` warnings across all modules (except `Readout::Get_Charge_TORA`, left unchanged).
+- Major performance optimizations: replaced 13 heap `TH1D*` per `ElectronicChannel` with a lightweight `std::vector<double>`-backed `Waveform` class, skipped APV Fermi-Dirac fits below threshold, replaced `sin()` loops in `Readout::Background()` with exact `sin/cos` recurrence, truncated negligible shaper kernel tails with `__restrict__` pointers (~8.5× APV and ~1.6× TIGER speedup at 2 threads).
+- Fixed residual bugs: deterministic per-module RNG seeding when `SEED > 0` (persistent `TRandom3` in `Ionization` + `gRandom` seeding), bounded Landau fit with peak fallback in `main_ana` (prevents negative `Qind MPV`), `Yview` ion tail and `t_ele` indexing in `Readout`, removed unused `TF1 f[n_ns]` array, fixed `Get_TPC()` canvas/double-fit and `primi` clearing in `Reconstruction`, fixed `Plot_PDF_Channels()` leaks, and removed obsolete source files.
 - Updated and synchronized `README`, `README.md`, and `ChangeLog` across project branches.
 - Refactored `src/Plot/HVscan.C` to support parametric APV and TIGER comparison modes against experimental data.
 - Updated `run_list.txt` APV scan (runs 30–39) event counts from 100 to 1000.
