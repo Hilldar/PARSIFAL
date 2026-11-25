@@ -26,3 +26,5 @@ LogAi/
 AGENTS.md
 .agents/
 log/
+lib/*/*.d
+tests/tmp_data/

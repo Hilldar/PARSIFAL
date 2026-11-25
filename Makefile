@@ -19,7 +19,8 @@ INC  = $(addprefix -I,$(SRC))
 vpath %.C $(SRC)
 
 CC      = g++
-CCFLAGS = -c -O2 -g -Wall -Wno-deprecated -fopenmp
+# -MMD -MP automatically generates .d header dependency files next to each .o
+CCFLAGS = -c -O2 -g -Wall -Wno-deprecated -fopenmp -MMD -MP
 
 LD      = g++
 LDFLAGS = -lGui -lTreePlayer -Wall -fopenmp
@@ -70,7 +71,11 @@ $(BIN_EXEC3):
 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(addprefix -L, $(LIBS)) -o $@
 $(BIN)/$(EXEC3): $(addprefix $(LIB)/, $(addsuffix .o, $(COMPONENTS3) ) )
 
-.PHONY : clean
+# Auto-include generated header dependency files
+DEPS = $(addprefix $(LIB)/, $(addsuffix .d, $(COMPONENTS1) $(COMPONENTS2) $(COMPONENTS3)))
+-include $(DEPS)
+
+.PHONY : clean all sim ana test installdirs
 clean:
 	@echo ... cleaning
 	rm -rf $(LIB)
