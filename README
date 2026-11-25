@@ -1,33 +1,122 @@
 #
+# PARSIFAL - Parameterized Simulation of MPGD Detectors
+#
 # Authors:
-# Riccardo Farinelli <rfarinelli@bo.infn.it>
-# Lia Lavezzi        <lia.lavezzi@to.infn.it>
-# Francesco Chiapponi <chiappon@bo.infn.it>
+#   Riccardo Farinelli  <rfarinelli@bo.infn.it>
+#   Lia Lavezzi         <lia.lavezzi@to.infn.it>
+#   Francesco Chiapponi <chiappon@bo.infn.it>
 #
-# All rights reserved
-# For the licensing terms see $PARSIFAL/LICENSE
+# All rights reserved.
+# For the licensing terms see $PARSIFAL/LICENSE (GPLv3).
 #
 
-Requirements: a working installation of ROOT (root.cern.ch). Tested on ROOT version 6.12/04
+OVERVIEW
+--------
+PARSIFAL is a C++/ROOT parameterized Monte Carlo simulator for Micro-Pattern
+Gaseous Detectors (MPGDs), supporting:
+  - Detectors : u-RWELL (Planar 1D, default), triple-GEM (Planar 2D), uRTube (R-Phi)
+  - ASICs     : APV (0), TIGER (1), TORA (2)
+  - Pipeline  : Primary/secondary ionization -> electron drift & diffusion ->
+                detector gain -> fast/slow ion-tail induction -> resistive
+                charge dispersion (T2K+Shepherd) -> white noise with pre-t0
+                buffer -> optional FFT bandpass filter -> shaper convolution ->
+                saturation & digitization -> hit/cluster CC & uTPC reconstruction
+  - Parallelism: OpenMP multi-threading (compiled with -O2 -fopenmp)
 
-HOWTO:
-1) set the ROOT environment variables: source $ROOTSYS/bin/thisroot.sh
-2) go to the directory where you copied PARSIFAL
-3) initilize PARSIFAL with the command: source init_PARSIFAL.sh
-4) set the PARSIFAL environment variables: source $PARSIFAL/bash_PARSIFAL2
-5) get the PARSIFAL command list: parsifal -h
+BRANCHES
+--------
+  - triplegem   : Legacy triple-GEM simulation
+  - main        : u-RWELL simulation with ion tail, T2K resistive model, white noise, OpenMP
+  - Tora        : TORA ASIC integration, FFT filtering, independent rise/trail thresholds,
+                  APV and TIGER experimental tuning
+  - Parsifal-AI : Physics/OpenMP/ROOT bugfixes, kernel optimizations, per-angle
+                  info_sim_angle<deg>.txt reports, parametric HVscan.C plotting
 
-# Future upgrades
-Up to now, the settings of the triple-GEM are introduced by the variable setup (=0)
-This determines the following variables:
-- collection efficiency x 3
-- extraction efficiency x 3
-- GEM gain x 3
-These variables depend on the gain of the detector
--> the check on the gain file is missing
+REQUIREMENTS
+------------
+  - ROOT 6 (https://root.cern.ch/) with C++17 support
+  - g++ with OpenMP support (-fopenmp)
 
-The ionization depends on the particle, now only muons are considered
-This determines the following variables:
-- number of primary clusters of electrons
-- number of secondary electrons for each primary cluster
-These variables depend on the particle type, its kinetic energy and the gas mixture
+HOWTO (BUILD & RUN)
+-------------------
+  1) Load ROOT environment:
+       source $ROOTSYS/bin/thisroot.sh
+  2) Enter the PARSIFAL directory:
+       cd /path/to/PARSIFAL
+  3) Initialize local environment script (generates bash_PARSIFAL):
+       source init_PARSIFAL.sh
+  4) Load PARSIFAL environment variables and aliases:
+       source bash_PARSIFAL
+  5) Compile Simulate and Analysis:
+       parsifal -m       (incremental build)
+       parsifal -M       (clean build; required whenever .h headers change)
+  6) Display available wrapper options:
+       parsifal -h
+  7) Run a simulation + analysis (example 1-event sanity runs at 0 deg):
+       parsifal -S 2 0   (APV)
+       parsifal -S 1 0   (TIGER)
+       parsifal -S 0 0   (TORA)
+  8) Run analysis only or open output ROOT file:
+       parsifal -A <runID> [angle]
+       parsifal -O <runID> <angle>
+  9) Produce HV scan comparison plots against experimental APV/TIGER data:
+       root -l -b -q 'src/Plot/HVscan.C("APV","data","pdf")'
+       root -l -b -q 'src/Plot/HVscan.C("TIGER","data","pdf")'
+
+CONFIGURATION (run_list.txt)
+----------------------------
+Each numeric row in run_list.txt defines a run configuration with 24 columns:
+  0  Run             Run ID
+  1  nEvt            Number of simulated events
+  2  GainFctr        Detector gain tuning factor
+  3  SpaceDiffFctr   Spatial diffusion tuning factor
+  4  TimeDiffFctr    Temporal diffusion tuning factor
+  5  Res_RC          Resistive RC time constant [ns]
+  6  Res_Sigma0      Resistive initial spread sigma0 [mm]
+  7  DetGain         Mean detector gain
+  8  Noise_fC        Input noise level [fC]
+  9  Thr_fC          General charge threshold [fC]
+  10 IT_Length       Ion tail duration [ns]
+  11 IT_ratio        Slow (ion) fraction of total induced signal
+  12 APV_ped         APV pedestal standard deviation
+  13 APV_thr         APV threshold multiplier
+  14 TIGER_E_fC_thr  TIGER energy-branch threshold [fC]
+  15 TIGER_T_fC_thr  TIGER time-branch threshold [fC]
+  16 TORA_thr_rise   TORA rising-edge threshold [fC]
+  17 TORA_thr_trail  TORA trailing-edge threshold [fC]
+  18 TORA_gain       TORA front-end gain [mV/fC]
+  19 TORA_tau        TORA shaping/peaking time tau [ns]
+  20 FFT_fmin        FFT high-pass cutoff [Hz] (0 = disabled)
+  21 FFT_fmax        FFT low-pass cutoff [Hz]  (0 = disabled)
+  22 Electronics     ASIC code (0 = APV, 1 = TIGER, 2 = TORA)
+  23 Strip_Pitch     Readout strip pitch [mm]
+
+COMPILE-TIME FLAGS
+------------------
+  - src/Common/Common.h:
+      NO_PrimaryIonization, NO_SecondaryIonization, NO_Gain, NO_Drift,
+      NO_Resistive, NO_Readout, NO_Saturation, NO_Noise, NO_FFT,
+      NO_Capacitive, NO_Hit, NO_Cluster, NO_uTPC_Correction, NO_Ion_Tail
+      (set to false to enable the corresponding stage; true to bypass it),
+      fast_simulation (true recommended), Bfield, SEED, n_ns, n_ns_buffer.
+  - src/main/Parsifal.C:
+      print_plot_above_thr (default 0 for scans; set to 1 only for single-event
+      waveform inspection in pdf/).
+
+OUTPUT FILES (data/<runID>/)
+----------------------------
+  - run_angle<deg>.root       : ROOT TTree ("tree") with ionization, channel,
+                                hit, and 1D cluster branches.
+  - info_sim_angle<deg>.txt   : Human-readable report with timestamps, runtime,
+                                decoded run_list.txt parameters, and flags.
+  - summary.txt               : Reconstructed metrics (Angle, Qind MPV, Qread,
+                                RatioQ, Size, CCres, TPCres, T0res, Eff).
+
+KNOWN LIMITATIONS & FUTURE UPGRADES
+-----------------------------------
+  - Finalize TORA front-end charge/time extraction in Readout::Get_Charge_TORA.
+  - Ionization tables currently cover muons in Ar:iC4H10 (90:10) and
+    Ar:CO2:CF4 (45:15:40); extend to additional particles/gas mixtures.
+  - Allow runtime selection of detector setup (triple-GEM / u-RWELL / uRTube)
+    and compile-time flags without recompiling.
+  - See ChangeLog and README.md for the full chronological history.
