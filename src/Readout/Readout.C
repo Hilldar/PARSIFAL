@@ -872,8 +872,8 @@ namespace PARSIFAL2{
         channel.at(ich)->Set_Charge(Get_Charge_TORA(channel.at(ich)));
         channel.at(ich)->Set_Time(Get_Time_TORA(channel.at(ich)));
         channel.at(ich)->Set_dTime(Get_dTime_TORA(channel.at(ich)));
-        // Set threshold flag
-        if(channel.at(ich)->Get_AboveThr_T()) channel.at(ich)->Set_AboveThr(true);
+        // Require both charge and time branches above threshold so rejected channels (-1) never form hits
+        if(channel.at(ich)->Get_AboveThr_E() && channel.at(ich)->Get_AboveThr_T()) channel.at(ich)->Set_AboveThr(true);
         else channel.at(ich)->Set_AboveThr(false);
         if(channel.at(ich)->Get_AboveThr() && (channel.at(ich)->Get_Charge()==0 || channel.at(ich)->Get_Time()==0)) cout<<"ich: "<<ich<<" Q: "<<channel.at(ich)->Get_Charge()<<" T: "<<channel.at(ich)->Get_Time()<<endl;
       }
@@ -1061,53 +1061,54 @@ namespace PARSIFAL2{
 
   double Readout::Get_Charge_TORA(ElectronicChannel *ch){
     Waveform *h_time = ch->Get_Histo_int_tora();
-    double maxbin    = h_time->GetNbinsX();
-    float time_thr = -999; // leading edge
+    int maxbin       = h_time->GetNbinsX();
+    float time_thr     = -999; // leading edge
     float time_falling = -999; // falling edge
     ch->Set_AboveThr_E(false);
-    for(int i=1;i<maxbin-1;i++) {
-      if(h_time->GetBinContent(i)>thrRise_TORA) {
+    for(int i = 1; i < maxbin - 1; i++) {
+      if(h_time->GetBinContent(i) > thrRise_TORA) {
         time_thr = i;
         break;
       }
     }
     ch->Set_t_thr_E(time_thr);
     ch->Set_t_rising_E(time_thr);
-  
-    //Saturation
-    ch->Set_Saturation_TORA(r->Gaus(saturation_TORA,sigma_saturation_TORA));
-    float q_peak  = ch->Get_Saturation_TORA();
+
+    // Saturation: clip waveform at per-event smeared threshold q_peak and advance peak index to plateau end
+    ch->Set_Saturation_TORA(r->Gaus(saturation_TORA, sigma_saturation_TORA));
+    float q_peak = ch->Get_Saturation_TORA();
     int timestamp_at_peak = h_time->GetMaximumBin();
     if(!NO_Saturation){
-      for(int i=1;i<maxbin;i++) {
-	      if(h_time->GetBinContent(i)>saturation_TORA) h_time->SetBinContent(i,q_peak); timestamp_at_peak=i;
+      for(int i = 1; i < maxbin; i++) {
+        if(h_time->GetBinContent(i) > q_peak) {
+          h_time->SetBinContent(i, q_peak);
+          timestamp_at_peak = i;
+        }
       }
     }
-    time_thr = ((int)(time_thr/timestep_TIGER))*timestep_TIGER;
-    float time_peak = time_thr + 4*6.25*(integration_time_TIGER+0.5);
-    
-    for(int i=timestamp_at_peak; i<maxbin; i++) {
-      if(i==maxbin-1) time_falling=2*maxbin;
-      if(h_time->GetBinContent(i)<thrTrail_TORA) {
-        time_falling = i-1;
+    if(time_thr >= 0) {
+      time_thr = static_cast<int>(time_thr / timestep_TORA) * timestep_TORA;
+    }
+    float time_peak = static_cast<int>(timestamp_at_peak / timestep_TORA) * timestep_TORA;
+
+    // Falling edge search starting from the signal peak (or end of saturation plateau)
+    for(int i = timestamp_at_peak; i < maxbin; i++) {
+      if(i == maxbin - 1) time_falling = 2 * maxbin;
+      if(h_time->GetBinContent(i) < thrTrail_TORA) {
+        time_falling = i - 1;
         break;
       }
     }
     ch->Set_t_falling_E(time_falling);
 
-    if(time_thr<0 || time_peak>=maxbin || time_falling<0 || time_falling>=maxbin) return -1;  //DOMANDA: esiste un tempo massimo oltre al quale se non viene ricevuto un t_falling la misura si interrompe (nel caso in cui thrTrailing sia > thrRise)
+    if(time_thr < 0 || time_peak >= maxbin || time_falling < 0 || time_falling >= maxbin) return -1;
+    if(gain_TORA <= 0) return -1;
+
+    float charge = h_time->GetBinContent(h_time->GetMaximumBin()) / gain_TORA;
+    if(charge <= thrTrail_TORA / gain_TORA) return -1;
 
     ch->Set_AboveThr_E(true);
-    time_peak = ((int)(time_peak/timestep_TIGER))*timestep_TIGER;
     ch->Set_t_Q_E(time_peak);
-  //   float charge = h_time->GetBinContent((int)time_peak)/gain_TORA;
-  //   if(TIGER_Get_Maximum) charge = h_time->GetMaximum()/gain_TORA;
-    // float charge = h_time->GetMaximum()/gain_TORA;
-    float charge = h_time->GetBinContent(h_time->GetMaximumBin())/gain_TORA;
-    // cout << "charge (mV): " << h_time->GetMaximum() << "-> " << h_time->GetBinCenter(h_time->GetMaximumBin()) << "-> " << h_time->GetBinContent(h_time->GetMaximumBin()) << endl;
-    // cout << "charge (fC): " << charge << endl;
-    if (charge <= thrTrail_TORA/gain_TORA) return -1;
-
     return charge;
   }
 
@@ -1150,7 +1151,7 @@ namespace PARSIFAL2{
     //   }
     // }
     if(time_thr<0 || time_falling<0) return time_thr;
-    //digitize the time in timestep 6.25ns
+    // Digitize time in TORA timestep (5 ns)
     time_thr = ((int)(1+time_thr/timestep_TORA))*timestep_TORA - efine_time_thr*timestep_TORA;
     return time_thr;
   }
