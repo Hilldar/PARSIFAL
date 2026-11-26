@@ -126,7 +126,8 @@ OUTPUT FILES (data/<runID>/)
 
 KNOWN LIMITATIONS & FUTURE UPGRADES
 -----------------------------------
-  - Finalize TORA front-end charge/time extraction in Readout::Get_Charge_TORA.
+  - Retune high-gain APV GainFctr values (runs 36-39 in run_list.txt) now that
+    APV saturation at 1970 ADC is properly active, and validate TORA HV scans.
   - Ionization tables currently cover muons in Ar:iC4H10 (90:10) and
     Ar:CO2:CF4 (45:15:40); extend to additional particles/gas mixtures.
   - Allow runtime selection of detector setup (triple-GEM / u-RWELL / uRTube)

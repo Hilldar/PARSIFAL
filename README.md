@@ -123,7 +123,7 @@ Each numeric row in `run_list.txt` specifies a 24-column run configuration:
 
 ## Known Limitations & Future Upgrades
 
-- Finalize TORA front-end charge/time extraction in `Readout::Get_Charge_TORA`.
+- Retune high-gain APV `GainFctr` values (runs `36–39` in `run_list.txt`) now that APV saturation at `1970 ADC` is properly active, and validate TORA HV scans against experimental data.
 - Extend ionization parameterizations beyond muons in `Ar:iC4H10 (90:10)` and `Ar:CO2:CF4 (45:15:40)`.
 - Move detector setup selection (triple-GEM / µ-RWELL / µRTube) to runtime configuration.
 
@@ -131,7 +131,12 @@ Each numeric row in `run_list.txt` specifies a 24-column run configuration:
 
 ## ChangeLog
 
+### 2026-11-26
+- Fixed `Readout::Get_Charge_TORA()` and TORA `Extract_Charge_Time()`: added missing braces on saturation clipping so `timestamp_at_peak` stays at the real peak (or plateau end) instead of `maxbin - 1`, compared against per-event `q_peak`, replaced leftover TIGER `timestep_TIGER`/`integration_time_TIGER` formulas with `timestep_TORA` and `timestamp_at_peak`, guarded `gain_TORA > 0`, moved `Set_AboveThr_E(true)` after the trailing-threshold check, and required `AboveThr_E && AboveThr_T` so rejected channels (`-1`) never form hits/clusters.
+- Achieved **0 errors and 0 `-Wall` warnings** across all 12 translation units and updated `tests/baseline.json` (verified deterministic on 1 and 2 OpenMP threads).
+
 ### 2026-11-25
+- Validated full 1,000-event APV (`30–39`) and TIGER (`10–24`) HV scans (~3.2× APV and ~1.6× TIGER speedup); confirmed that replacing `TH1D` with `Waveform` also resolved a long-standing ROOT bug where `h_time_apv->GetYaxis()->SetRangeUser(-200, 2000)` pinned `TH1::GetMaximum()` to `2000` and silently disabled APV saturation after ~5–10 events.
 - Added automated deterministic regression test suite (`tests/regression_test.sh`, `tests/check_regression.py`, `tests/baseline.json`) verifying APV, TIGER, and TORA bit-for-bit across OpenMP thread counts.
 - Added runtime CLI overrides to `Simulate` (`--seed`, `--nevents`, `--bfield`, `--no-noise`, `--no-sat`, `--no-fft`, `--plot-hits`, `--tora-shaper <1|3>`) backed by `inline` switches in `src/Common/Common.h`, and `PARSIFAL_data` support in `Analysis`.
 - Enabled automatic header dependency tracking (`-MMD -MP`) in `Makefile` and eliminated remaining `-Wall` warnings across all modules (except `Readout::Get_Charge_TORA`, left unchanged).
