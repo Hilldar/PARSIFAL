@@ -31,6 +31,7 @@ namespace PARSIFAL2{
   inline bool   NO_uTPC_Correction      = true;
   inline bool   NO_Ion_Tail             = false;
   inline int    TORA_shaper_order       = 1;     // 1 = 1st-order shaper, 3 = 3rd-order shaper
+  inline int    Resistive_Model         = 0;     // 0=STD, 1=Djunes, 2=Morello, 3=Exp, 4=Lorentz, 5=2D-PRF, 6=Dixit Voigt, 7=Two-Scale Dixit
   inline bool   Print_Plot_Above_Thr    = false; // Save waveform PDF/PNG for hits above threshold
   // Special signals
   inline bool   Single_Electron         = false;

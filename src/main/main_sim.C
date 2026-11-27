@@ -8,6 +8,7 @@
 
 int nshot = 1;
 static int g_override_nevents = -1;
+static bool g_cli_set_resistive_model = false;
 
 using namespace PARSIFAL2;
 
@@ -34,6 +35,21 @@ static string FormatHMS(double seconds) {
   return oss.str();
 }
 
+// Return human-readable resistive model name from code
+static string GetResistiveModelName(int code) {
+  switch (code) {
+    case 0:  return "STD (T2K+shepherd, Gaussian Erf)";
+    case 1:  return "Djunes (DRD1 2024-01-31)";
+    case 2:  return "Morello (linear sigma, Gaussian Erf)";
+    case 3:  return "Exponential / Laplace";
+    case 4:  return "Lorentzian / Cauchy";
+    case 5:  return "2D-PRF (1/r^3 dipole)";
+    case 6:  return "Dixit Prompt+Delayed (Voigt)";
+    case 7:  return "Two-Scale Dixit (Prompt + bi-RC)";
+    default: return "Unknown (fallback STD)";
+  }
+}
+
 // Return human-readable ASIC name from electronics code
 static string GetElectronicsName(int code) {
   switch (code) {
@@ -46,7 +62,7 @@ static string GetElectronicsName(int code) {
 
 // Write human-readable simulation metadata, run configuration, and timing to data/<run>/info_sim_angle<angle>.txt
 static void Write_InfoSim(const string& info_path,
-                          const string var[24],
+                          const string var[25],
                           int angle_deg,
                           double angle_rad,
                           const TString& root_outfile,
@@ -97,6 +113,9 @@ static void Write_InfoSim(const string& info_path,
        << "Ion Tail Slow/Total Ratio  : " << var[11] << "\n\n"
 
        << "[Resistive Layer]\n"
+       << "Resistive Model            : " << GetResistiveModelName(Resistive_Model)
+       << " (code " << Resistive_Model
+       << (g_cli_set_resistive_model ? ", CLI override)\n" : ", from run_list.txt)\n")
        << "Resistive RC (tau)         : " << var[5] << " ns\n"
        << "Resistive Sigma0           : " << var[6] << " mm\n\n"
 
@@ -132,6 +151,7 @@ static void Write_InfoSim(const string& info_path,
        << "Capacitive Induction       : " << on_off(!NO_Capacitive) << "\n"
        << "uTPC Correction            : " << on_off(!NO_uTPC_Correction) << "\n"
        << "TORA Shaper Order          : " << TORA_shaper_order << "\n"
+       << "Resistive Model            : " << GetResistiveModelName(Resistive_Model) << " (code " << Resistive_Model << ")\n"
        << "Plot Hits Above Thr        : " << on_off(Print_Plot_Above_Thr) << "\n"
        << "Seed                       : " << SEED << "\n"
        << "Time Window (n_ns)         : " << n_ns << " ns (+ " << n_ns_buffer << " ns buffer)\n"
@@ -152,7 +172,7 @@ void Run_i(string folder_i, int angle_i){
   double aangle = angle_i*TMath::DegToRad();
   ifstream infile;
   infile.open("run_list.txt", ios::in);
-  const int var_size = 24;
+  const int var_size = 25;
   string var[var_size];
   // 0  -> runID
   // 1  -> nEvent
@@ -178,8 +198,19 @@ void Run_i(string folder_i, int angle_i){
   // 21 -> FFT max freq. cut [Hz]
   // 22 -> Electronics (0=APV, 1=TIGER, 2=TORA)
   // 23 -> Strip Pitch [mm]
+  // 24 -> Resistive Model (0=STD, 1=Djunes, 2=Morello, 3=Exp, 4=Lorentz, 5=2D-PRF, 6=Dixit Voigt, 7=Two-Scale Dixit)
   var[0]="?";
-  while(infile>>var[0]>>var[1]>>var[2]>>var[3]>>var[4]>>var[5]>>var[6]>>var[7]>>var[8]>>var[9]>>var[10]>>var[11]>>var[12]>>var[13]>>var[14]>>var[15]>>var[16]>>var[17]>>var[18]>>var[19]>>var[20]>>var[21]>>var[22]>>var[23]){
+  string line;
+  while(getline(infile, line)){
+    istringstream iss(line);
+    if(!(iss >> var[0] >> var[1] >> var[2] >> var[3] >> var[4] >> var[5] >> var[6] >> var[7]
+             >> var[8] >> var[9] >> var[10] >> var[11] >> var[12] >> var[13] >> var[14] >> var[15]
+             >> var[16] >> var[17] >> var[18] >> var[19] >> var[20] >> var[21] >> var[22] >> var[23])){
+      var[0]="?";
+      continue;
+    }
+    // Backward-compatible optional 25th column (Res_Model); defaults to 0 (STD) if omitted
+    if(!(iss >> var[24])) var[24] = "0";
     if(var[0]==folder_i) {
       nshot = stoi(var[1]);
       break;
@@ -193,6 +224,9 @@ void Run_i(string folder_i, int angle_i){
   if(var[0]=="?") {
     cout<<"ERROR: Check the file run_list.txt"<<endl;
     return;
+  }
+  if(!g_cli_set_resistive_model) {
+    Resistive_Model = stoi(var[24]);
   }
   if(g_override_nevents > 0) {
     var[1] = to_string(g_override_nevents);
@@ -281,7 +315,8 @@ static void PrintUsage(const char* prog) {
        << "  --no-sat <0|1>      Disable/enable saturation\n"
        << "  --no-fft <0|1>      Disable/enable FFT filter\n"
        << "  --plot-hits <0|1>   Save PDF/PNG waveforms for hits above threshold\n"
-       << "  --tora-shaper <1|3> TORA shaper order (1 or 3)\n";
+       << "  --tora-shaper <1|3>      TORA shaper order (1 or 3)\n"
+       << "  --resistive-model <0..7> Override Res_Model from run_list.txt (0=STD, 1=Djunes, 2=Morello, 3=Exp, 4=Lorentz, 5=2D-PRF, 6=Dixit Voigt, 7=Two-Scale Dixit)\n";
 }
 
 int main(int argc, char* argv[]){
@@ -319,6 +354,7 @@ int main(int argc, char* argv[]){
       else if(arg == "--no-fft") { if(!need_val(arg)) return 1; NO_FFT = (stoi(argv[++i]) != 0); }
       else if(arg == "--plot-hits"){ if(!need_val(arg)) return 1; Print_Plot_Above_Thr = (stoi(argv[++i]) != 0); }
       else if(arg == "--tora-shaper"){ if(!need_val(arg)) return 1; TORA_shaper_order = stoi(argv[++i]); }
+      else if(arg == "--resistive-model"){ if(!need_val(arg)) return 1; Resistive_Model = stoi(argv[++i]); g_cli_set_resistive_model = true; }
       else if(arg == "-h" || arg == "--help"){ PrintUsage(argv[0]); return 0; }
       else {
         cerr << "ERROR: unknown option '" << arg << "'" << endl;
