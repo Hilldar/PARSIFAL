@@ -6,12 +6,65 @@
 #include "TH1D.h"
 #include "TH1I.h"
 #include "TF1.h"
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
 using namespace std;
 
 const int NSIGMA_SIGNAL = 5;
+
+// Robust Gaussian fit with peak-centered bounded recovery when the default
+// unconstrained fit drifts off-peak or collapses to a sub-bin spike.
+static void FitBoundedGaussian(TH1* h, TF1* f, double min_sigma, double max_sigma){
+  if(!h || !f) return;
+  if(h->GetEntries() <= 0){
+    f->SetParameters(0.0, 0.0, max_sigma);
+    return;
+  }
+  const int max_bin   = h->GetMaximumBin();
+  const double peak_x = h->GetBinCenter(max_bin);
+  const double peak_y = h->GetBinContent(max_bin);
+  const double bin_w  = h->GetBinWidth(max_bin);
+  const double mean_lo = peak_x - 3.0 * bin_w;
+  const double mean_hi = peak_x + 3.0 * bin_w;
+
+  // Stage 1: preserve exact default fit behavior when it converges cleanly on the peak
+  f->ReleaseParameter(0);
+  f->ReleaseParameter(1);
+  f->ReleaseParameter(2);
+  h->Fit(f, "WMQN0");
+  const double raw_mean  = f->GetParameter(1);
+  const double raw_sigma = f->GetParameter(2);
+  if(raw_sigma >= min_sigma && raw_sigma <= max_sigma &&
+     raw_mean >= mean_lo && raw_mean <= mean_hi){
+    return;
+  }
+
+  // Stage 2: recover from off-peak drift or sub-bin collapse using peak-seeded bounds
+  int left_bin = max_bin;
+  while(left_bin > 1 && h->GetBinContent(left_bin) > 0.5 * peak_y) left_bin--;
+  int right_bin = max_bin;
+  while(right_bin < h->GetNbinsX() && h->GetBinContent(right_bin) > 0.5 * peak_y) right_bin++;
+  const double fwhm_sigma = ((right_bin - left_bin) * bin_w) / 2.35482;
+  double init_sigma = (fwhm_sigma >= min_sigma) ? fwhm_sigma : h->GetRMS();
+  init_sigma = std::clamp(init_sigma, min_sigma, max_sigma);
+
+  f->SetParameters(peak_y, peak_x, init_sigma);
+  f->SetParLimits(0, 0.0, peak_y * 5.0 + 1.0);
+  f->SetParLimits(1, mean_lo, mean_hi);
+  f->SetParLimits(2, min_sigma, max_sigma);
+
+  // Omit "M" (Improve) here so status == 0 directly indicates Migrad convergence
+  int status = h->Fit(f, "WQBN0");
+  const double fit_mean  = f->GetParameter(1);
+  const double fit_sigma = std::fabs(f->GetParameter(2));
+  if(status != 0 || fit_sigma < min_sigma || fit_sigma > max_sigma ||
+     fit_mean < mean_lo || fit_mean > mean_hi){
+    f->SetParameters(peak_y, peak_x, init_sigma);
+  }
+}
 
 static string GetDataDir(){
   const char *env = getenv("PARSIFAL_data");
@@ -35,7 +88,9 @@ void Run_i(string ifolder, int iangle, bool append = false){
 	TH1D *h_CC = new TH1D("h_CC","h_CC",100,-2,5);
         intree->Draw("cluster1d_positionCC_X-(ionio_posI[0]+ionio_posF[0])/2>>h_CC","cluster1d_size>0 && cluster1d_type==1 && abs(cluster1d_positionCC_X-0.5*(ionio_posF[0]+ionio_posI[0]))<5 && cluster1d_high_Q","goff");
         TF1 *f_gaus_CC = new TF1 ("f_gaus_CC","gaus");
-        h_CC->Fit("f_gaus_CC","WMQN0");
+        // Min sigma = 0.5 * bin_width (0.035 mm = 35 um) prevents sub-bin spike collapse
+        const double cc_min_sigma = 0.5 * h_CC->GetBinWidth(1);
+        FitBoundedGaussian(h_CC, f_gaus_CC, cc_min_sigma, 2.0);
 	// Selection cut
 	TString cut = Form("cluster1d_size>0 && cluster1d_type==1 && abs(cluster1d_positionCC_X-0.5*(ionio_posF[0]+ionio_posI[0])-%f)<%f && cluster1d_high_Q",f_gaus_CC->GetParameter(1),f_gaus_CC->GetParameter(2)*NSIGMA_SIGNAL);
         cout<<cut<<endl;
@@ -79,7 +134,7 @@ void Run_i(string ifolder, int iangle, bool append = false){
         h_TPC->Fit("f_gaus_TPC","WMQN0");
 	// Residual CC
 	intree->Draw("cluster1d_positionCC_X-(ionio_posI[0]+ionio_posF[0])/2>>h_CC",cut,"goff");
-        h_CC->Fit("f_gaus_CC","WMQN0");
+        FitBoundedGaussian(h_CC, f_gaus_CC, cc_min_sigma, 2.0);
 	// Write summary metrics
 	float eff = (float)(intree->GetEntries(cut))/intree->GetEntries();
 	if(f_gaus_CC->GetParameter(2)*1000>500) eff = 0;
