@@ -1,6 +1,12 @@
 # PARSIFAL ChangeLog
 # Ordered from most recent to oldest (YYYY-MM-DD)
 
+[2026-11-27] - RF / AI
+- Added modular resistive charge-dispersion models in src/Resistive/Resistive.h selectable per run via Res_Model (0=STD T2K+Shepherd, 1=Djunes, 2=Morello, 3=Exp/Laplace, 4=Lorentz/Cauchy, 5=2D-PRF, 6=Dixit Prompt+Delayed Voigt, 7=Two-Scale Dixit Prompt+bi-RC), with --resistive-model <0..7> CLI override in src/main/main_sim.C and source logging in info_sim_angle<deg>.txt.
+- Extended run_list.txt from 24 to 25 columns by adding Res_Model (col 24), upgraded main_sim.C to line-based getline/istringstream parsing (backward-compatible with 24-column files defaulting to 0), preserved all 755 historical runs with Res_Model=0, and added validated 1,000-event/run HV scans for APV (2490-2499 Two-Scale Dixit, 2500-2509 Lorentz) and TIGER (2730-2744 Two-Scale Dixit, thrE=thrT=6.0 fC) using unified Res_RC=80.0 ns and SpaceDiffFctr=2.0.
+- Added peak-centered bounded Gaussian recovery (FitBoundedGaussian) in src/main/main_ana.C to prevent off-peak drift or sub-bin spike collapse on low-gain h_CC/h_CC_clean fits while preserving default fit results when well-converged.
+- Verified 0 errors, 0 -Wall warnings, and bit-for-bit deterministic regression PASS (tests/regression_test.sh) on APV (36), TIGER (21), and TORA (56).
+
 [2026-11-26] - RF / AI
 - Fixed Readout::Get_Charge_TORA() and TORA Extract_Charge_Time(): added missing braces on saturation clipping so timestamp_at_peak stays at the signal peak (or plateau end) instead of maxbin-1, compared against per-event q_peak, replaced leftover TIGER timestep/integration constants with timestep_TORA and timestamp_at_peak, guarded gain_TORA > 0, moved Set_AboveThr_E(true) after the trailing-threshold check, and required AboveThr_E && AboveThr_T so rejected (-1) channels never enter hits/clusters.
 - Achieved 0 errors and 0 -Wall compiler warnings across all 12 translation units, and updated tests/baseline.json (verified bit-for-bit deterministic on 1 and 2 OpenMP threads).

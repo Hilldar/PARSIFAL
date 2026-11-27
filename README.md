@@ -23,7 +23,7 @@ For the licensing terms see `$PARSIFAL/LICENSE` (GNU GPLv3).
   1. Primary & secondary ionization (`Ionization`, Garfield++-parametrized gas mixtures: `Ar:iC4H10 90:10` and `Ar:CO2:CF4 45:15:40`).
   2. Electron drift and spatial/temporal diffusion (`ElectronDrift`).
   3. Gas multiplication (`DetectorGain`, Polya/histogram sampling).
-  4. Fast (electron) + slow (ion tail) signal induction and resistive charge dispersion (`Resistive`, T2K+Shepherd model).
+  4. Fast (electron) + slow (ion tail) signal induction and modular resistive charge dispersion (`Resistive`: `0` = T2K+Shepherd default, `7` = Two-Scale Dixit recommended, plus `1..6`).
   5. White noise with pre-$t_0$ buffer, optional FFT bandpass filtering, shaper convolution, saturation, and digitization (`Readout`).
   6. Hit finding and 1D clustering with Charge Centroid (CC) and µTPC reconstruction (`Reconstruction`).
 - **Parallelism:** OpenMP multi-threading (`-O2 -fopenmp`).
@@ -35,7 +35,7 @@ For the licensing terms see `$PARSIFAL/LICENSE` (GNU GPLv3).
 | `triplegem` | Legacy triple-GEM simulation code |
 | `main` | µ-RWELL simulation with ion tail, T2K resistive dispersion, white noise, and OpenMP |
 | `Tora` | TORA ASIC integration, FFT filtering, independent rise/trail thresholds, APV/TIGER tuning |
-| `Parsifal-AI` | Physics/OpenMP/ROOT bugfixes, `Waveform` & kernel optimizations, runtime CLI flags, `-MMD -MP` build, `info_sim_angle<deg>.txt`, parametric `HVscan.C`, deterministic regression tests |
+| `Parsifal-AI` | Physics/OpenMP/ROOT bugfixes, `Waveform` & kernel optimizations, modular resistive models (`0..7`), 25-column `run_list.txt` (`Res_Model`), `FitBoundedGaussian` analysis fix, runtime CLI flags, `-MMD -MP` build, `info_sim_angle<deg>.txt`, parametric `HVscan.C`, deterministic regression tests |
 
 ---
 
@@ -92,44 +92,52 @@ root -l -b -q 'src/Plot/HVscan.C("TIGER","data","pdf")'
 
 ## Configuration (`run_list.txt`)
 
-Each numeric row in `run_list.txt` specifies a 24-column run configuration:
+Each numeric row in `run_list.txt` specifies a **25-column** run configuration:
 
 | Col | Name | Description / Unit | Col | Name | Description / Unit |
 |---:|---|---|---:|---|---|
-| 0 | `Run` | Run ID | 12 | `APV_ped` | APV pedestal std |
-| 1 | `nEvt` | Number of events | 13 | `APV_thr` | APV threshold factor |
-| 2 | `GainFctr` | Gain tuning factor | 14 | `TIGER_E_fC_thr` | TIGER E-branch threshold [fC] |
-| 3 | `SpaceDiffFctr` | Spatial diffusion factor | 15 | `TIGER_T_fC_thr` | TIGER T-branch threshold [fC] |
-| 4 | `TimeDiffFctr` | Temporal diffusion factor | 16 | `TORA_thr_rise` | TORA rising threshold [fC] |
-| 5 | `Res_RC` | Resistive RC $\tau$ [ns] | 17 | `TORA_thr_trail` | TORA trailing threshold [fC] |
-| 6 | `Res_Sigma0` | Resistive $\sigma_0$ [mm] | 18 | `TORA_gain` | TORA gain [mV/fC] |
-| 7 | `DetGain` | Mean detector gain | 19 | `TORA_tau` | TORA shaping time $\tau$ [ns] |
-| 8 | `Noise_fC` | Input noise [fC] | 20 | `FFT_fmin` | FFT high-pass cutoff [Hz] |
-| 9 | `Thr_fC` | General threshold [fC] | 21 | `FFT_fmax` | FFT low-pass cutoff [Hz] |
-| 10 | `IT_Length` | Ion tail length [ns] | 22 | `Electronics` | `0`=APV, `1`=TIGER, `2`=TORA |
-| 11 | `IT_ratio` | Slow (ion) signal fraction | 23 | `Strip_Pitch` | Strip pitch [mm] |
+| 0 | `Run` | Run ID | 13 | `APV_thr` | APV threshold factor |
+| 1 | `nEvt` | Number of events | 14 | `TIGER_E_fC_thr` | TIGER E-branch threshold [fC] |
+| 2 | `GainFctr` | Gain tuning factor | 15 | `TIGER_T_fC_thr` | TIGER T-branch threshold [fC] |
+| 3 | `SpaceDiffFctr` | Spatial diffusion factor | 16 | `TORA_thr_rise` | TORA rising threshold [fC] |
+| 4 | `TimeDiffFctr` | Temporal diffusion factor | 17 | `TORA_thr_trail` | TORA trailing threshold [fC] |
+| 5 | `Res_RC` | Resistive RC $\tau$ [ns] | 18 | `TORA_gain` | TORA gain [mV/fC] |
+| 6 | `Res_Sigma0` | Resistive $\sigma_0$ [mm] | 19 | `TORA_tau` | TORA shaping time $\tau$ [ns] |
+| 7 | `DetGain` | Mean detector gain | 20 | `FFT_fmin` | FFT high-pass cutoff [Hz] |
+| 8 | `Noise_fC` | Input noise [fC] | 21 | `FFT_fmax` | FFT low-pass cutoff [Hz] |
+| 9 | `Thr_fC` | General threshold [fC] | 22 | `Electronics` | `0`=APV, `1`=TIGER, `2`=TORA |
+| 10 | `IT_Length` | Ion tail length [ns] | 23 | `Strip_Pitch` | Strip pitch [mm] |
+| 11 | `IT_ratio` | Slow (ion) signal fraction | 24 | `Res_Model` | Resistive model (`0`=STD, `1`=Djunes, `2`=Morello, `3`=Exp, `4`=Lorentz, `5`=2D-PRF, `6`=Dixit-Voigt, `7`=Two-Scale Dixit) |
+| 12 | `APV_ped` | APV pedestal std | | | |
 
 ### Runtime CLI Flags & Simulation Switches
 
 - **Runtime CLI options** (`./bin/Simulate <runID> <angle> [options]`):
-  `--seed <U>`, `--nevents <N>`, `--bfield <0|1>`, `--no-noise <0|1>`, `--no-sat <0|1>`, `--no-fft <0|1>`, `--plot-hits <0|1>`, `--tora-shaper <1|3>`.
-- **Default switches (`src/Common/Common.h`):** stage bypass flags `NO_PrimaryIonization`, `NO_SecondaryIonization`, `NO_Gain`, `NO_Drift`, `NO_Resistive`, `NO_Readout`, `NO_Saturation`, `NO_Noise`, `NO_FFT`, `NO_Capacitive`, `NO_Hit`, `NO_Cluster`, `NO_uTPC_Correction`, `NO_Ion_Tail` (`false` = active, `true` = bypassed), plus `fast_simulation`, `Bfield`, `SEED`, `TORA_shaper_order`, `Print_Plot_Above_Thr` (`false` by default), `n_ns`, `n_ns_buffer`.
+  `--seed <U>`, `--nevents <N>`, `--bfield <0|1>`, `--no-noise <0|1>`, `--no-sat <0|1>`, `--no-fft <0|1>`, `--plot-hits <0|1>`, `--tora-shaper <1|3>`, `--resistive-model <0..7>` (overrides `Res_Model` from `run_list.txt`).
+- **Default switches (`src/Common/Common.h`):** stage bypass flags `NO_PrimaryIonization`, `NO_SecondaryIonization`, `NO_Gain`, `NO_Drift`, `NO_Resistive`, `NO_Readout`, `NO_Saturation`, `NO_Noise`, `NO_FFT`, `NO_Capacitive`, `NO_Hit`, `NO_Cluster`, `NO_uTPC_Correction`, `NO_Ion_Tail` (`false` = active, `true` = bypassed), plus `fast_simulation`, `Bfield`, `SEED`, `TORA_shaper_order`, `Resistive_Model` (default `0`, overridden per run by `run_list.txt` col 24), `Print_Plot_Above_Thr` (`false` by default), `n_ns`, `n_ns_buffer`.
 
 ## Output Files (`data/<runID>/`)
 
 - `run_angle<deg>.root`: ROOT `TTree` (`tree`) with ionization, channel, hit, and 1D cluster branches.
-- `info_sim_angle<deg>.txt`: human-readable run report with start/end timestamps, simulation and total elapsed time, OpenMP threads, decoded `run_list.txt` parameters, and compile-time flags.
+- `info_sim_angle<deg>.txt`: human-readable run report with start/end timestamps, simulation and total elapsed time, OpenMP threads, decoded `run_list.txt` parameters, and runtime flags.
 - `summary.txt`: reconstructed analysis metrics (`Angle`, `Qind MPV`, `Qread`, `RatioQ`, `Size`, `CCres`, `TPCres`, `T0res`, `Eff`).
 
 ## Known Limitations & Future Upgrades
 
-- Retune high-gain APV `GainFctr` values (runs `36–39` in `run_list.txt`) now that APV saturation at `1970 ADC` is properly active, and validate TORA HV scans against experimental data.
+- Validate TORA HV scans with the updated resistive models (`7` Two-Scale Dixit) against experimental data.
+- Study delta-ray emission in primary ionization to account for high-gain cluster-size broadening observed at high HV (`660–680 V` on TIGER).
 - Extend ionization parameterizations beyond muons in `Ar:iC4H10 (90:10)` and `Ar:CO2:CF4 (45:15:40)`.
 - Move detector setup selection (triple-GEM / µ-RWELL / µRTube) to runtime configuration.
 
 ---
 
 ## ChangeLog
+
+### 2026-11-27
+- Added modular resistive charge-dispersion models in `src/Resistive/Resistive.h` (`0`=STD T2K+Shepherd, `1`=Djunes, `2`=Morello, `3`=Exp/Laplace, `4`=Lorentz/Cauchy, `5`=2D-PRF, `6`=Dixit Prompt+Delayed Voigt, `7`=Two-Scale Dixit Prompt+bi-RC), with `--resistive-model <0..7>` CLI override in `src/main/main_sim.C` and source logging in `info_sim_angle<deg>.txt`.
+- Extended `run_list.txt` from 24 to **25 columns** (`Res_Model` at col 24), upgraded `main_sim.C` to line-based `getline`/`istringstream` parsing (backward-compatible with 24-column files), preserved all 755 historical runs (`Res_Model = 0`), and added validated 1,000-event/run HV scans for **APV** (`2490–2499` Two-Scale Dixit, `2500–2509` Lorentz) and **TIGER** (`2730–2744` Two-Scale Dixit, `thrE = thrT = 6.0 fC`) with unified `Res_RC = 80.0 ns` and `SpaceDiffFctr = 2.0`.
+- Added peak-centered bounded Gaussian recovery (`FitBoundedGaussian`) in `src/main/main_ana.C` to prevent off-peak drift or sub-bin spike collapse on low-gain `h_CC`/`h_CC_clean` fits while preserving default fit results when well-converged.
+- Verified **0 errors, 0 `-Wall` warnings**, and bit-for-bit deterministic regression PASS (`tests/regression_test.sh`) on APV (`36`), TIGER (`21`), and TORA (`56`).
 
 ### 2026-11-26
 - Fixed `Readout::Get_Charge_TORA()` and TORA `Extract_Charge_Time()`: added missing braces on saturation clipping so `timestamp_at_peak` stays at the real peak (or plateau end) instead of `maxbin - 1`, compared against per-event `q_peak`, replaced leftover TIGER `timestep_TIGER`/`integration_time_TIGER` formulas with `timestep_TORA` and `timestamp_at_peak`, guarded `gain_TORA > 0`, moved `Set_AboveThr_E(true)` after the trailing-threshold check, and required `AboveThr_E && AboveThr_T` so rejected channels (`-1`) never form hits/clusters.

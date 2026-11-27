@@ -18,7 +18,8 @@ Gaseous Detectors (MPGDs), supporting:
   - ASICs     : APV (0), TIGER (1), TORA (2)
   - Pipeline  : Primary/secondary ionization -> electron drift & diffusion ->
                 detector gain -> fast/slow ion-tail induction -> resistive
-                charge dispersion (T2K+Shepherd) -> white noise with pre-t0
+                charge dispersion (modular models 0..7; default 0=T2K+Shepherd,
+                recommended 7=Two-Scale Dixit) -> white noise with pre-t0
                 buffer -> optional FFT bandpass filter -> shaper convolution ->
                 saturation & digitization -> hit/cluster CC & uTPC reconstruction
   - Parallelism: OpenMP multi-threading (compiled with -O2 -fopenmp)
@@ -30,8 +31,9 @@ BRANCHES
   - Tora        : TORA ASIC integration, FFT filtering, independent rise/trail thresholds,
                   APV and TIGER experimental tuning
   - Parsifal-AI : Physics/OpenMP/ROOT bugfixes, Waveform & kernel optimizations,
-                  runtime CLI flags, -MMD -MP build, info_sim_angle<deg>.txt
-                  reports, parametric HVscan.C, deterministic regression tests
+                  modular resistive models (0..7), 25-column run_list.txt (Res_Model),
+                  FitBoundedGaussian analysis fix, runtime CLI flags, -MMD -MP build,
+                  info_sim_angle<deg>.txt reports, parametric HVscan.C, regression tests
 
 REQUIREMENTS
 ------------
@@ -70,7 +72,7 @@ HOWTO (BUILD & RUN)
 
 CONFIGURATION (run_list.txt)
 ----------------------------
-Each numeric row in run_list.txt defines a run configuration with 24 columns:
+Each numeric row in run_list.txt defines a run configuration with 25 columns:
   0  Run             Run ID
   1  nEvt            Number of simulated events
   2  GainFctr        Detector gain tuning factor
@@ -95,24 +97,28 @@ Each numeric row in run_list.txt defines a run configuration with 24 columns:
   21 FFT_fmax        FFT low-pass cutoff [Hz]  (0 = disabled)
   22 Electronics     ASIC code (0 = APV, 1 = TIGER, 2 = TORA)
   23 Strip_Pitch     Readout strip pitch [mm]
+  24 Res_Model       Resistive model (0=STD, 1=Djunes, 2=Morello, 3=Exp,
+                     4=Lorentz, 5=2D-PRF, 6=Dixit-Voigt, 7=Two-Scale Dixit)
 
 RUNTIME CLI FLAGS & DEFAULT SWITCHES
 ------------------------------------
   - CLI overrides (./bin/Simulate <runID> <angle> [options]):
-      --seed <U>          Deterministic RNG seed (0 = random)
-      --nevents <N>       Override event count from run_list.txt
-      --bfield <0|1>      Enable/disable magnetic field
-      --no-noise <0|1>    Disable/enable noise
-      --no-sat <0|1>      Disable/enable saturation
-      --no-fft <0|1>      Disable/enable FFT filter
-      --plot-hits <0|1>   Save PDF/PNG waveforms for hits above threshold
-      --tora-shaper <1|3> Select TORA shaper order (1 or 3)
+      --seed <U>               Deterministic RNG seed (0 = random)
+      --nevents <N>            Override event count from run_list.txt
+      --bfield <0|1>           Enable/disable magnetic field
+      --no-noise <0|1>         Disable/enable noise
+      --no-sat <0|1>           Disable/enable saturation
+      --no-fft <0|1>           Disable/enable FFT filter
+      --plot-hits <0|1>        Save PDF/PNG waveforms for hits above threshold
+      --tora-shaper <1|3>      Select TORA shaper order (1 or 3)
+      --resistive-model <0..7> Override Res_Model from run_list.txt
   - Default switches in src/Common/Common.h:
       NO_PrimaryIonization, NO_SecondaryIonization, NO_Gain, NO_Drift,
       NO_Resistive, NO_Readout, NO_Saturation, NO_Noise, NO_FFT,
       NO_Capacitive, NO_Hit, NO_Cluster, NO_uTPC_Correction, NO_Ion_Tail
       (set to false to enable the corresponding stage; true to bypass it),
       fast_simulation (true recommended), Bfield, SEED, TORA_shaper_order,
+      Resistive_Model (default 0, overridden by run_list.txt col 24),
       Print_Plot_Above_Thr (false by default), n_ns, n_ns_buffer.
 
 OUTPUT FILES (data/<runID>/)
@@ -126,8 +132,10 @@ OUTPUT FILES (data/<runID>/)
 
 KNOWN LIMITATIONS & FUTURE UPGRADES
 -----------------------------------
-  - Retune high-gain APV GainFctr values (runs 36-39 in run_list.txt) now that
-    APV saturation at 1970 ADC is properly active, and validate TORA HV scans.
+  - Validate TORA HV scans with the updated resistive models (7 Two-Scale Dixit)
+    against experimental data.
+  - Study delta-ray emission in primary ionization to account for high-gain
+    cluster-size broadening observed at high HV (660-680 V on TIGER).
   - Ionization tables currently cover muons in Ar:iC4H10 (90:10) and
     Ar:CO2:CF4 (45:15:40); extend to additional particles/gas mixtures.
   - Allow runtime selection of detector setup (triple-GEM / u-RWELL / uRTube)
